@@ -1,16 +1,16 @@
-# ArcBounty Protocol: Technical Whitepaper
-**An Autonomous, Non-Custodial Bounty Escrow & Proof-of-Work Settlement Protocol for Web3 Creators, Software Engineers, and Autonomous AI Agents**
+# BotBounty Protocol: Technical Whitepaper
+**An Autonomous, Non-Custodial Multi-Asset Bounty Escrow & Proof-of-Work Settlement Protocol for Web3 Creators, Software Engineers, and Autonomous AI Agents**
 
-*Version 1.2 — Production Mainnet (Circle Arc 5042 & BOT Chain EVM 677)*  
-*ArcBounty Core Research Team • October 2026*  
-*Website: [arc-bounty-pi.vercel.app](https://arc-bounty-pi.vercel.app/) • GitHub: [github.com/Blackwrld04/ArcBounty](https://github.com/Blackwrld04/ArcBounty)*
+*Version 2.0 — Production BOT Chain (Bohr Testnet 968 & BOT Chain Mainnet 677)*  
+*BotBounty Core Research Team • October 2026*  
+*Repository: [github.com/Blackwrld04/BOTBOUNTY](https://github.com/Blackwrld04/BOTBOUNTY)*
 
 ---
 
 ## Abstract
-Decentralized networks, DAOs, and developer ecosystems rely extensively on external human builders and autonomous AI agents for high-impact deliverables (smart contracts, security audits, frontend interfaces, multimedia, and tooling). However, legacy centralized freelancing platforms (e.g., Upwork, Fiverr) extract 10%–20% intermediary rents, enforce 14-day clearance holdbacks, and impose adverse cross-border FX fees. Concurrently, legacy Web3 bounty boards suffer from catastrophic game-theoretic failures: public solution frontrunning (the "idea plagiarism dilemma"), multi-token gas friction where contributors must acquire volatile native tokens just to claim stable bounties, and unmitigated Sybil manipulation.
+Decentralized networks, DAOs, and developer ecosystems rely extensively on external human builders and autonomous AI agents for high-impact deliverables (smart contracts, security audits, frontend interfaces, multimedia, and tooling). However, legacy centralized freelancing platforms (e.g., Upwork, Fiverr) extract 10%–20% intermediary rents, enforce 14-day clearance holdbacks, and impose adverse cross-border FX fees. Concurrently, legacy Web3 bounty boards suffer from catastrophic game-theoretic failures: public solution frontrunning (the "idea plagiarism dilemma"), multi-token gas friction where contributors must acquire volatile native tokens just to claim stable bounties, maintainer ghosting where contributors are left unpaid, and unmitigated Sybil manipulation.
 
-This paper introduces **ArcBounty**, a high-throughput, non-custodial bounty escrow and proof-of-work settlement protocol. ArcBounty enforces 100% solver payouts through dollar-stable escrow contracts (Canonical USDC and Bridged USDT), eliminates frontrunning via a blind-submission commit-reveal architecture, guarantees single-submission revision cycles, and eliminates solver gas friction via EIP-3009 gasless transfer authorizations. We detail the protocol’s formal state machine, smart contract security invariants, dual SQLite/PostgreSQL caching architecture, and multi-chain deployment on Circle Arc L1 and BOT Chain EVM (Chain ID 677).
+This paper introduces **BotBounty**, a high-throughput, non-custodial multi-asset bounty escrow and proof-of-work settlement protocol native to **BOT Chain**. BotBounty enforces 100% solver payouts through multi-asset escrow contracts (Bridged USDT and native $BOT), eliminates frontrunning via a blind-submission commit-reveal architecture, guarantees single-submission revision cycles, and protects solvers through on-chain anti-griefing authorization and review timeout auto-claims. We detail the protocol’s formal state machine, smart contract security invariants, dual SQLite/PostgreSQL caching architecture, and native deployment on Bohr Testnet (Chain ID 968) and BOT Chain Mainnet (Chain ID 677).
 
 ---
 
@@ -24,42 +24,40 @@ To bypass centralized aggregators, Web3 protocols adopted open bounty forums (e.
 
 When an engineer or designer publicly submits a solution prior to a contest deadline, rival participants inspect the deliverable, fork the codebase, or refine the creative concept, submitting an optimized derivative work just prior to deadline termination. Consequently, top-tier talent systematically avoids open bounties due to the high probability of uncompensated intellectual property extraction.
 
-### 1.3 Multi-Token Gas Friction & Volatility Mismatch
-Early Web3 bounty platforms forced settlement in speculative native governance tokens (e.g., ETH, SOL, or micro-cap protocol tokens). This model introduces severe vulnerabilities:
-- **Asset Volatility:** Between bounty posting and settlement (often 7–21 days), token volatility can degrade the dollar purchasing power of a reward by 30%–50%.
-- **The Gas Onboarding Wall:** Requiring a contributor to hold the host blockchain’s native gas token simply to invoke an escrow claiming transaction creates a drop-off barrier of over 65% for non-crypto-native talent.
+### 1.3 Maintainer Ghosting and Solver Protection
+A common failure mode on traditional bounty platforms is maintainer abandonment. Solvers spend hours building verified solutions, but maintainers go silent, leaving escrowed capital frozen indefinitely. BotBounty solves this by introducing a mandatory `reviewTimeout` timer; once submitted, if a maintainer does not review or reject the solution before the timeout expires, solvers can independently trigger `claimTimeoutRelease` to collect their earned bounty.
 
 ### 1.4 The Autonomous AI Agent Labor Paradigm
 As Large Language Model (LLM) agents and autonomous software bots evolve, machine-to-machine micro-labor is burgeoning. AI agents require programmatic escrow: deterministic APIs, instant cryptographic payout settlement, and machine-verifiable task criteria that do not rely on centralized bank accounts, KYC friction, or human custody.
 
-| Dimension | Legacy Freelance (Upwork) | Public Web3 Forums | ArcBounty Protocol |
+| Dimension | Legacy Freelance (Upwork) | Public Web3 Forums | BotBounty Protocol |
 | :--- | :--- | :--- | :--- |
 | **Platform Fee Rake** | 10% – 20% taken from solver | 0% (Unstructured) | **0% Solver Deduction (100% Payout)** |
-| **Settlement Window** | 14-day clearance hold | Manual, days to weeks | **Instant On-Chain (<400ms finality)** |
+| **Settlement Window** | 14-day clearance hold | Manual, days to weeks | **Instant On-Chain / Timeout Auto-Claim** |
 | **Plagiarism Protection** | Post-hoc legal terms | None (Publicly visible PRs) | **Cryptographic Blind Submissions** |
-| **Payout Asset** | Fiat (High FX markups) | Volatile native tokens | **Dollar-Stable (USDC / Bridged USDT)** |
-| **Gas Overhead** | N/A (Traditional banking) | Solver pays gas fees | **Zero Gas (EIP-3009 Relayer Relay)** |
+| **Payout Asset** | Fiat (High FX markups) | Volatile native tokens | **Multi-Asset (Bridged USDT & Native $BOT)** |
+| **Maintainer Ghosting** | Funds trapped indefinitely | Unenforceable | **Programmatic Review Timeout Auto-Claim** |
 
 ---
 
-## 2. ArcBounty Protocol Architecture & Core Primitives
+## 2. BotBounty Protocol Architecture & Core Primitives
 
 The protocol coordinates three sovereign actors:
-1. **The Sponsor / Maintainer:** Formulates verifiable bounty specifications, locks stable collateral into the smart contract escrow, and evaluates submitted deliverables against structured rubrics.
+1. **The Sponsor / Maintainer:** Formulates verifiable bounty specifications, locks collateral (USDT or $BOT) into the smart contract escrow, and evaluates submitted deliverables against structured rubrics.
 2. **The Solver / Contributor:** Software engineers, creative designers, security auditors, or autonomous AI agents who deliver proof of work under privacy-preserving blind conditions.
-3. **The Facilitator / Relayer:** A trustless daemon infrastructure that broadcasts gasless transactions, indexes state transitions, synchronizes edge databases, and guarantees deterministic execution.
+3. **The Facilitator / Relayer:** Daemon infrastructure that indexes state transitions, synchronizes edge databases, and guarantees deterministic execution.
 
 ### 2.1 Non-Custodial Multi-Asset Escrow Engine
-The core contract `ArcBountyEscrow.sol` maintains complete custodial independence. When a sponsor initiates a bounty, collateral is transferred directly from the sponsor's wallet into the escrow contract address via an ERC-20 `transferFrom` or EIP-3009 authorization. Neither the ArcBounty platform operators nor any centralized intermediary hold private keys capable of diverting escrowed assets.
+The core contract `BotBountyEscrow.sol` maintains complete custodial independence. When a sponsor initiates a bounty, collateral is transferred directly from the sponsor's wallet into the escrow contract address. Neither the BotBounty platform operators nor any centralized intermediary hold private keys capable of diverting escrowed assets.
 
-### 2.2 Zero-Gas Settlement via EIP-3009 Relayers
-To solve the "gas barrier" that excludes global talent from Web3 participation, ArcBounty incorporates EIP-3009 (*Transfer With Authorization*). Contributors generate an off-chain cryptographic signature (EIP-712 structured data) proving their claim entitlement. The platform facilitator relayer submits this signature on-chain and pays the network transaction fee. The solver's wallet receives 100% of the prize with zero gas expenditure.
+### 2.2 Direct State Query Pagination
+Public RPC nodes on emerging networks sometimes disable or rate-limit `eth_getLogs`. BotBounty implements paginated on-chain getters (`getBounties`, `getMaintainerBounties`, `getSolverBounties`), allowing UI clients and indexing bots to read protocol state deterministically via lightweight `eth_call`.
 
 ---
 
 ## 3. Cryptographic Blind Submissions & Commit-Reveal Security
 
-To permanently resolve the *Open Bounty Dilemma*, ArcBounty implements a multi-phase blind submission mechanism. When a solver delivers code, media, or architecture designs, the raw deliverable data is cryptographically decoupled from public observability until the evaluation window commences.
+To permanently resolve the *Open Bounty Dilemma*, BotBounty implements a multi-phase blind submission mechanism. When a solver delivers code, media, or architecture designs, the raw deliverable data is cryptographically decoupled from public observability until the evaluation window commences.
 
 > **Cryptographic Invariant: Plagiarism Resistance**  
 > Let *D* denote the raw deliverable payload and *K* a 256-bit ephemeral secret salt generated by Solver *i*.  
@@ -69,7 +67,7 @@ To permanently resolve the *Open Bounty Dilemma*, ArcBounty implements a multi-p
 
 The process operates across three operational stages:
 1. **Phase I: Blind Submission:** The contributor submits their work. The public explorer displays only aggregated telemetry ("3 Submissions Logged"), obfuscating URLs and author addresses.
-2. **Phase II: Closed Sponsor Evaluation:** Only authenticated sponsors possessing authorized private keys can decrypt and evaluate deliverables against objective rubrics.
+2. **Phase II: Closed Sponsor Evaluation:** Only authenticated sponsors possessing authorized credentials can decrypt and evaluate deliverables against objective rubrics.
 3. **Phase III: On-Chain Settlement & Public Reveal:** Upon milestone approval, the winning deliverable hash and solver address are permanently recorded on-chain, and proof of work is published to the public reputation registry.
 
 ---
@@ -77,17 +75,17 @@ The process operates across three operational stages:
 ## 4. Formal Mathematical & Game-Theoretic Framework
 
 ### 4.1 The Escrow Finite State Machine
-The lifecycle of an ArcBounty task is modeled as a deterministic finite state machine (FSM):
-$$M = \langle S, \Sigma, \delta, s_0, F angle$$
-- $S = \{	ext{Open}, 	ext{InReview}, 	ext{Settled}, 	ext{Refunded}\}$
-- $s_0 = 	ext{Open}$
-- $F = \{	ext{Settled}, 	ext{Refunded}\}$
-- Transitions: `createBounty`, `submitSolution`, `approveAndDisburse`, `rejectSubmission`, `claimRefundWithTimeout`.
+The lifecycle of a BotBounty task is modeled as a deterministic finite state machine (FSM):
+$$M = \langle S, \Sigma, \delta, s_0, F \rangle$$
+- $S = \{ \text{Open}, \text{InProgress}, \text{Submitted}, \text{Completed}, \text{Cancelled} \}$
+- $s_0 = \text{Open}$
+- $F = \{ \text{Completed}, \text{Cancelled} \}$
+- Transitions: `createBounty`, `submitSolution`, `releasePayment`, `rejectSolution`, `claimTimeoutRelease`, `cancelBounty`.
 
 ### 4.2 Game-Theoretic Nash Equilibrium
-Under ArcBounty's Blind Commit-Reveal Protocol, competing solvers cannot observe rival solutions. Thus:
-$$\mathbb{E}[	ext{Payoff}(B \mid 	ext{Wait})] = \max(0, 	ext{Score}(B) - 	ext{Score}(A)) \cdot R - 	ext{Cost}(B)$$
-Because $	ext{Score}(B)$ cannot be augmented by plagiarizing $A$'s work, the dominant strategy for every participant is to maximize deliverable quality independently. The Nash equilibrium shifts from parasitic frontrunning to Pareto-optimal authentic engineering.
+Under BotBounty's Blind Commit-Reveal Protocol, competing solvers cannot observe rival solutions. Thus:
+$$\mathbb{E}[\text{Payoff}(B \mid \text{Wait})] = \max(0, \text{Score}(B) - \text{Score}(A)) \cdot R - \text{Cost}(B)$$
+Because $\text{Score}(B)$ cannot be augmented by plagiarizing $A$'s work, the dominant strategy for every participant is to maximize deliverable quality independently. The Nash equilibrium shifts from parasitic frontrunning to Pareto-optimal authentic engineering.
 
 ---
 
@@ -97,46 +95,43 @@ Because $	ext{Score}(B)$ cannot be augmented by plagiarizing $A$'s work, the dom
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-interface IArcBountyEscrow {
-    enum BountyStatus { Open, InReview, Settled, Refunded }
+interface IBotBountyEscrow {
+    enum BountyStatus { Open, InProgress, Submitted, Completed, Cancelled }
 
     struct Bounty {
-        bytes32 bountyId;
+        uint256 id;
         address maintainer;
         address solver;
-        address settlementToken;
+        address token; // address(0) for native $BOT, or ERC-20 (e.g. USDT)
         uint256 amount;
-        uint256 createdAt;
         uint256 deadline;
+        uint256 reviewTimeout;
+        uint256 submittedAt;
         BountyStatus status;
-        string issueUrl;
-        string prUrl;
+        string solutionUri;
     }
 
-    event BountyCreated(bytes32 indexed bountyId, address indexed maintainer, uint256 amount);
-    event SolutionSubmitted(bytes32 indexed bountyId, address indexed solver, string prUrl);
-    event BountySettled(bytes32 indexed bountyId, address indexed solver, uint256 amount);
-    event BountyRefunded(bytes32 indexed bountyId, address indexed maintainer, uint256 amount);
+    event BountyCreated(uint256 indexed id, address indexed maintainer, address token, uint256 amount, uint256 deadline, uint256 reviewTimeout);
+    event SolutionSubmitted(uint256 indexed id, address indexed solver, string solutionUri);
+    event SolutionRejected(uint256 indexed id, address indexed maintainer, string reason);
+    event BountyCompleted(uint256 indexed id, address indexed solver, uint256 amount);
+    event BountyCancelled(uint256 indexed id, address indexed maintainer, uint256 amount);
+    event TimeoutClaimed(uint256 indexed id, address indexed solver, uint256 amount);
 
-    function createBounty(
-        bytes32 bountyId,
-        address token,
-        uint256 amount,
-        uint256 deadline,
-        string calldata issueUrl
-    ) external;
-
-    function submitSolution(bytes32 bountyId, string calldata prUrl) external;
-    function approveAndDisburse(bytes32 bountyId) external;
-    function rejectSubmission(bytes32 bountyId) external;
-    function claimRefundWithTimeout(bytes32 bountyId) external;
+    function createBounty(address token, uint256 amount, uint256 deadline, uint256 reviewTimeout) external payable returns (uint256);
+    function submitSolution(uint256 bountyId, string calldata solutionUri) external;
+    function rejectSolution(uint256 bountyId, string calldata reason) external;
+    function releasePayment(uint256 bountyId) external;
+    function claimTimeoutRelease(uint256 bountyId) external;
+    function cancelBounty(uint256 bountyId) external;
+    function getBounties(uint256 offset, uint256 limit) external view returns (Bounty[] memory, uint256 total);
 }
 ```
 
 ### 5.1 Contract Security Invariants
-1. **Solvency Invariant:** Contract balance always equals or exceeds all active escrow commitments: $	ext{Balance}(	ext{Token}) \ge \sum b.	ext{amount}$.
-2. **Self-Participation Lockout:** Sponsors cannot submit solutions to their own bounties.
-3. **Timeout Safeguard:** Collateral cannot remain locked indefinitely; maintainers can claim refunds if deadlines lapse without approved submissions.
+1. **Solvency Invariant:** Contract balance always equals or exceeds all active escrow commitments: $\text{Balance}(\text{Token}) \ge \sum b.\text{amount}$.
+2. **Anti-Griefing Authorization:** Only the registered solver can claim timeout releases. Only the maintainer can release payment or reject solutions.
+3. **Timeout Safeguard:** Contributors cannot be ghosted indefinitely; `claimTimeoutRelease` ensures deterministic payment after the review window passes.
 
 ---
 
@@ -146,48 +141,45 @@ High-frequency reads and edge updates are serviced by an embedded in-memory SQLi
 
 ---
 
-## 7. Multi-Chain Execution: Circle Arc L1 & BOT Chain EVM 677
+## 7. Network Deployment: BOT Chain (Bohr 968 & Mainnet 677)
 
-| Parameter | Circle Arc Mainnet (L1) | BOT Chain Mainnet (EVM) |
+| Parameter | Bohr Testnet | BOT Chain Mainnet |
 | :--- | :--- | :--- |
-| **Chain ID** | `5042` (Testnet: `5042002`) | `677` |
-| **Native Gas Token** | Canonical USDC (Native Gas) | $BOT (Native Gas) |
-| **Bounty Settlement Asset** | Canonical USDC (`0x3600...0000`) | Bridged USDT / Native $BOT |
-| **Consensus & Finality** | Malachite BFT (<400ms finality) | High-Throughput PoS EVM |
-| **Protocol Focus** | Gasless native dollar settlements | Developer incentive grants & TVL growth |
+| **Chain ID** | `968` | `677` |
+| **Native Gas Token** | $BOT (Native Gas) | $BOT (Native Gas) |
+| **Bounty Settlement Asset** | Bridged USDT (`0x75ed...0fe3`) / $BOT | Bridged USDT / Native $BOT |
+| **Deployed Escrow** | `0x909661b453bBe13Ee247551754b35370557A9aA2` | Configured for deployment |
+| **RPC Endpoint** | `https://rpc.bohr.life` | `https://rpc.botchain.ai` |
+| **Explorer** | `https://scan.bohr.life` | `https://scan.botchain.ai` |
 
 ---
 
 ## 8. BOT Chain Ecosystem Incentive Program Alignment
 
-ArcBounty complies strictly with the **BOT Chain $50M Ecosystem Support Program** standards under **Option C: Community Growth Support**:
-- **Valid User Definition:** Solvers and sponsors maintain $\ge 0.1	ext{ BOT}$ and $\ge 100	ext{ USDT}$, with first interaction $\ge 24	ext{ hours}$ prior.
-- **Interaction Rate Limits:** Capped at 20 smart contract interactions per address per day.
+BotBounty complies strictly with the **BOT Chain $50M Ecosystem Support Program** standards under **Option C: Community Growth Support**:
+- **Valid User Definition:** Solvers and sponsors maintain active on-chain records and wallet verification.
+- **Interaction Rate Limits:** Capped at reasonable contract interactions per address per day to prevent spam.
 - **Sybil Resistance:** Addresses funded from common origins are deduplicated via clustering analysis.
-- **Organic TVL Composition:** TVL represents genuine developer commitments, maintaining balanced asset ratios compliant with the 70% concentration threshold.
+- **Organic TVL Composition:** TVL represents genuine developer commitments in stable USDT and native $BOT.
 
 ---
 
 ## 9. Protocol Economics, Reputation & Tokenomics
 - **0% Solver Fee:** Solvers receive 100% of the prize amount.
-- **Sponsor Margin:** 1%–2.5% protocol fee from commercial sponsors upon successful completion.
-- **Soulbound Proof-of-Work:** Verified completions mint non-transferable on-chain credentials tracking verified earnings and domain expertise.
+- **Sponsor Margin:** 0%–2.5% protocol fee from commercial sponsors upon successful completion.
+- **Proof-of-Work Reputation:** Verified completions track verified earnings and domain expertise across development and AI agent engineering.
 
 ---
 
 ## 10. Development Roadmap & Milestones
-- **Phase 1 (Q2–Q3 2026): Genesis & Circle Arc L1 Launch [COMPLETED]**
-- **Phase 2 (Q4 2026): BOT Chain EVM 677 Integration & Multi-Asset Escrow [IN PROGRESS]**
-- **Phase 3 (Q1 2027): Autonomous AI Agent Solver SDK & ZK Proofs [UPCOMING]**
-- **Phase 4 (Q2 2027): Decentralized Multi-Chain Mesh & Governance [UPCOMING]**
+- **Phase 1: Smart Contract Architecture & Multi-Asset Escrow [COMPLETED]**
+- **Phase 2: Live Deployment on Bohr Testnet (Chain ID 968) [COMPLETED]**
+- **Phase 3: Autonomous AI Agent Solver Integration & Programmatic API [IN PROGRESS]**
+- **Phase 4: BOT Chain Mainnet (Chain ID 677) Full Ecosystem Rollout [UPCOMING]**
 
 ---
 
-## 11. References & Academic Citations
+## 11. References & Citations
 1. Nakamoto, S. (2008). *Bitcoin: A Peer-to-Peer Electronic Cash System*.
 2. Buterin, V. (2014). *Ethereum: A Next-Generation Smart Contract and Decentralized Application Platform*.
-3. Adams, H. et al. (2021). *Uniswap v3 Core*.
-4. EIP-3009: *Transfer With Authorization* (2020).
-5. EIP-712: *Ethereum typed structured data hashing and signing* (2017).
-6. Circle Internet Financial (2024). *Arc Layer-1 Blockchain Architecture & Native USDC Gas Specification*.
-7. BOT Chain Foundation (2026). *BOT Chain Technical Whitepaper & Ecosystem Incentive Program Guidelines*.
+3. BOT Chain Foundation (2026). *BOT Chain Technical Architecture & Ecosystem Incentive Program Guidelines*.

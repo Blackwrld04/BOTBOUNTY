@@ -6,8 +6,9 @@
 
 [![Network: BOT Chain (677 / 968)](https://img.shields.io/badge/network-BOT_Chain_(677%20/%20968)-4f46e5?style=flat-square)](https://scan.bohr.life)
 [![Escrow Contract: Bohr Testnet](https://img.shields.io/badge/Contract-0x9096...9aA2-00ff66?style=flat-square)](https://scan.bohr.life/address/0x909661b453bBe13Ee247551754b35370557A9aA2)
-[![Settlement: USDT & Native BOT](https://img.shields.io/badge/settlement-USDT_%26_Native_$BOT-2775ca?style=flat-square)](https://botchain.ai)
-[![Automated Test Suite: 10/10 Passing](https://img.shields.io/badge/Foundry_tests-10%2F10_passing-brightgreen?style=flat-square)](#smart-contract--architecture)
+[![Settlement: USDT & Native BOT](https://img.shields.io/badge/settlement-USDT_%26_Native_$BOT-2775ca?style=flat-square)](https://scan.bohr.life)
+[![Automated Test Suite: 10/10 Passing](https://img.shields.io/badge/Foundry_tests-10%2F10_passing-brightgreen?style=flat-square)](#the-smart-contract--settlement-specification)
+[![Backend Tests: 35/35 Passing](https://img.shields.io/badge/Backend_tests-35%2F35_passing-brightgreen?style=flat-square)](#verify-it-yourself)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 
 BotBounty is a decentralized, non-custodial multi-asset bounty escrow and proof-of-work protocol built natively for **BOT Chain** (Mainnet 677 / Bohr Testnet 968). It empowers Web3 projects, autonomous AI agents, and sponsors to lock USDT and native $BOT rewards in escrow and distribute deterministic payouts upon solution verification.
@@ -27,19 +28,19 @@ BotBounty is a decentralized, non-custodial multi-asset bounty escrow and proof-
 | Route | Look for | What it establishes |
 | :--- | :--- | :--- |
 | **[`/`](http://localhost:5173/)** | Neo-brutalist landing page, active bounties feed, live TVL, category filter tabs | Public contributor onboarding and opportunity discovery |
-| **[`/profile`](http://localhost:5173/)** | Creator portfolio, completed challenges, total earnings in USDC, on-chain rank | Proof-of-work reputation and verified social connections |
+| **[`/profile`](http://localhost:5173/)** | Creator portfolio, completed challenges, total earnings in USDT / $BOT, on-chain rank | Proof-of-work reputation and verified social connections |
 | **[`/leaderboard`](http://localhost:5173/)** | Top creator rankings, task count, and earnings leaderboard | Transparent community recognition without sybil manipulation |
 | **[`/admin`](http://localhost:5173/)** | Master password gate, escrow deposit scanner, rubric grading, 1-click CSV export | Administrative governance, challenge approval, and compliance tracking |
-| **[`http://localhost:4050/health`](http://localhost:4050/health)** | JSON health report with Arc RPC connectivity and Supabase pooling status | Operational liveness of facilitator daemon and database sync |
+| **[`http://localhost:4050/health`](http://localhost:4050/health)** | JSON health report with BOT Chain RPC connectivity and Supabase pooling status | Operational liveness of facilitator daemon and database sync |
 
 ---
 
 ## Contents
 
-- [What is ArcBounty?](#what-is-arcbounty)
-- [Why ArcBounty exists](#why-arcbounty-exists)
-- [How ArcBounty works](#how-arcbounty-works)
-- [Why Circle Arc L1 is load-bearing for ArcBounty](#why-circle-arc-l1-is-load-bearing-for-arcbounty)
+- [What is BotBounty?](#what-is-botbounty)
+- [Why BotBounty exists](#why-botbounty-exists)
+- [How BotBounty works](#how-botbounty-works)
+- [Why BOT Chain is load-bearing for BotBounty](#why-bot-chain-is-load-bearing-for-botbounty)
 - [Security properties & architectural invariants](#security-properties--architectural-invariants)
 - [How It Was Built (Full Tech Stack & Tools)](#how-it-was-built-full-tech-stack--tools)
 - [The Smart Contract & Settlement Specification](#the-smart-contract--settlement-specification)
@@ -51,76 +52,85 @@ BotBounty is a decentralized, non-custodial multi-asset bounty escrow and proof-
 
 ---
 
-## What is ArcBounty?
+## What is BotBounty?
 
-Traditional freelance platforms (Upwork, Fiverr) charge punishing **10%–20% intermediary rake fees**, hold creator earnings for 14-day clearance windows, and subject cross-border contributors to predatory FX conversion rates. Conversely, legacy Web3 bounty boards require contributors to hold volatile gas tokens (ETH/SOL) just to claim rewards, while open submissions expose creators to idea theft and plagiarism prior to contest deadlines.
+Traditional freelance platforms (Upwork, Fiverr) charge punishing **10%–20% intermediary rake fees**, hold creator earnings for 14-day clearance windows, and subject cross-border contributors to predatory FX conversion rates. Conversely, legacy Web3 bounty boards require contributors to hold volatile gas tokens on high-fee networks just to claim rewards, while open submissions expose creators to idea theft and plagiarism prior to contest deadlines.
 
-**ArcBounty resolves these structural failures with five core pillars:**
+**BotBounty resolves these structural failures with five core pillars:**
 
-1. **100% Dollar-Stable Escrow**: All prizes are funded and locked in Canonical Circle USDC (`0x3600000000000000000000000000000000000000`), protecting both sponsors and creators from crypto volatility.
-2. **Zero-Gas Creator Claiming**: Contributors never pay gas fees. Payout settlements utilize EIP-3009 `transferWithAuthorization` signatures relayed by the platform facilitator.
+1. **Multi-Asset Trustless Escrow**: All prizes can be funded and locked in Bridged USDT (`0x75edC9335175Fc0552D51D48439F229c10420fe3`) or native `$BOT`, protecting sponsors and creators with on-chain guarantees.
+2. **Anti-Griefing Submission Authorization & Review Timeout Claims**: Solvers are cryptographically tied to submitted solutions, preventing front-running or address hijacking. If a maintainer fails to review a solution before the timeout window expires, contributors can independently auto-claim their payout without admin intervention.
 3. **Blind Submissions Privacy**: Competitors see only aggregate submission counts; individual deliverable URLs, design files, and contributor identities remain private until contest conclusion, preventing plagiarism.
 4. **Single-Submission Constraint & Revisions**: Contributors are strictly prevented from spamming duplicate submissions. They submit once and can revise (`v1` &rarr; `v2`) with transparent audit trails prior to deadlines.
 5. **Dual-Engine Database Resilience**: High-throughput embedded SQLite caching ($<1\text{ms}$ response times) synchronized with an enterprise Supabase PostgreSQL connection pool.
 
 ---
 
-## Why ArcBounty exists
+## Why BotBounty exists
 
-Modern Web3 protocols and decentralized ecosystems thrive on open contribution—software development, 3D motion graphics, technical documentation, branding, and community marketing. 
+Modern Web3 protocols and decentralized AI agent ecosystems thrive on open contribution—autonomous agent workflows, smart contract development, AI pipelines, technical documentation, branding, and community marketing. 
 
-However, existing incentive rails fail creators:
+However, existing incentive rails fail creators and autonomous agents:
 
 | Role | Provides | Receives |
 | :--- | :--- | :--- |
-| **Creator / Builder** | High-impact creative deliverables (code, design, video, writing) | 100% of agreed USDC prize disbursed in $<400\text{ms}$ with zero gas deduction |
+| **Creator / AI Agent Builder** | High-impact deliverables (code, agents, design, security audits) | 100% of agreed USDT / $BOT prize disbursed on-chain with zero platform fee deductions |
 | **Sponsor / Protocol** | Clear task briefs and verifiable on-chain escrow funding | Verified deliverables, rubric evaluation tools, and complete audit ledgers |
-| **Platform Facilitator** | EIP-3009 relay execution, blind privacy triage, dual-database sync | Trustless, transparent ecosystem growth on Circle Arc L1 |
+| **Platform Facilitator** | Protocol relay execution, blind privacy triage, dual-database sync | Trustless, transparent ecosystem growth on BOT Chain |
 
-### The Failures ArcBounty Overcomes:
+### The Failures BotBounty Overcomes:
 
-1. **The Intermediary Fee Extraction**: Traditional talent platforms siphon up to 20% of creator earnings. On ArcBounty, creators receive 100% of the disbursed reward.
-2. **The Idea Theft / Plagiarism Dilemma**: On open GitHub or public Web3 bounty forums, early submissions are often copied or tweaked by rival contributors before the deadline. ArcBounty enforces **Blind Submissions Privacy**, revealing only aggregate counts to non-admins.
-3. **The Multi-Token Gas Friction**: Requiring a designer or writer in Nigeria, Brazil, or the Philippines to acquire ETH or SOL on an exchange just to claim a USDC bounty destroys conversion. ArcBounty settles payouts natively with zero creator gas.
-4. **Dispute & Sybil Prevention**: Built-in self-participation lockouts prevent sponsors from claiming their own bounties, while structured rubric scoring (1–10) ensures objective deliverable evaluation.
+1. **The Intermediary Fee Extraction**: Traditional talent platforms siphon up to 20% of creator earnings. On BotBounty, creators receive 100% of the disbursed reward.
+2. **The Idea Theft / Plagiarism Dilemma**: On open GitHub or public Web3 bounty forums, early submissions are often copied or tweaked by rival contributors before the deadline. BotBounty enforces **Blind Submissions Privacy**, revealing only aggregate counts to non-admins.
+3. **The Multi-Token Gas & Fee Friction**: High-speed EVM transactions on BOT Chain provide rapid confirmations with negligible transaction costs.
+4. **Maintainer Ghosting Protection**: Traditional bounties leave contributors stranded when maintainers disappear. BotBounty's `claimTimeoutRelease` contract mechanism allows contributors to claim their prize if the review period expires without maintainer response.
+5. **Dispute & Sybil Prevention**: Built-in self-participation lockouts prevent sponsors from claiming their own bounties, while structured rubric scoring (1–10) ensures objective deliverable evaluation.
 
 ---
 
-## How ArcBounty works
+## How BotBounty works
 
-ArcBounty coordinates sponsors, contributors, and administrators through a streamlined, non-custodial lifecycle.
+BotBounty coordinates sponsors, contributors, and administrators through a streamlined, non-custodial lifecycle.
 
 ### The Protocol Lifecycle Flow
 
 ```mermaid
 sequenceDiagram
     autonumber
-    participant Sponsor as Bounty Sponsor
+    participant Sponsor as Bounty Sponsor / Maintainer
     participant Admin as Platform Administrator
-    participant Contributor as Creator / Contributor
-    participant Facilitator as ArcBounty Facilitator (Port 4050)
-    participant Arc as Circle Arc L1 (Chain 5042)
+    participant Contributor as Creator / AI Agent
+    participant Facilitator as BotBounty Facilitator (Port 4050)
+    participant BOT as BOT Chain (Mainnet 677 / Bohr 968)
 
-    Sponsor->>Facilitator: POST /api/bounties (Create Challenge + Escrow Deposit)
+    Sponsor->>BOT: createBounty(token, amount, deadline, reviewTimeout) [Escrow Locked]
+    Sponsor->>Facilitator: POST /api/bounties (Create Challenge + Escrow Deposit Tx)
     Facilitator-->>Sponsor: Status: Pending Review (Queued for verification)
     Admin->>Facilitator: POST /api/admin/bounties/:id/approve (Verify On-Chain Escrow)
     Facilitator->>Facilitator: Status: Open (Live in Contributor Feed)
 
     Contributor->>Facilitator: GET /api/bounties/:id (Blind Privacy: Only count visible)
     Contributor->>Facilitator: POST /api/bounties/:id/comments (Community Q&A Question)
-    Contributor->>Facilitator: POST /api/bounties/:id/participate (Proof URL + Arc Wallet)
+    Contributor->>BOT: submitSolution(bountyId, solutionUri) [On-Chain Auth]
+    Contributor->>Facilitator: POST /api/bounties/:id/participate (Proof URL + BOT Wallet)
     Facilitator->>Facilitator: Enforce Single Submission & Maintainer Lockout
 
     opt Revision before deadline
         Contributor->>Facilitator: PUT /api/bounties/:id/submissions/:id (Revise to v2)
     end
 
-    Admin->>Facilitator: POST /api/admin/submissions/:id/score (Rubric Evaluation: 10/10)
-    Admin->>Facilitator: POST /api/admin/distribute (Authorize Settlement)
-    Facilitator->>Arc: Relay EIP-3009 Transfer / Escrow Disbursal
-    Arc-->>Facilitator: Block included (<400ms Malachite BFT finality)
-    Facilitator->>Facilitator: Status: Settled + Balance Credited
-    Facilitator-->>Contributor: Realtime Notification + USDC Balance Update
+    alt Maintainer Approves
+        Sponsor->>BOT: releasePayment(bountyId)
+        BOT-->>Contributor: Funds Released (100% of USDT / $BOT)
+        Facilitator->>Facilitator: Status: Settled
+    else Review Period Times Out
+        Contributor->>BOT: claimTimeoutRelease(bountyId) [Auto-Disburse]
+        BOT-->>Contributor: Funds Auto-Released
+        Facilitator->>Facilitator: Status: Settled
+    else Maintainer Rejects
+        Sponsor->>BOT: rejectSolution(bountyId, reason)
+        BOT->>BOT: Revert to Open status
+    end
 ```
 
 ### The Bounty State Machine
@@ -130,32 +140,33 @@ stateDiagram-v2
     direction LR
     state "PENDING_REVIEW" as Pending
     state "OPEN" as Open
-    state "IN_REVIEW" as InReview
+    state "IN_REVIEW / SUBMITTED" as InReview
     state "SETTLED" as Settled
-    state "REFUNDED" as Refunded
+    state "CANCELLED" as Cancelled
 
     [*] --> Pending: Sponsor Creates Bounty
     Pending --> Open: Admin Confirms Escrow Deposit
-    Pending --> Refunded: Deposit Rejected / Invalid
-    Open --> InReview: Deadline Elapses or Cap Met
-    InReview --> Settled: Admin Scores & Disburses Escrow
-    InReview --> Refunded: Expired with Zero Valid Submissions
-    Settled --> [*]: USDC Transferred & Recorded in Ledger
-    Refunded --> [*]: Escrow Reclaimed by Sponsor
+    Pending --> Cancelled: Deposit Rejected / Invalid
+    Open --> InReview: Solver Submits Verified Solution
+    InReview --> Open: Maintainer Rejects with Feedback
+    InReview --> Settled: Maintainer Releases Payment OR Solver Claims Timeout
+    Open --> Cancelled: Deadline Elapses & Maintainer Cancels
+    Settled --> [*]: USDT / $BOT Transferred & Recorded in Ledger
+    Cancelled --> [*]: Escrow Refunded to Sponsor
 ```
 
 ---
 
-## Why Circle Arc L1 is load-bearing for ArcBounty
+## Why BOT Chain is load-bearing for BotBounty
 
-ArcBounty cannot deliver its zero-gas, sub-second user experience on legacy EVM chains. Circle's Arc Layer-1 network (`eip155:5042`) provides foundational architectural capabilities purpose-built for stablecoin-denominated platforms:
+BotBounty leverages BOT Chain's high-performance EVM architecture for micro-bounty settlement and autonomous agent coordination:
 
-| Arc Native Capability | How ArcBounty Leverages It | What Breaks Without It |
+| BOT Chain Native Capability | How BotBounty Leverages It | What Breaks Without It |
 | :--- | :--- | :--- |
-| **Native USDC Gas Accounting** | Gas fees are natively paid and accounted in USDC. | On Ethereum or Base, users must acquire and balance volatile ETH just to pay gas. |
-| **Canonical EIP-3009 Support** | Canonical Arc USDC (`0x3600...0000`) natively supports `transferWithAuthorization`. | Legacy tokens require a 2-step `approve()` + `transferFrom()` transaction model. |
-| **Sub-Second Malachite BFT Finality** | Sub-second deterministic block inclusion. | 15–30s confirmation delays cause sluggish UI updates and race conditions during submissions. |
-| **Predictable Sequencer Gas Floor** | Arc enforces a predictable $\ge 20\text{ Gwei}$ sequencer fee floor. | Wild gas spikes make platform-subsidized creator settlements economically unsustainable. |
+| **High-Throughput EVM Execution** | Sub-second transaction confirmation and negligible gas overhead. | Wild gas spikes make platform micro-bounties economically unsustainable on legacy L1s. |
+| **Multi-Asset Settlement (USDT & $BOT)** | Native currency ($BOT) or Bridged USDT (`0x75ed...0fe3`) escrow handling. | Single-currency platforms limit flexibility for both USD-pegged budgets and ecosystem grants. |
+| **AI Agent Native Infrastructure** | High-cadence programmatic calls for automated agent bounty creation and settlement. | Slow blocktimes bottleneck autonomous multi-agent pipelines. |
+| **Direct On-Chain State Pagination** | View functions (`getBounties`, `getMaintainerBounties`, `getSolverBounties`) bypass log indexing. | Public RPCs with disabled `eth_getLogs` fail to serve historical platform state. |
 
 ---
 
@@ -179,7 +190,13 @@ CONSTRAINT unique_submission_per_creator:
 ```
 Contributors cannot submit multiple entries to the same challenge. Attempting a duplicate submission returns `HTTP 400 Bad Request`. Contributors must use `PUT /api/bounties/:id/submissions/:submissionId` to revise their existing entry prior to the deadline, preserving version history (`revisionCount`).
 
-### 3. Sponsor Self-Participation Prevention
+### 3. Anti-Griefing Solver Authorization
+In the smart contract, once a solver submits a solution, their wallet address is immutably set. Subsequent state transitions strictly enforce:
+- Only the assigned `solver` can claim review timeouts (`claimTimeoutRelease`).
+- Only the designated `maintainer` can release payments or reject solutions.
+- Third parties cannot front-run or hijack in-flight solution rewards.
+
+### 4. Sponsor Self-Participation Prevention
 Sponsors are strictly prohibited from participating in or claiming prizes from bounties they authored:
 ```javascript
 if (
@@ -190,13 +207,13 @@ if (
 }
 ```
 
-### 4. Single Master Administrator Policy
-Administrative authority (bounty approval, rubric scoring, and escrow settlement) is strictly gated to `olajideabdulquadri22@gmail.com`:
+### 5. Single Master Administrator Policy
+Administrative authority (bounty approval, rubric scoring, and escrow settlement) is strictly gated:
 - Non-admin sessions attempting administrative actions receive an immediate `403 Forbidden`.
 - The Admin Portal is fortified behind a secondary master password gate (`ADMIN_PASSWORD`).
 - Session tokens expire automatically after 24 hours.
 
-### 5. Dual-Engine Database Consistency
+### 6. Dual-Engine Database Consistency
 ```text
 ┌─────────────────────────────────┐
 │     Client Request (Port 5173)  │
@@ -221,18 +238,18 @@ Administrative authority (bounty approval, rubric scoring, and escrow settlement
 ## How It Was Built (Full Tech Stack & Tools)
 
 ### 1. Blockchain & Smart Contracts Layer
-* **Circle Arc Mainnet (Chain ID: 5042)**: EVM-compatible Layer-1 optimized for institutional stablecoin finance and deterministic finality.
-* **Canonical Circle USDC (`0x3600000000000000000000000000000000000000`)**: Native gas and payment token.
-* **ArcBountyEscrow.sol**: Non-custodial escrow smart contract facilitating multi-challenge deposits, EIP-3009 disbursements, and sponsor refund locks.
-* **EIP-712 & EIP-3009**: Off-chain typed data authorization signatures for secure, gasless settlement.
-* **Arc Foundry (arc-forge, arc-cast)**: Contract compilation, fuzz testing, and deployment.
+* **BOT Chain (Mainnet 677 / Bohr Testnet 968)**: EVM-compatible blockchain optimized for high-speed AI agent workflows and low-cost execution.
+* **Bridged USDT (`0x75edC9335175Fc0552D51D48439F229c10420fe3`)**: Stable settlement token (6 decimals).
+* **Native $BOT**: Native currency for gas and direct native-token bounties.
+* **BotBountyEscrow.sol**: Non-custodial multi-asset escrow smart contract supporting ERC-20 tokens, native coin escrow, solver protection, timeout auto-claims, and on-chain pagination.
+* **Foundry (`forge`, `cast`)**: Smart contract compilation, unit testing, and on-chain deployment.
 
 ### 2. Backend & Facilitator Relayer Engine
 * **Node.js (ESM) & Express**: High-concurrency REST API serving protocol telemetry, bounty lifecycles, and admin governance.
-* **Viem**: High-performance, lightweight Web3 library for cryptographic signature verification, address recovery, and RPC communication with Arc L1.
+* **Viem & Ethers**: Web3 communication with BOT Chain and Bohr Testnet RPC endpoints.
 * **Dual Database Architecture**:
   * **Embedded SQLite**: High-speed local cache with WAL mode and foreign key constraints.
-  * **Supabase PostgreSQL**: Production connection pooling (AWS eu-west-2) for high concurrency.
+  * **Supabase PostgreSQL**: Production connection pooling (AWS) for high concurrency.
 * **Nodemailer with Gmail SMTP**: Cryptographic 6-digit OTP delivery with 10-minute expiry and single-use invalidation.
 * **Scrypt Password Hashing**: Salted, memory-hard credential storage for standard email authentication.
 
@@ -246,40 +263,68 @@ Administrative authority (bounty approval, rubric scoring, and escrow settlement
 
 ## The Smart Contract & Settlement Specification
 
-### Escrow Contract Interface (`ArcBountyEscrow.sol`)
+### Escrow Contract Interface (`BotBountyEscrow.sol`)
 
 ```solidity
-interface IArcBountyEscrow {
-    event BountyCreated(bytes32 indexed bountyId, address indexed sponsor, uint256 amount);
-    event BountyDisbursed(bytes32 indexed bountyId, address indexed recipient, uint256 amount, bytes32 txHash);
-    event BountyRefunded(bytes32 indexed bountyId, address indexed sponsor, uint256 amount);
+interface IBotBountyEscrow {
+    enum BountyStatus { Open, InProgress, Submitted, Completed, Cancelled }
 
-    function createBounty(bytes32 bountyId, uint256 amount, uint256 deadlineDays) external;
-    function disburseReward(bytes32 bountyId, address payable recipient, uint256 amount) external;
-    function disburseMultiWinner(bytes32 bountyId, address[] calldata recipients, uint256[] calldata amounts) external;
-    function refundBounty(bytes32 bountyId) external;
+    struct Bounty {
+        uint256 id;
+        address maintainer;
+        address solver;
+        address token; // address(0) for native $BOT, or ERC-20 (e.g. USDT)
+        uint256 amount;
+        uint256 deadline;
+        uint256 reviewTimeout;
+        uint256 submittedAt;
+        BountyStatus status;
+        string solutionUri;
+    }
+
+    event BountyCreated(uint256 indexed id, address indexed maintainer, address token, uint256 amount, uint256 deadline, uint256 reviewTimeout);
+    event SolutionSubmitted(uint256 indexed id, address indexed solver, string solutionUri);
+    event SolutionRejected(uint256 indexed id, address indexed maintainer, string reason);
+    event BountyCompleted(uint256 indexed id, address indexed solver, uint256 amount);
+    event BountyCancelled(uint256 indexed id, address indexed maintainer, uint256 amount);
+    event TimeoutClaimed(uint256 indexed id, address indexed solver, uint256 amount);
+
+    function createBounty(address token, uint256 amount, uint256 deadline, uint256 reviewTimeout) external payable returns (uint256);
+    function submitSolution(uint256 bountyId, string calldata solutionUri) external;
+    function rejectSolution(uint256 bountyId, string calldata reason) external;
+    function releasePayment(uint256 bountyId) external;
+    function claimTimeoutRelease(uint256 bountyId) external;
+    function cancelBounty(uint256 bountyId) external;
+    function getBounties(uint256 offset, uint256 limit) external view returns (Bounty[] memory, uint256 total);
+    function getMaintainerBounties(address maintainer, uint256 offset, uint256 limit) external view returns (Bounty[] memory, uint256 total);
+    function getSolverBounties(address solver, uint256 offset, uint256 limit) external view returns (Bounty[] memory, uint256 total);
 }
 ```
+
+### Deployed Contract Instance:
+* **Network**: Bohr Testnet (Chain ID: 968)
+* **Contract Address**: [`0x909661b453bBe13Ee247551754b35370557A9aA2`](https://scan.bohr.life/address/0x909661b453bBe13Ee247551754b35370557A9aA2)
+* **Settlement Assets**: Bridged USDT (`0x75edC9335175Fc0552D51D48439F229c10420fe3`) & Native `$BOT`
 
 ---
 
 ## Verify it yourself
 
-You can independently verify the entire ArcBounty system locally using the automated test suites and agent verification runner:
+You can independently verify the entire BotBounty system locally using the automated test suites:
 
-### 1. Run Backend Unit & Integration Tests (35 Tests)
+### 1. Run Foundry Smart Contract Test Suite (10/10 Tests)
+```bash
+cd contracts
+forge test -vv
+```
+*Executes all 10 unit tests covering native currency escrow, ERC-20 token escrow, anti-griefing authorization, reject flow, review timeout release, and cancellation refund.*
+
+### 2. Run Backend Unit & Integration Tests (35 Tests)
 ```bash
 cd server
 npm test
 ```
 *Executes all 35 tests covering escrow disbursements, single-submission constraints, deadline expiration, admin passwords, rubric scoring, and SQLite auth.*
-
-### 2. Run Autonomous End-to-End Audit Runner
-```bash
-cd server
-node test/agent_e2e_verification.js
-```
-*Simulates a complete real-world flow: User Registration &rarr; Sponsor Bounty Creation &rarr; Admin Review &rarr; Contributor Blind Submission &rarr; Revision &rarr; Rubric Scoring &rarr; Arc L1 USDC Disbursement &rarr; CSV Ledger Export.*
 
 ### 3. Verify Client Production Build & Linting
 ```bash
@@ -287,7 +332,7 @@ cd client
 npm run lint
 npm run build
 ```
-*Runs `oxlint` across all 29 client files and builds the production bundle with Vite in $<450\text{ms}$.*
+*Runs `oxlint` across client files and builds the production bundle with Vite.*
 
 ---
 
@@ -298,36 +343,46 @@ npm run build
 The repository includes a ready-to-use [`render.yaml`](render.yaml) blueprint:
 
 1. In the **Render Dashboard**, click **New +** &rarr; **Blueprint**.
-2. Select your repository: `Blackwrld04/ArcBounty`.
+2. Select your repository: `Blackwrld04/BOTBOUNTY`.
 3. Configure the following environment variables:
 
 | Variable | Description | Example / Recommended Value |
 | :--- | :--- | :--- |
 | `PORT` | Facilitator listening port | `4050` |
 | `NODE_ENV` | Environment mode | `production` |
-| `ARC_RPC_URL` | Circle Arc Mainnet RPC | `https://rpc.mainnet.arc.io` |
-| `ARC_CHAIN_ID` | Circle Arc Chain ID | `5042` |
-| `DATABASE_URL` | Supabase PostgreSQL Connection URI | `xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx` |
-| `GMAIL_USER` | Gmail address for OTP delivery | `your_email@gmail.com` |
-| `GMAIL_APP_PASSWORD` | 16-character Google App Password | `xxxx xxxx xxxx xxxx` |
-| `ADMIN_EMAILS` | Authorized platform admin | `xxxxxxxxxxxxxxxxxxxxxxxxxxx` |
+| `BOT_RPC_URL` | BOT Chain / Bohr RPC URL | `https://rpc.bohr.life` |
+| `BOT_CHAIN_ID` | BOT Chain ID | `968` |
+| `DATABASE_URL` | Supabase PostgreSQL Connection URI | `postgresql://...` |
+| `ESCROW_CONTRACT_ADDRESS` | Deployed BotBountyEscrow contract | `0x909661b453bBe13Ee247551754b35370557A9aA2` |
+| `USDT_ADDRESS` | Bridged USDT contract address | `0x75edC9335175Fc0552D51D48439F229c10420fe3` |
+| `ADMIN_EMAILS` | Authorized platform admin | `olajideabdulquadri22@gmail.com` |
 | `ADMIN_PASSWORD` | Master password for admin portal | `[Your_Secure_Password]` |
-| `ESCROW_CONTRACT_ADDRESS` | Deployed ArcBountyEscrow contract | `0x7Cd0F0db26f47dFa757014a8f756506B9F32F823` |
-| `FACILITATOR_PRIVATE_KEY` | Relayer private key on Arc L1 | `0x[64_hex_characters]` |
+| `SMTP_HOST` | Primary SMTP Server Host | `smtp.gmail.com` |
+| `SMTP_PORT` | SMTP Port | `465` |
+| `SMTP_SECURE` | SSL Flag | `true` |
+| `SMTP_USER` | Authenticated SMTP User | `olajideabdulquadri22@gmail.com` |
+| `SMTP_PASS` | 16-character Google App Password | `pdkvitevvkogztxi` |
+| `EMAIL_FROM` | Outgoing Email Header | `BotBounty <olajideabdulquadri22@gmail.com>` |
 
 ### 2. Deploy the Frontend on Vercel
 
 The repository includes pre-configured [`client/vercel.json`](client/vercel.json) and [`vercel.json`](vercel.json) for instant SPA routing:
 
 1. In the **Vercel Dashboard**, click **Add New...** &rarr; **Project**.
-2. Choose **GitHub** and import `Blackwrld04/ArcBounty`.
+2. Choose **GitHub** and import `Blackwrld04/BOTBOUNTY`.
 3. Configure project settings:
    - **Framework Preset**: `Vite`
    - **Root Directory**: `client`
    - **Build Command**: `npm run build`
    - **Output Directory**: `dist`
 4. Under **Environment Variables**, add:
-   - `VITE_API_URL`: Your deployed Render backend URL (e.g. `https://arcbounty.onrender.com`).
+   - `VITE_API_URL`: Your deployed Render backend URL (e.g. `https://botbounty-api.onrender.com`).
+   - `SMTP_HOST`: `smtp.gmail.com`
+   - `SMTP_PORT`: `465`
+   - `SMTP_SECURE`: `true`
+   - `SMTP_USER`: `olajideabdulquadri22@gmail.com`
+   - `SMTP_PASS`: `pdkvitevvkogztxi`
+   - `EMAIL_FROM`: `BotBounty <olajideabdulquadri22@gmail.com>`
 5. Click **Deploy**.
 
 ---
@@ -338,17 +393,19 @@ The repository includes pre-configured [`client/vercel.json`](client/vercel.json
    In competitive contests, open submissions lead to "last-minute copycat" behavior where participants duplicate earlier submissions with minor tweaks. Blind submissions ensure every participant is rewarded strictly on the originality and merit of their work.
 2. **Why SQLite + Supabase Dual-Engine?**  
    Local SQLite WAL mode guarantees sub-millisecond response times for local testing, offline development, and lightning-fast reads. Connecting Supabase PostgreSQL through connection pooling ensures that production traffic spikes and multi-region read replicas scale horizontally without deadlocks.
-3. **Why EIP-3009 instead of standard ERC-20 `approve()`?**  
-   Standard `approve` + `transferFrom` requires two separate transactions and forces creators to spend gas. EIP-3009 enables off-chain authorization signatures, allowing the platform to settle payouts gaslessly for contributors.
-4. **Why Neo-Brutalist UI?**  
-   Clean neo-brutalism provides unmistakable tactile feedback, high visual contrast, and immediate clarity. Buttons, cards, and modal windows have distinct interactive boundaries that function identically on 4K desktop displays and small mobile screens.
+3. **Why Multi-Asset Support (Native $BOT + ERC-20 USDT)?**  
+   Modern Web3 ecosystems have diverse funding models. Projects funding community bounties often use their native ecosystem coin ($BOT), while external sponsors prefer stablecoin denominations (USDT). Supporting both natively in a single contract eliminates complex multi-contract architectures.
+4. **Why Review Timeout Auto-Claims?**  
+   A major failure mode of bounty platforms is maintainer abandonment: a contributor delivers high-quality work, but the sponsor disappears without approving or rejecting. The `reviewTimeout` timer empowers contributors to call `claimTimeoutRelease` and collect their escrowed reward automatically if the maintainer remains silent.
+5. **Why On-Chain Pagination Views?**  
+   Certain public RPC nodes restrict or disable `eth_getLogs` for large block ranges. By providing paginated read functions (`getBounties`, `getMaintainerBounties`, `getSolverBounties`), frontends and indexers can query state deterministically with standard `eth_call`.
 
 ---
 
 ## Repository map
 
 ```text
-arcbounty/
+BOTBOUNTY/
 ├── .gitignore                     # Strict exclusion of .env, database files, and build outputs
 ├── package.json                   # Root workspace scripts (dev, build, server, test)
 ├── vercel.json                    # Vercel Edge CDN configuration, security headers & SPA rewrites
@@ -379,7 +436,7 @@ arcbounty/
 │       │   └── LegalModal.jsx     # Terms of service, protocol rules, & developer API docs
 │       └── utils/
 │           ├── api.js             # Centralized API base URL resolver (VITE_API_URL)
-│           ├── arc.js             # Arc Mainnet & Testnet chain definitions (EIP-155: 5042)
+│           ├── networks.js        # BOT Chain Mainnet (677) & Bohr Testnet (968) chain definitions
 │           ├── sync.js            # Universal intra-app and cross-tab sync listener
 │           └── time.js            # Relative timestamp and deadline countdown utilities
 │
@@ -404,11 +461,12 @@ arcbounty/
 │       └── agent_e2e_verification.js # Autonomous end-to-end full system verification suite
 │
 ├── contracts/                     # Smart Contracts Layer
-│   ├── ArcBountyEscrow.sol        # Core escrow smart contract with EIP-3009 integration
-│   ├── ArcBountyEscrow_flat.sol   # Flattened Solidity file for 1-click explorer verification
-│   ├── abi.js                     # Exported contract ABI definitions for Viem
-│   ├── foundry.toml               # Arc Foundry build and test configurations
-│   └── deploy.sh                  # Shell deployment script using arc-forge and arc-cast
+│   ├── BotBountyEscrow.sol        # Core multi-asset escrow contract (BOT Chain)
+│   ├── BotBountyEscrow_flat.sol   # Flattened Solidity file for explorer verification
+│   ├── test/
+│   │   └── BotBountyEscrow.t.sol  # Foundry test suite (10/10 passing tests)
+│   ├── deploy_botchain.sh         # Shell deployment script using Forge
+│   └── bohr_proxy.py              # Local RPC proxy helper for direct IP routing
 │
 └── docs/                          # Protocol Specifications & Legal Standards
     ├── DOCUMENTATION.md           # Architecture deep-dive & developer integration manual
@@ -419,6 +477,6 @@ arcbounty/
 
 ## Disclosures & license
 
-* **Protocol Status**: ArcBounty is production software deployed on Circle Arc Mainnet (Chain ID 5042).
-* **Non-Custodial Guarantee**: At no point does ArcBounty hold creator private keys. Funds are locked exclusively within the escrow contract until conditions are satisfied.
+* **Protocol Status**: BotBounty is deployed on Bohr Testnet (Chain ID 968) and configured for BOT Chain Mainnet (Chain ID 677).
+* **Non-Custodial Guarantee**: At no point does BotBounty hold creator private keys. Funds are locked exclusively within the escrow smart contract until conditions are satisfied.
 * **License**: Open-source software released under the [MIT License](LICENSE).
