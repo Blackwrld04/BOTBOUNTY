@@ -1,8 +1,8 @@
 {
-  "name": "arcbounty-root",
+  "name": "botbounty-root",
   "version": "1.0.0",
   "type": "module",
-  "description": "ArcBounty — Open Bounty & Proof-of-Work Protocol for Web3 Creators on Circle Arc",
+  "description": "BotBounty — Autonomous AI Agent & Developer Bounty Escrow Protocol on BOT Chain",
   "private": true,
   "scripts": {
     "dev": "npm run dev --prefix client",

@@ -35,7 +35,7 @@ export default function Hero({ openCreateModal, onExploreClick, openAuthModal, u
               {/* Sticker Tape Badge */}
               <div style={{ marginBottom: '16px' }}>
                 <span className="sticker-tape">
-                  CIRCLE ARC L1 (5042) · NATIVE USDC ESCROW · ZERO-GAS CREATOR SETTLEMENT
+                  BOT CHAIN (EVM 677) · MULTI-ASSET ESCROW (USDT &amp; $BOT) · AI AGENT SETTLEMENTS
                 </span>
               </div>
 

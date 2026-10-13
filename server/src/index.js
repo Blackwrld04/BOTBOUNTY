@@ -24,8 +24,8 @@ app.use('/api/admin', adminRouter);
 app.get('/', (req, res) => {
   res.json({
     status: 'online',
-    message: 'ArcBounty Facilitator API is running',
-    network: 'Circle Arc (5042)',
+    message: 'BotBounty Facilitator API is running',
+    network: 'BOT Chain (968 / 677)',
     health: '/health',
     timestamp: new Date().toISOString(),
   });
@@ -34,20 +34,20 @@ app.get('/', (req, res) => {
 app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
-    network: 'Circle Arc (5042)',
+    network: 'BOT Chain (968 / 677)',
     database: isExternalDbConfigured() ? 'Supabase PostgreSQL (Connection Pooling)' : 'Embedded SQLite',
     timestamp: new Date().toISOString(),
   });
 });
 
 app.listen(config.port, async () => {
-  console.log(`[ArcBounty Server] Listening on http://localhost:${config.port}`);
-  console.log(`[ArcBounty] Network: Arc (Chain ID: ${config.arcChainId}) | Canonical USDC: ${config.usdcAddress}`);
+  console.log(`[BotBounty Server] Listening on http://localhost:${config.port}`);
+  console.log(`[BotBounty] Network: BOT Chain (Chain ID: ${config.botChainId}) | Escrow: ${config.escrowContractAddress}`);
 
   if (isExternalDbConfigured()) {
     await initSupabaseDatabase(INITIAL_BOUNTIES, db);
   } else {
-    console.log('[ArcBounty Database] Active: Embedded SQLite. To connect to Supabase, paste DATABASE_URL in server/.env');
+    console.log('[BotBounty Database] Active: Embedded SQLite. To connect to Supabase, paste DATABASE_URL in server/.env');
   }
 });
 

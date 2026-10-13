@@ -38,9 +38,9 @@ async function dispatchEmail({ to, subject, html, text }) {
   const smtpUser = process.env.SMTP_USER || process.env.GMAIL_USER;
   const rawPass = process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD;
   const smtpPass = rawPass ? rawPass.replace(/\s+/g, '') : null;
-  const emailFrom = process.env.EMAIL_FROM || (smtpUser ? `"ArcBounty" <${smtpUser}>` : '"ArcBounty" <no-reply@arcbounty.io>');
+  const emailFrom = process.env.EMAIL_FROM || (smtpUser ? `"BotBounty" <${smtpUser}>` : '"BotBounty" <no-reply@botbounty.ai>');
 
-  const relaySecret = process.env.EMAIL_RELAY_SECRET || 'arcbounty-relay-auth-2026';
+  const relaySecret = process.env.EMAIL_RELAY_SECRET || 'botbounty-relay-auth-2026';
   const relayUrl = `${CLIENT_URL}/api/send-email`;
   const resendKey = process.env.RESEND_API_KEY;
 
@@ -123,7 +123,7 @@ async function dispatchEmail({ to, subject, html, text }) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          from: emailFrom.includes('onboarding@resend.dev') ? emailFrom : 'ArcBounty <onboarding@resend.dev>',
+          from: emailFrom.includes('onboarding@resend.dev') ? emailFrom : 'BotBounty <onboarding@resend.dev>',
           to: recipients,
           subject,
           html,
@@ -147,7 +147,7 @@ async function dispatchEmail({ to, subject, html, text }) {
   // STRATEGY 4: Local Development / Test Suite Fallback (0ms JSON transport)
   try {
     const mailer = await getTransporter();
-    const sender = process.env.FROM_EMAIL || '"ArcBounty Security" <security@arcbounty.io>';
+    const sender = process.env.FROM_EMAIL || '"BotBounty Security" <security@arcbounty.io>';
     for (const recipient of recipients) {
       await mailer.sendMail({
         from: sender,
@@ -170,8 +170,8 @@ async function dispatchEmail({ to, subject, html, text }) {
  */
 export async function sendVerificationEmail(toEmail, code, type = 'login') {
   const subject = type === 'signup'
-    ? 'Verify your ArcBounty Creator Account'
-    : 'Your ArcBounty Verification Code';
+    ? 'Verify your BotBounty Creator Account'
+    : 'Your BotBounty Verification Code';
 
   const digits = String(code).split('');
   const digitCells = digits.map(d => `
@@ -193,7 +193,7 @@ export async function sendVerificationEmail(toEmail, code, type = 'login') {
       <body style="margin: 0; padding: 0; width: 100% !important; background-color: #0b111e; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
         <!-- Hidden Preheader Preview Text -->
         <div style="display: none; max-height: 0px; overflow: hidden; font-size: 1px; line-height: 1px; color: #0b111e; opacity: 0; mso-hide: all;">
-          Your ArcBounty verification code is ${code}. Valid for 10 minutes on Circle Arc.
+          Your BotBounty verification code is ${code}. Valid for 10 minutes on Circle Arc.
         </div>
 
         <!-- Master Wrapper -->
@@ -225,7 +225,7 @@ export async function sendVerificationEmail(toEmail, code, type = 'login') {
                     </h1>
                     
                     <p style="margin: 0 0 24px 0; font-size: 14px; line-height: 1.6; color: #94a3b8;">
-                      Use the single-use 6-digit verification code below to complete your ${type === 'signup' ? 'account registration' : 'sign in'} on <strong>ArcBounty</strong>:
+                      Use the single-use 6-digit verification code below to complete your ${type === 'signup' ? 'account registration' : 'sign in'} on <strong>BotBounty</strong>:
                     </p>
 
                     <!-- Code Box -->
@@ -254,7 +254,7 @@ export async function sendVerificationEmail(toEmail, code, type = 'login') {
                     <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="background-color: #16243d; border-left: 4px solid #e9a13f; border-radius: 4px; padding: 12px 14px; margin-bottom: 20px;">
                       <tr>
                         <td style="font-size: 12px; line-height: 1.5; color: #cbd5e1;">
-                          <strong style="color: #ffcc6f;">Security Notice:</strong> Never share this code with anyone. ArcBounty team members will never ask for your verification code or private keys.
+                          <strong style="color: #ffcc6f;">Security Notice:</strong> Never share this code with anyone. BotBounty team members will never ask for your verification code or private keys.
                         </td>
                       </tr>
                     </table>
@@ -293,7 +293,7 @@ export async function sendVerificationEmail(toEmail, code, type = 'login') {
     to: toEmail,
     subject,
     html: htmlContent,
-    text: `Your ArcBounty verification code is: ${code}. Valid for 10 minutes on Circle Arc L1.`
+    text: `Your BotBounty verification code is: ${code}. Valid for 10 minutes on Circle Arc L1.`
   });
 }
 
@@ -371,7 +371,7 @@ export async function sendRewardDisbursedEmail({ toEmail, creatorName, bountyTit
     to: toEmail,
     subject,
     html: htmlContent,
-    text: `Your ArcBounty prize of $${amount} USDC for "${bountyTitle}" has been disbursed to ${walletAddress}. Settlement Tx: ${txHash}`
+    text: `Your BotBounty prize of $${amount} USDC for "${bountyTitle}" has been disbursed to ${walletAddress}. Settlement Tx: ${txHash}`
   });
 }
 
@@ -381,7 +381,7 @@ export async function sendRewardDisbursedEmail({ toEmail, creatorName, bountyTit
 export async function sendBountyApprovedNotification(maintainerEmail, bounty) {
   if (!maintainerEmail || !maintainerEmail.includes('@')) return null;
 
-  const subject = `Your Challenge is Now Live: "${bounty.title}" on ArcBounty`;
+  const subject = `Your Challenge is Now Live: "${bounty.title}" on BotBounty`;
 
   let prizeInfo = `$${bounty.amount} USDC`;
   if (bounty.rewardDistribution && bounty.rewardDistribution.type === 'tiered' && Array.isArray(bounty.rewardDistribution.tiers)) {
@@ -405,7 +405,7 @@ export async function sendBountyApprovedNotification(maintainerEmail, bounty) {
             <td style="padding: 28px 24px;">
               <h2 style="margin: 0 0 10px 0; font-size: 19px; font-weight: 800; color: #ffffff;">Your Bounty is Live!</h2>
               <p style="margin: 0 0 18px 0; font-size: 14px; line-height: 1.5; color: #94a3b8;">
-                Platform admins have verified your escrow funding and conditions. Your bounty is now published on the ArcBounty public feed for creators to participate.
+                Platform admins have verified your escrow funding and conditions. Your bounty is now published on the BotBounty public feed for creators to participate.
               </p>
               <div style="background-color: #0a1322; border: 1.5px solid #2f578c; border-radius: 8px; padding: 18px; margin-bottom: 20px;">
                 <div style="font-size: 16px; font-weight: 800; color: #ffffff; margin-bottom: 6px;">${bounty.title}</div>
@@ -413,7 +413,7 @@ export async function sendBountyApprovedNotification(maintainerEmail, bounty) {
                 <div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">Category: ${bounty.categoryName || bounty.category} &bull; Deadline: ${new Date(bounty.deadline).toLocaleDateString()}</div>
               </div>
               <a href="${CLIENT_URL}" style="display: block; text-align: center; background-color: #ffcc6f; color: #000000; padding: 12px; border-radius: 6px; font-weight: 800; text-decoration: none; font-size: 14px;">
-                View Live Challenge on ArcBounty
+                View Live Challenge on BotBounty
               </a>
             </td>
           </tr>
@@ -426,7 +426,7 @@ export async function sendBountyApprovedNotification(maintainerEmail, bounty) {
     to: maintainerEmail,
     subject,
     html: htmlContent,
-    text: `Your bounty "${bounty.title}" has been approved by admin and is now live on ArcBounty! Prize: ${prizeInfo}.`
+    text: `Your bounty "${bounty.title}" has been approved by admin and is now live on BotBounty! Prize: ${prizeInfo}.`
   });
 }
 

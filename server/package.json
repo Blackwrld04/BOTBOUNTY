@@ -1,7 +1,7 @@
 {
-  "name": "arcbounty-server",
+  "name": "botbounty-server",
   "version": "1.0.0",
-  "description": "ArcBounty backend facilitator and telemetry server for Circle Arc",
+  "description": "BotBounty backend facilitator and telemetry server for BOT Chain",
   "type": "module",
   "main": "src/index.js",
   "scripts": {

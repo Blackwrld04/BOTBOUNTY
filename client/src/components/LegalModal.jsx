@@ -9,32 +9,32 @@ export default function LegalModal({ type, onClose }) {
   const contentMap = {
     terms: {
       title: 'Terms of Service',
-      subtitle: 'ArcBounty Protocol Rules, On-Chain Escrow & Circle Arc L1 Alignment',
+      subtitle: 'BotBounty Protocol Rules, On-Chain Escrow & Circle Arc L1 Alignment',
       icon: <FileText size={20} color="#1b3158" />,
       body: (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', fontSize: '0.84rem', color: '#334155', lineHeight: 1.65 }}>
           <div style={{ background: '#f1f5f9', border: '1.5px solid #000000', borderRadius: '8px', padding: '10px 14px', fontSize: '0.78rem', color: '#1e293b' }}>
-            <strong>Protocol Notice:</strong> ArcBounty operates natively on <strong>Circle Arc L1</strong> (Chain ID 5042 / 5042002) with native USDC gas and EIP-3009 transfer authorizations. All settled disbursements are permanent and governed by on-chain consensus.
+            <strong>Protocol Notice:</strong> BotBounty operates natively on <strong>Circle Arc L1</strong> (Chain ID 5042 / 5042002) with native USDC gas and EIP-3009 transfer authorizations. All settled disbursements are permanent and governed by on-chain consensus.
           </div>
 
           <div>
             <strong style={{ color: '#0f172a', display: 'block', fontSize: '0.92rem', marginBottom: '4px' }}>1. Acceptance of Terms</strong>
-            By accessing ArcBounty (arcbounty.io), authenticating via email OTP, connecting a Web3 wallet, creating a challenge, or submitting deliverable proofs, you enter into a binding agreement with the protocol maintainers. If you do not agree to these terms, you must discontinue using the platform immediately.
+            By accessing BotBounty (arcbounty.io), authenticating via email OTP, connecting a Web3 wallet, creating a challenge, or submitting deliverable proofs, you enter into a binding agreement with the protocol maintainers. If you do not agree to these terms, you must discontinue using the platform immediately.
           </div>
 
           <div>
             <strong style={{ color: '#0f172a', display: 'block', fontSize: '0.92rem', marginBottom: '4px' }}>2. Circle Arc Network &amp; Native USDC Standard</strong>
-            ArcBounty is architected specifically for Circle Arc. All platform values, security deposits, prize allocations, and solver settlements are executed in <strong>Canonical Circle USDC</strong> (<code>0x3600000000000000000000000000000000000000</code>). In accordance with the Circle Arc specification, network gas is paid natively in USDC, avoiding volatile multi-token gas mechanics.
+            BotBounty is architected specifically for Circle Arc. All platform values, security deposits, prize allocations, and solver settlements are executed in <strong>Canonical Circle USDC</strong> (<code>0x3600000000000000000000000000000000000000</code>). In accordance with the Circle Arc specification, network gas is paid natively in USDC, avoiding volatile multi-token gas mechanics.
           </div>
 
           <div>
             <strong style={{ color: '#0f172a', display: 'block', fontSize: '0.92rem', marginBottom: '4px' }}>3. Eligibility &amp; Compliance</strong>
-            Users must be at least 18 years of age. Users must not be residents of, or accessing ArcBounty from, any jurisdiction subject to comprehensive OFAC sanctions (including Cuba, Iran, North Korea, Syria, or sanctioned Ukrainian territories). Users are solely responsible for local freelance tax reporting.
+            Users must be at least 18 years of age. Users must not be residents of, or accessing BotBounty from, any jurisdiction subject to comprehensive OFAC sanctions (including Cuba, Iran, North Korea, Syria, or sanctioned Ukrainian territories). Users are solely responsible for local freelance tax reporting.
           </div>
 
           <div>
             <strong style={{ color: '#0f172a', display: 'block', fontSize: '0.92rem', marginBottom: '4px' }}>4. Challenge Creation &amp; Escrow Verification</strong>
-            Sponsors establish bounties by depositing the exact USDC prize pool into the platform escrow address (<code>0x7Cd0F0db26f47dFa757014a8f756506B9F32F823</code>) or locking funds via <code>ArcBountyEscrow.sol</code>. Challenges remain in <strong>Pending Review</strong> until platform administrators verify the deposit on ArcScan to prevent unbacked listings.
+            Sponsors establish bounties by depositing the exact USDC prize pool into the platform escrow address (<code>0x7Cd0F0db26f47dFa757014a8f756506B9F32F823</code>) or locking funds via <code>BotBountyEscrow.sol</code>. Challenges remain in <strong>Pending Review</strong> until platform administrators verify the deposit on ArcScan to prevent unbacked listings.
           </div>
 
           <div>
@@ -71,18 +71,18 @@ export default function LegalModal({ type, onClose }) {
 
           <div>
             <strong style={{ color: '#0f172a', display: 'block', fontSize: '0.92rem', marginBottom: '4px' }}>11. Prohibited Conduct</strong>
-            Users must not submit plagiarized work, insert backdoors or malicious code, operate sybil accounts, engage in wash bounties, or attempt to exploit smart contract interfaces. Violators will be blacklisted across the ArcBounty relayer network.
+            Users must not submit plagiarized work, insert backdoors or malicious code, operate sybil accounts, engage in wash bounties, or attempt to exploit smart contract interfaces. Violators will be blacklisted across the BotBounty relayer network.
           </div>
 
           <div>
             <strong style={{ color: '#0f172a', display: 'block', fontSize: '0.92rem', marginBottom: '4px' }}>12. Limitation of Liability</strong>
-            To the maximum extent permitted by law, ArcBounty maintainers and affiliates shall not be liable for any indirect, incidental, or consequential damages resulting from smart contract bugs, Circle Arc network halts, RPC latency, or wallet credential losses.
+            To the maximum extent permitted by law, BotBounty maintainers and affiliates shall not be liable for any indirect, incidental, or consequential damages resulting from smart contract bugs, Circle Arc network halts, RPC latency, or wallet credential losses.
           </div>
         </div>
       )
     },
     docs: {
-      title: 'ArcBounty Documentation',
+      title: 'BotBounty Documentation',
       subtitle: 'Developer & Creator Protocol Guide for Circle Arc L1',
       icon: <BookOpen size={20} color="#2563eb" />,
       body: (

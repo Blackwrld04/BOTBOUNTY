@@ -79,7 +79,7 @@ export default function Navbar({
                 padding: 0
               }}
             >
-              Arc<span style={{ color: 'var(--arc-blockstream-gold)' }}>Bounty</span>
+              Bot<span style={{ color: 'var(--arc-blockstream-gold)' }}>Bounty</span>
             </span>
           </div>
         </div>

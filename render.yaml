@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: arcbounty-facilitator
+    name: botbounty-api
     runtime: node
     plan: free
     region: oregon
@@ -13,14 +13,20 @@ services:
         value: production
       - key: PORT
         value: "4050"
-      - key: ARC_RPC_URL
-        value: https://rpc.mainnet.arc.io
-      - key: ARC_CHAIN_ID
-        value: "5042"
+      - key: BOT_RPC_URL
+        value: https://rpc.bohr.life
+      - key: BOT_CHAIN_ID
+        value: "968"
+      - key: BOT_MAINNET_RPC_URL
+        value: https://rpc.botchain.ai
+      - key: BOT_MAINNET_CHAIN_ID
+        value: "677"
       - key: FACILITATOR_PRIVATE_KEY
         sync: false
       - key: ESCROW_CONTRACT_ADDRESS
-        value: "0x7Cd0F0db26f47dFa757014a8f756506B9F32F823"
+        value: "0x909661b453bBe13Ee247551754b35370557A9aA2"
+      - key: USDT_ADDRESS
+        value: "0x75edC9335175Fc0552D51D48439F229c10420fe3"
       - key: DATABASE_URL
         sync: false
       - key: GMAIL_USER
@@ -30,9 +36,9 @@ services:
       - key: RESEND_API_KEY
         sync: false
       - key: CLIENT_URL
-        value: "https://arc-bounty-pi.vercel.app"
+        value: "https://botbounty.vercel.app"
       - key: EMAIL_RELAY_SECRET
-        value: "arcbounty-relay-auth-2026"
+        value: "botbounty-relay-auth-2026"
       - key: ADMIN_EMAILS
         value: "olajideabdulquadri22@gmail.com"
       - key: ADMIN_PASSWORD

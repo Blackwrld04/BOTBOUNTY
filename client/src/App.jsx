@@ -15,6 +15,7 @@ import LegalModal from './components/LegalModal';
 import MobileDock from './components/MobileDock';
 import { INITIAL_BOUNTIES } from './data/initialBounties';
 import { ARC_MAINNET, ARC_TESTNET } from './utils/arc';
+import { BOT_TESTNET, BOT_MAINNET } from './utils/networks';
 import { triggerSync, subscribeToSync } from './utils/sync';
 import { API_BASE } from './utils/api';
 import { Zap, CheckCircle2, ExternalLink, X } from 'lucide-react';
@@ -31,12 +32,12 @@ const useIsMobile = () => {
 
 export default function App() {
   const isMobile = useIsMobile();
-  const [network, setNetwork] = useState(ARC_MAINNET);
+  const [network, setNetwork] = useState(BOT_TESTNET);
 
   // Authenticated user state: default to null (Guest / new visitor mode)
   const [user, setUser] = useState(() => {
     try {
-      const savedUser = localStorage.getItem('arcbounty_session_user');
+      const savedUser = localStorage.getItem('botbounty_session_user') || localStorage.getItem('arcbounty_session_user');
       return savedUser ? JSON.parse(savedUser) : null;
     } catch (e) {
       return null;

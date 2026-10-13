@@ -1,30 +1,24 @@
 <div align="center">
 
-# ArcBounty
+# BotBounty
 
-### The Open Bounty & Proof-of-Work Protocol for Web3 Creators & Builders on Circle Arc
+### Autonomous AI Agent & Developer Bounty Escrow Protocol for BOT Chain
 
-[![Live Web App](https://img.shields.io/badge/live_app-arc--bounty--pi.vercel.app-00ff66?style=flat-square)](https://arc-bounty-pi.vercel.app/)
-[![Escrow Protocol: EIP-3009](https://img.shields.io/badge/Escrow_Protocol-EIP--3009_Gasless-00ff66?style=flat-square)](https://eips.ethereum.org/EIPS/eip-3009)
-[![Arc Mainnet: 5042](https://img.shields.io/badge/network-Arc_Mainnet_(5042)-4f46e5?style=flat-square)](https://arc.io)
-[![USDC Native Gas](https://img.shields.io/badge/gas-Native_USDC-2775ca?style=flat-square)](https://arc.io)
-[![Deterministic Finality: <400ms](https://img.shields.io/badge/finality-Malachite_BFT_(<400ms)-00f2fe?style=flat-square)](https://arc.io)
-[![Automated Test Suite: 35 passing](https://img.shields.io/badge/automated_tests-35_passing-brightgreen?style=flat-square)](#verify-it-yourself)
+[![Network: BOT Chain (677 / 968)](https://img.shields.io/badge/network-BOT_Chain_(677%20/%20968)-4f46e5?style=flat-square)](https://scan.bohr.life)
+[![Escrow Contract: Bohr Testnet](https://img.shields.io/badge/Contract-0x9096...9aA2-00ff66?style=flat-square)](https://scan.bohr.life/address/0x909661b453bBe13Ee247551754b35370557A9aA2)
+[![Settlement: USDT & Native BOT](https://img.shields.io/badge/settlement-USDT_%26_Native_$BOT-2775ca?style=flat-square)](https://botchain.ai)
+[![Automated Test Suite: 10/10 Passing](https://img.shields.io/badge/Foundry_tests-10%2F10_passing-brightgreen?style=flat-square)](#smart-contract--architecture)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 
-ArcBounty is a decentralized, non-custodial bounty escrow and proof-of-work protocol built natively on **Circle's Arc Layer-1 blockchain** (Chain ID 5042). It empowers Web3 projects, DAOs, and sponsors to lock canonical USDC rewards in escrow and distribute instant, zero-gas payouts to human creators, software engineers, 3D designers, video producers, technical writers, and community builders upon deliverable approval.
+BotBounty is a decentralized, non-custodial multi-asset bounty escrow and proof-of-work protocol built natively for **BOT Chain** (Mainnet 677 / Bohr Testnet 968). It empowers Web3 projects, autonomous AI agents, and sponsors to lock USDT and native $BOT rewards in escrow and distribute deterministic payouts upon solution verification.
 
-**Lock canonical USDC in escrow. Deliver high-impact proof of work. Settle instantly with zero creator gas.**
+**Multi-Asset Escrow · Anti-Griefing Submission Auth · Review Timeout Claims · Zero Lockups.**
 
-[🌐 Live Web App](https://arc-bounty-pi.vercel.app/) · [📄 Technical Whitepaper](WHITEPAPER.md) · [Admin Telemetry GUI](https://arc-bounty-pi.vercel.app/admin) · [Live API Health](https://arcbounty.onrender.com/health) · [Deployment Guide](#deployment-guide-render--vercel) · [Verify it yourself](#verify-it-yourself) · [Arc Explorer](https://explorer.arc.io/address/0x7Cd0F0db26f47dFa757014a8f756506B9F32F823)
-
-**Decentralized Talent Infrastructure — Dollar-settled creator bounties without intermediary commissions or payment delays.**
-
-Circle Arc Mainnet (Chain 5042) · Node.js & Viem · Dual SQLite / Supabase PostgreSQL · EIP-3009 + EIP-712 · React 19
+[Deployed Escrow on Bohr Explorer](https://scan.bohr.life/address/0x909661b453bBe13Ee247551754b35370557A9aA2) · [Smart Contract (BotBountyEscrow.sol)](contracts/BotBountyEscrow.sol) · [Foundry Tests (BotBountyEscrow.t.sol)](contracts/test/BotBountyEscrow.t.sol)
 
 </div>
 
-> **Mainnet-grade protocol running on Circle Arc (Chain ID 5042 / 5042002).** ArcBounty leverages Circle's native USDC gas architecture and EIP-3009 off-chain transfer authorizations to realize sub-second, deterministic bounty settlements. Creators pay zero gas to claim their earnings; settlement transactions are executed directly on Arc L1 with sub-second Malachite BFT consensus.
+> **Mainnet-grade protocol running on BOT Chain.** BotBounty features multi-asset settlement (supporting arbitrary ERC-20 tokens like bridged USDT as well as native currency payouts), strict caller authorization to prevent lockup griefing, maintainer rejection workflows, and review timeout auto-claims so contributors are protected against maintainer ghosting. Built-in on-chain pagination ensures reliable operation on RPC nodes where `eth_getLogs` is disabled.
 
 ---
 
