@@ -14,10 +14,12 @@ export const config = {
   arcRpcUrl: process.env.ARC_RPC_URL || 'https://rpc.mainnet.arc.io',
   arcChainId: parseInt(process.env.ARC_CHAIN_ID || '5042', 10),
 
-  // Token Contracts on BOT Chain
+  // Token Contracts
   usdtAddress: process.env.USDT_ADDRESS || '0x75edC9335175Fc0552D51D48439F229c10420fe3',
   usdtMainnetAddress: '0xaBabc7Ddc03e501d190C676BF3d92ef0e6e87a3C',
   usdtDecimals: 6,
+  usdcAddress: '0x3600000000000000000000000000000000000000',
+  usdcDecimals: 6,
 
   // Facilitator & Escrow Contracts
   facilitatorPrivateKey: process.env.FACILITATOR_PRIVATE_KEY || '0x0000000000000000000000000000000000000000000000000000000000000001',

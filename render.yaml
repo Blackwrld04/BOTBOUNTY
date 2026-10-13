@@ -21,20 +21,26 @@ services:
         value: https://rpc.botchain.ai
       - key: BOT_MAINNET_CHAIN_ID
         value: "677"
-      - key: FACILITATOR_PRIVATE_KEY
-        sync: false
       - key: ESCROW_CONTRACT_ADDRESS
         value: "0x909661b453bBe13Ee247551754b35370557A9aA2"
       - key: USDT_ADDRESS
         value: "0x75edC9335175Fc0552D51D48439F229c10420fe3"
-      - key: DATABASE_URL
-        sync: false
+      - key: SMTP_HOST
+        value: "smtp.gmail.com"
+      - key: SMTP_PORT
+        value: "465"
+      - key: SMTP_SECURE
+        value: "true"
+      - key: SMTP_USER
+        value: "olajideabdulquadri22@gmail.com"
+      - key: SMTP_PASS
+        value: "pdkvitevvkogztxi"
+      - key: EMAIL_FROM
+        value: "BotBounty <olajideabdulquadri22@gmail.com>"
       - key: GMAIL_USER
-        sync: false
+        value: "olajideabdulquadri22@gmail.com"
       - key: GMAIL_APP_PASSWORD
-        sync: false
-      - key: RESEND_API_KEY
-        sync: false
+        value: "pdkvitevvkogztxi"
       - key: CLIENT_URL
         value: "https://botbounty.vercel.app"
       - key: EMAIL_RELAY_SECRET
@@ -42,4 +48,6 @@ services:
       - key: ADMIN_EMAILS
         value: "olajideabdulquadri22@gmail.com"
       - key: ADMIN_PASSWORD
+        sync: false
+      - key: DATABASE_URL
         sync: false

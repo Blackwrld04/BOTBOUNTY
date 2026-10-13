@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer';
 
 /**
- * ArcBounty Vercel Serverless Email Relay
+ * BotBounty Vercel Serverless Email Relay
  * Dispatches high-deliverability transactional emails via Gmail SMTP over port 465 (SSL).
  * Bypasses cloud host port blocks (e.g. Render free tier) and sandbox domain restrictions.
  */
@@ -22,7 +22,7 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     return res.status(200).json({
       status: 'ok',
-      service: 'ArcBounty Email Relay',
+      service: 'BotBounty Email Relay',
       timestamp: new Date().toISOString()
     });
   }
@@ -44,63 +44,65 @@ export default async function handler(req, res) {
 
     // 1. Verify shared relay secret
     const secret = req.headers['x-relay-secret'] || body.secret;
-    const expectedSecret = process.env.EMAIL_RELAY_SECRET || 'arcbounty-relay-auth-2026';
+    const expectedSecret = process.env.EMAIL_RELAY_SECRET || 'botbounty-relay-auth-2026';
+    const legacySecret = 'arcbounty-relay-auth-2026';
 
-    if (secret !== expectedSecret) {
+    if (secret !== expectedSecret && secret !== legacySecret) {
       return res.status(401).json({ error: 'Unauthorized relay request' });
     }
 
-    const { to, subject, html, text, auth } = body;
+    const { to, subject, html, text, auth, from, host: bodyHost, port: bodyPort, secure: bodySecure } = body;
 
     // 2. Resolve credentials from request auth payload or environment
-    const user = auth?.user || process.env.GMAIL_USER;
-    const rawPass = auth?.pass || process.env.GMAIL_APP_PASSWORD;
+    const user = auth?.user || process.env.SMTP_USER || process.env.GMAIL_USER || 'olajideabdulquadri22@gmail.com';
+    const rawPass = auth?.pass || process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD || 'pdkvitevvkogztxi';
     const pass = rawPass ? rawPass.replace(/\s+/g, '') : null;
+    const host = bodyHost || process.env.SMTP_HOST || 'smtp.gmail.com';
+    const port = parseInt(bodyPort || process.env.SMTP_PORT || '465', 10);
+    const secure = bodySecure !== undefined ? bodySecure : (process.env.SMTP_SECURE === 'false' ? false : port === 465);
 
     if (!user || !pass) {
-      return res.status(400).json({
-        error: 'Missing SMTP credentials. Provide auth.user and auth.pass or set GMAIL_USER and GMAIL_APP_PASSWORD.'
+      return res.status(500).json({
+        error: 'Missing SMTP credentials. Please configure SMTP_USER and SMTP_PASS.'
       });
     }
 
-    if (!to || !subject || (!html && !text)) {
-      return res.status(400).json({
-        error: 'Missing required fields: to, subject, and either html or text must be provided.'
-      });
-    }
+    const recipients = Array.isArray(to) ? to : [to];
 
-    const recipients = Array.isArray(to) ? to.join(', ') : to;
-
-    // 3. Dispatch through Gmail SMTP (Port 465 SSL)
+    // 3. Create high-speed SSL transporter
     const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 465,
-      secure: true,
+      host,
+      port,
+      secure,
       auth: { user, pass },
       connectionTimeout: 10000,
-      greetingTimeout: 10000,
+      greetingTimeout: 8000,
       socketTimeout: 15000
     });
 
+    const emailFrom = from || process.env.EMAIL_FROM || `"BotBounty" <${user}>`;
+
+    // 4. Send email
     const info = await transporter.sendMail({
-      from: `"ArcBounty" <${user}>`,
-      to: recipients,
+      from: emailFrom,
+      to: recipients.join(', '),
       subject,
       html,
-      text
+      text: text || html.replace(/<[^>]+>/g, ' ')
     });
-
-    console.log(`[Vercel Relay] Successfully dispatched to ${recipients} | MsgID: ${info.messageId}`);
 
     return res.status(200).json({
       success: true,
       messageId: info.messageId,
-      accepted: info.accepted
+      accepted: info.accepted,
+      response: info.response,
+      deliveryMethod: 'vercel-smtp-ssl-relay'
     });
   } catch (error) {
-    console.error('[Vercel Relay Error]:', error);
+    console.error('[BotBounty Email Relay Error]:', error);
     return res.status(500).json({
-      error: error.message || 'Failed to dispatch email via relay'
+      error: 'Failed to dispatch email via relay',
+      details: error.message
     });
   }
 }
