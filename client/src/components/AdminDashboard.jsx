@@ -1536,7 +1536,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
                       fontWeight: 700,
                       color: '#854d0e'
                     }}>
-                      Arc L1 RPC Scanner: {scanResult.bountiesScanned} bounties scanned on Chain 5042 &bull; {scanResult.depositsDetected} deposits verified.
+                      BOT Chain RPC Scanner: {scanResult.bountiesScanned} bounties scanned on Chain 968 &bull; {scanResult.depositsDetected} deposits verified.
                     </div>
                   )}
                 </div>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { X, Wallet, Zap, Plus, ExternalLink, CheckCircle } from 'lucide-react';
-import { ARC_MAINNET, ARC_TESTNET, truncateAddress } from '../utils/arc';
+import { BOT_TESTNET, BOT_MAINNET, truncateAddress } from '../utils/networks';
 import { getWalletProvider } from '../utils/wallet';
 import { useIsMobile } from '../utils/useIsMobile';
 
@@ -97,14 +97,14 @@ export default function WalletModal({
         </button>
 
         <span className="sticker-tape" style={{ marginBottom: '8px' }}>
-          ARC L1 WALLET &amp; NETWORK
+          BOT CHAIN WALLET &amp; NETWORK
         </span>
 
         <h3 className="font-space" style={{ fontSize: '1.65rem', fontWeight: 900, color: '#000000', marginBottom: '4px' }}>
           CONNECT &amp; SWITCH
         </h3>
         <p style={{ color: '#4b5563', fontSize: '0.9rem', fontWeight: 600, marginBottom: '22px' }}>
-          Connect an EVM wallet (MetaMask / Rabby) or toggle between Arc Mainnet and Testnet.
+          Connect an EVM wallet (MetaMask / OKX / Rabby) or toggle between BOT Bohr Testnet and Mainnet.
         </p>
 
         {/* Network Selector */}
@@ -114,33 +114,33 @@ export default function WalletModal({
           </label>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
             <button
-              onClick={() => setNetwork(ARC_MAINNET)}
+              onClick={() => setNetwork(BOT_TESTNET)}
               className="brutal-btn"
               style={{
-                background: network.id === 5042 ? 'var(--arc-sky-sync)' : '#ffffff',
+                background: network.id === 968 ? 'var(--arc-sky-sync)' : '#ffffff',
                 color: '#000000',
                 padding: '12px',
                 textAlign: 'left',
                 display: 'block'
               }}
             >
-              <div style={{ fontWeight: 900, fontSize: '0.92rem' }}>ARC MAINNET</div>
-              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#1f2937' }}>Chain ID: 5042</div>
+              <div style={{ fontWeight: 900, fontSize: '0.92rem' }}>BOHR TESTNET</div>
+              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#1f2937' }}>Chain ID: 968</div>
             </button>
 
             <button
-              onClick={() => setNetwork(ARC_TESTNET)}
+              onClick={() => setNetwork(BOT_MAINNET)}
               className="brutal-btn"
               style={{
-                background: network.id === 5042002 ? 'var(--arc-token-sand)' : '#ffffff',
+                background: network.id === 677 ? 'var(--arc-token-sand)' : '#ffffff',
                 color: '#000000',
                 padding: '12px',
                 textAlign: 'left',
                 display: 'block'
               }}
             >
-              <div style={{ fontWeight: 900, fontSize: '0.92rem' }}>ARC TESTNET</div>
-              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#1f2937' }}>Chain ID: 5042002</div>
+              <div style={{ fontWeight: 900, fontSize: '0.92rem' }}>BOT MAINNET</div>
+              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#1f2937' }}>Chain ID: 677</div>
             </button>
           </div>
         </div>
@@ -163,7 +163,7 @@ export default function WalletModal({
 
           <div>
             <p className="font-space" style={{ fontSize: '1.9rem', fontWeight: 900, color: '#000000', lineHeight: 1, margin: 0 }}>
-              ${(wallet.balance || 0).toLocaleString()} <span style={{ fontSize: '1rem', fontWeight: 800 }}>USDC</span>
+              ${(wallet.balance || 0).toLocaleString()} <span style={{ fontSize: '1rem', fontWeight: 800 }}>USDT</span>
             </p>
             <p style={{ fontSize: '0.75rem', color: '#1f2937', fontFamily: 'Geist Mono, monospace', fontWeight: 700, marginTop: '6px', margin: '6px 0 0 0' }}>
               {wallet.address}
@@ -196,7 +196,7 @@ export default function WalletModal({
             className="brutal-btn brutal-btn-white"
             style={{ width: '100%', padding: '12px', fontSize: '0.88rem' }}
           >
-            USE SIMULATED DEMO ACCOUNT ($10,000 USDC)
+            USE SIMULATED DEMO ACCOUNT (10,000 USDT / 500 $BOT)
           </button>
         </div>
       </div>

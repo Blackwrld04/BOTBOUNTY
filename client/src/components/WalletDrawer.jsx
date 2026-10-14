@@ -18,7 +18,7 @@ export default function WalletDrawer({ isOpen, onClose, wallet, setWallet, netwo
     const fetchTransactions = async () => {
       setLoadingTx(true);
       try {
-        const token = localStorage.getItem('arcbounty_session_token');
+        const token = localStorage.getItem('botbounty_session_token') || localStorage.getItem('arcbounty_session_token');
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
         const query = user?.email ? `?email=${encodeURIComponent(user.email)}` : creatorAddress ? `?address=${encodeURIComponent(creatorAddress)}` : '';
 
@@ -307,7 +307,7 @@ export default function WalletDrawer({ isOpen, onClose, wallet, setWallet, netwo
                   No Bounty Payouts Collected Yet
                 </h5>
                 <p style={{ fontSize: '0.78rem', color: '#64748b', margin: 0, lineHeight: 1.45 }}>
-                  Participate in open challenges on ArcBounty. When your work is approved, your USDC reward will be disbursed directly from escrow to your wallet and logged here.
+                  Participate in open challenges on BotBounty. When your work is approved, your USDT reward will be disbursed directly from escrow to your wallet and logged here.
                 </p>
               </div>
             )}

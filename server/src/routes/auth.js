@@ -312,7 +312,7 @@ authRouter.post('/verify-code', (req, res) => {
 
     return res.json({
       success: true,
-      message: 'Email verified successfully! Welcome to ArcBounty.',
+      message: 'Email verified successfully! Welcome to BotBounty.',
       user: formatUser(user),
       token
     });

@@ -154,7 +154,7 @@ export default function ConnectWalletModal({
       if (mobileDevice) {
         const deepLink = getMobileDeepLink(walletId);
         setError(
-          `To connect your ${targetWalletObj.name} on mobile, tap "Open in ${targetWalletObj.name} App" below to launch the DApp inside your wallet, or use the "Instant Arc L1 Creator Wallet" button.`
+          `To connect your ${targetWalletObj.name} on mobile, tap "Open in ${targetWalletObj.name} App" below to launch the DApp inside your wallet, or use the "Instant BOT Chain Creator Wallet" button.`
         );
       } else {
         setError(
@@ -173,7 +173,34 @@ export default function ConnectWalletModal({
       }
       const address = accounts[0];
 
-      // Request single-use cryptographic challenge nonce from ArcBounty server
+      // Switch or add BOT Chain (Bohr Testnet 968) to wallet
+      try {
+        await provider.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: '0x3c8' }]
+        });
+      } catch (switchErr) {
+        if (switchErr?.code === 4902 || switchErr?.data?.originalError?.code === 4902) {
+          try {
+            await provider.request({
+              method: 'wallet_addEthereumChain',
+              params: [
+                {
+                  chainId: '0x3c8',
+                  chainName: 'BOT Bohr Testnet',
+                  nativeCurrency: { name: 'tBOT', symbol: 'tBOT', decimals: 18 },
+                  rpcUrls: ['https://rpc.bohr.life'],
+                  blockExplorerUrls: ['https://scan.bohr.life']
+                }
+              ]
+            });
+          } catch (addErr) {
+            console.warn('Network add skipped:', addErr);
+          }
+        }
+      }
+
+      // Request single-use cryptographic challenge nonce from BotBounty server
       let challenge = null;
       try {
         const nonceRes = await fetch(`${API_BASE}/api/auth/wallet-nonce?address=${address}`);
@@ -190,7 +217,7 @@ export default function ConnectWalletModal({
             params: [challenge.message, address]
           });
 
-          const sessionToken = localStorage.getItem('arcbounty_session_token');
+          const sessionToken = localStorage.getItem('botbounty_session_token') || localStorage.getItem('arcbounty_session_token');
           const verifyRes = await fetch(`${API_BASE}/api/auth/wallet-verify`, {
             method: 'POST',
             headers: {

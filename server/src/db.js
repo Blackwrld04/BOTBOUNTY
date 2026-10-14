@@ -12,6 +12,7 @@ import {
   pgSaveDisbursement,
   pgSaveSession
 } from './supabase.js';
+import { config } from './config.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -553,7 +554,9 @@ export function createWalletChallenge(address) {
   const nonce = crypto.randomBytes(16).toString('hex');
   const now = Date.now();
   const expiresAt = now + 5 * 60 * 1000; // 5 minutes validity
-  const message = `Sign in to ArcBounty (Circle Arc L1)\nNetwork: Circle Arc (Chain ID 5042)\nAddress: ${normalized}\nNonce: ${nonce}\nIssued At: ${new Date(now).toISOString()}`;
+  const chainId = config.botChainId || 968;
+  const chainName = chainId === 677 ? 'BOT Chain Mainnet' : 'BOT Chain / Bohr Testnet';
+  const message = `Sign in to BotBounty (BOT Chain)\nNetwork: ${chainName} (Chain ID ${chainId})\nAddress: ${normalized}\nNonce: ${nonce}\nIssued At: ${new Date(now).toISOString()}`;
 
   // Invalidate past challenges for this address
   const invalidateStmt = db.prepare(`UPDATE auth_challenges SET used = 1 WHERE address = ? AND used = 0`);

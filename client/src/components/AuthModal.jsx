@@ -483,6 +483,33 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
       }
       const address = accounts[0];
 
+      // Switch or add BOT Chain (Bohr Testnet 968)
+      try {
+        await provider.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: '0x3c8' }]
+        });
+      } catch (switchErr) {
+        if (switchErr?.code === 4902 || switchErr?.data?.originalError?.code === 4902) {
+          try {
+            await provider.request({
+              method: 'wallet_addEthereumChain',
+              params: [
+                {
+                  chainId: '0x3c8',
+                  chainName: 'BOT Bohr Testnet',
+                  nativeCurrency: { name: 'tBOT', symbol: 'tBOT', decimals: 18 },
+                  rpcUrls: ['https://rpc.bohr.life'],
+                  blockExplorerUrls: ['https://scan.bohr.life']
+                }
+              ]
+            });
+          } catch (addErr) {
+            console.warn('Network add skipped:', addErr);
+          }
+        }
+      }
+
       const nonceRes = await fetch(`${API_BASE}/wallet-nonce?address=${address}`);
       const challengeData = await nonceRes.json();
       if (!challengeData.success) {
@@ -1042,7 +1069,7 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
                       cursor: isLoading ? 'wait' : 'pointer'
                     }}
                   >
-                    <span>{isLoading ? 'Verifying Credentials...' : 'Log In to ArcBounty'}</span>
+                    <span>{isLoading ? 'Verifying Credentials...' : 'Log In to BotBounty'}</span>
                     <ArrowRight size={16} />
                   </button>
                   <p style={{ textAlign: 'center', fontSize: '0.82rem', color: '#64748b', marginTop: '14px', marginBottom: 0 }}>
@@ -1212,7 +1239,7 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
                       />
                     </div>
                     <span style={{ fontSize: '0.72rem', color: '#64748b', display: 'block', marginTop: '4px' }}>
-                      Your unique link: arcbounty.io/@{username || 'handle'}
+                      Your unique link: botchain.ai/@{username || 'handle'}
                     </span>
                     {handleStatus.state === 'available' && (
                       <span style={{ fontSize: '0.74rem', color: '#16a34a', fontWeight: 800, display: 'block', marginTop: '2px' }}>
@@ -1833,7 +1860,7 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
                   Sign in with Google
                 </h3>
                 <p style={{ fontSize: '0.84rem', color: '#4b5563', margin: '4px 0 0 0' }}>
-                  Enter your Google Account to authenticate on ArcBounty
+                  Enter your Google Account to authenticate on BotBounty
                 </p>
               </div>
 

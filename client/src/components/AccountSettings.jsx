@@ -772,7 +772,7 @@ export default function AccountSettings({
                   COLLECTED BOUNTY EARNINGS
                 </span>
                 <span style={{ fontSize: '0.72rem', background: '#dcfce7', color: '#166534', border: '1px solid #166534', padding: '1px 6px', borderRadius: '4px', fontWeight: 800 }}>
-                  CHAIN ID 5042
+                  CHAIN ID 968 (BOHR TESTNET)
                 </span>
               </div>
 
@@ -780,7 +780,7 @@ export default function AccountSettings({
                 <span className="font-space" style={{ fontSize: '2.4rem', fontWeight: 900, color: '#0f172a' }}>
                   ${(wallet?.balance || 0).toLocaleString()}
                 </span>
-                <span style={{ fontSize: '1.1rem', fontWeight: 800, color: '#64748b' }}>USDC</span>
+                <span style={{ fontSize: '1.1rem', fontWeight: 800, color: '#64748b' }}>USDT</span>
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px' }}>

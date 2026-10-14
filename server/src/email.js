@@ -147,7 +147,7 @@ async function dispatchEmail({ to, subject, html, text }) {
   // STRATEGY 4: Local Development / Test Suite Fallback (0ms JSON transport)
   try {
     const mailer = await getTransporter();
-    const sender = process.env.FROM_EMAIL || '"BotBounty Security" <security@arcbounty.io>';
+    const sender = process.env.FROM_EMAIL || '"BotBounty Security" <security@botchain.ai>';
     for (const recipient of recipients) {
       await mailer.sendMail({
         from: sender,
@@ -208,10 +208,10 @@ export async function sendVerificationEmail(toEmail, code, type = 'login') {
                 <tr>
                   <td align="center" style="background-color: #1b3158; padding: 26px 20px; border-bottom: 2.5px solid #2f578c;">
                     <div style="font-size: 24px; font-weight: 900; letter-spacing: -0.02em; color: #ffffff; margin-bottom: 6px;">
-                      Arc<span style="color: #ffcc6f;">Bounty</span>
+                      Bot<span style="color: #6366f1;">Bounty</span>
                     </div>
                     <div style="display: inline-block; background-color: #0d1a2d; color: #acc6e9; border: 1.5px solid #2f578c; border-radius: 6px; padding: 4px 10px; font-size: 11px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;">
-                      Circle Arc L1 &bull; Chain ID 5042
+                      BOT Chain &bull; Chain ID 968
                     </div>
                   </td>
                 </tr>
@@ -324,10 +324,10 @@ export async function sendRewardDisbursedEmail({ toEmail, creatorName, bountyTit
                 <tr>
                   <td align="center" style="background-color: #1b3158; padding: 26px 20px; border-bottom: 2.5px solid #2f578c;">
                     <div style="font-size: 24px; font-weight: 900; color: #ffffff; margin-bottom: 6px;">
-                      Arc<span style="color: #ffcc6f;">Bounty</span>
+                      Bot<span style="color: #6366f1;">Bounty</span>
                     </div>
                     <div style="display: inline-block; background-color: #0d1a2d; color: #acc6e9; border: 1.5px solid #2f578c; border-radius: 6px; padding: 4px 10px; font-size: 11px; font-weight: 800; text-transform: uppercase;">
-                      Settlement Confirmed &bull; Chain ID 5042
+                      Settlement Confirmed &bull; Chain ID 968
                     </div>
                   </td>
                 </tr>
@@ -337,7 +337,7 @@ export async function sendRewardDisbursedEmail({ toEmail, creatorName, bountyTit
                       Bounty Prize Disbursed!
                     </h1>
                     <p style="margin: 0 0 20px 0; font-size: 14px; line-height: 1.6; color: #94a3b8;">
-                      Hello <strong>${creatorName || 'Creator'}</strong>, your submission for <strong>${bountyTitle}</strong> was reviewed and selected as the winner. The prize reward has been disbursed from the platform escrow to your Circle Arc wallet!
+                      Hello <strong>${creatorName || 'Creator'}</strong>, your submission for <strong>${bountyTitle}</strong> was reviewed and selected as the winner. The prize reward has been disbursed from the platform escrow to your BOT Chain wallet!
                     </p>
                     <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="background-color: #0a1322; border: 2px solid #ffcc6f; border-radius: 10px; padding: 20px; margin-bottom: 24px; text-align: center;">
                       <tr>
@@ -486,6 +486,6 @@ export async function sendNewBountyBroadcastToCreators(creatorEmails, bounty) {
     to: validEmails,
     subject,
     html: htmlContent,
-    text: `New Challenge on ArcBounty: "${bounty.title}". Prize: ${prizeInfo}. Submit your deliverable on ArcBounty to win native USDC!`
+    text: `New Challenge on BotBounty: "${bounty.title}". Prize: ${prizeInfo}. Submit your deliverable on BotBounty to win USDT / $BOT!`
   });
 }

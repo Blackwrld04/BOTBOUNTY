@@ -23,6 +23,7 @@ import {
   sendNewBountyBroadcastToCreators
 } from '../email.js';
 import { activeAdminTokens } from './admin.js';
+import { config } from '../config.js';
 
 export const bountyRouter = express.Router();
 
@@ -34,11 +35,11 @@ bountyRouter.get('/escrow-wallet', (req, res) => {
   const escrowWallet = process.env.ESCROW_WALLET_ADDRESS || '0x8b415aE3956992b0cbC6C78c485A4d099F6331cE';
   res.json({
     success: true,
-    escrowWallet,
-    chainId: parseInt(process.env.ARC_CHAIN_ID || '5042', 10),
-    networkName: 'Circle Arc L1',
-    token: 'Canonical USDC',
-    tokenAddress: '0x3600000000000000000000000000000000000000'
+    escrowWallet: config.escrowContractAddress || '0x909661b453bBe13Ee247551754b35370557A9aA2',
+    chainId: parseInt(process.env.BOT_CHAIN_ID || '968', 10),
+    networkName: 'BOT Chain (Bohr Testnet)',
+    token: 'Bridged USDT',
+    tokenAddress: config.usdtAddress || '0x75edC9335175Fc0552D51D48439F229c10420fe3'
   });
 });
 
@@ -411,7 +412,7 @@ bountyRouter.post('/github-webhook', (req, res) => {
     const payload = req.body;
 
     if (event === 'ping' || payload?.action === 'ping') {
-      return res.json({ success: true, message: 'ArcBounty GitHub Webhook alive and verified on Circle Arc L1!' });
+      return res.json({ success: true, message: 'BotBounty GitHub Webhook alive and verified on BOT Chain!' });
     }
 
     if (event === 'pull_request') {
@@ -424,10 +425,10 @@ bountyRouter.post('/github-webhook', (req, res) => {
       const prUrl = pr.html_url || '';
       const isMerged = pr.merged === true;
 
-      // Extract bounty ID from PR (e.g. bounty-arc-001 or #bounty-arc-001)
-      const match = (prTitle + ' ' + prBody).match(/bounty-arc-[\w-]+/i);
+      // Extract bounty ID from PR (e.g. bounty-bot-001 or bounty-arc-001)
+      const match = (prTitle + ' ' + prBody).match(/bounty-(?:bot|arc)-[\w-]+/i);
       if (!match) {
-        return res.json({ success: true, message: 'PR received, but no linked ArcBounty ID found.' });
+        return res.json({ success: true, message: 'PR received, but no linked BotBounty ID found.' });
       }
 
       const bountyId = match[0].toLowerCase();
