@@ -378,7 +378,7 @@ export default function ConnectWalletModal({
         </div>
 
         <p style={{ fontSize: '0.8rem', color: '#4b5563', lineHeight: 1.45, marginBottom: '14px' }}>
-          Connect your Web3 wallet to receive deterministic USDC payouts directly on Circle Arc L1 (Chain ID 5042).
+          Connect your Web3 wallet to receive fast USDT &amp; $BOT payouts directly on BOT Chain (Chain ID 677 / 968).
         </p>
 
         {/* Mobile Web3 In-App Browser Indicator */}
@@ -622,7 +622,7 @@ export default function ConnectWalletModal({
                 }}
               >
                 <Zap size={15} />
-                <span>Use Instant Arc L1 Creator Wallet</span>
+                <span>Use Instant BOT Chain Creator Wallet</span>
               </button>
             </div>
           )}
@@ -632,15 +632,15 @@ export default function ConnectWalletModal({
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '14px', fontSize: '0.72rem', color: '#64748b', flexWrap: 'wrap', gap: '6px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <ShieldCheck size={14} color="#16a34a" />
-            <span>Circle Arc L1 &bull; Deterministic USDC</span>
+            <span>BOT Chain (677 / 968) &bull; USDT &amp; $BOT</span>
           </div>
           <a
-            href="https://arc.io"
+            href="https://scan.bohr.life"
             target="_blank"
             rel="noopener noreferrer"
             style={{ color: '#2f578c', fontWeight: 700, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '3px' }}
           >
-            <span>Network Specs</span>
+            <span>BOT Chain Docs</span>
             <ExternalLink size={11} />
           </a>
         </div>

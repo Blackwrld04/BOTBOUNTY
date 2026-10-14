@@ -136,7 +136,7 @@ export default function Navbar({
               Docs
             </button>
             <a
-              href="https://docs.arc.io"
+              href="https://scan.bohr.life"
               target="_blank"
               rel="noopener noreferrer"
               style={{
@@ -149,7 +149,7 @@ export default function Navbar({
               onMouseEnter={(e) => (e.currentTarget.style.color = '#000000')}
               onMouseLeave={(e) => (e.currentTarget.style.color = '#64748b')}
             >
-              Arc L1 ↗
+              BOT Chain Docs ↗
             </a>
           </div>
 

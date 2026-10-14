@@ -802,7 +802,7 @@ export default function BountyDetailModal({
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#166534' }}>CIRCLE ARC MAINNET SETTLEMENT PROOF</span>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#166534' }}>BOT CHAIN SETTLEMENT PROOF</span>
                     <p style={{ fontFamily: 'Geist Mono, monospace', fontSize: '0.85rem', fontWeight: 700, color: '#000000', margin: '4px 0 0 0' }}>
                       {bounty.settlementTx}
                     </p>
@@ -1124,7 +1124,7 @@ export default function BountyDetailModal({
                         <span>Official Winning Outcome Settled</span>
                       </div>
                       <p style={{ margin: 0, fontSize: '0.78rem', color: '#15803d' }}>
-                        Escrow prize disbursement of ${bounty.amount?.toLocaleString()} USDC is complete with instant finality on Circle Arc.
+                        Escrow prize disbursement of ${bounty.amount?.toLocaleString()} USDT is complete with instant finality on BOT Chain.
                       </p>
                     </div>
                   )}
@@ -1234,7 +1234,7 @@ export default function BountyDetailModal({
                       Sign in or create an account to submit work
                     </p>
                     <p style={{ fontSize: '0.82rem', color: '#4b5563', marginBottom: '18px', maxWidth: '440px', margin: '0 auto 18px auto', fontWeight: 500 }}>
-                      Join thousands of creators earning canonical USDC on Circle Arc. Submit your deliverable and get paid with zero gas fees.
+                      Join thousands of creators earning USDT on BOT Chain. Submit your deliverable and get paid with zero gas fees.
                     </p>
                     <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
                       <button
@@ -1282,7 +1282,7 @@ export default function BountyDetailModal({
                               <span>Your Work Is Submitted for Review (Revision v{userSubmission.revision_count || 1})</span>
                             </div>
                             <p style={{ fontSize: '0.78rem', color: '#15803d', margin: '3px 0 0 0', fontWeight: 600 }}>
-                              Your deliverable is recorded on Circle Arc. Only one submission is permitted per creator — click <strong>Edit Deliverable</strong> to update your solution, notes, or co-creator splits before the deadline.
+                              Your deliverable is recorded on BOT Chain. Only one submission is permitted per creator — click <strong>Edit Deliverable</strong> to update your solution, notes, or co-creator splits before the deadline.
                             </p>
                           </div>
                           <button
@@ -1404,7 +1404,7 @@ export default function BountyDetailModal({
 
                           <div>
                             <label style={{ fontSize: '0.78rem', fontWeight: 800, color: '#000000', display: 'block', marginBottom: '6px' }}>
-                              YOUR PAYOUT WALLET ADDRESS (Circle Arc L1) *
+                              YOUR PAYOUT WALLET ADDRESS (BOT Chain EVM) *
                             </label>
                             <input
                               type="text"

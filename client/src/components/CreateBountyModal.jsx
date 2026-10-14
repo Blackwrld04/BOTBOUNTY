@@ -920,16 +920,16 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Shield size={18} color="var(--arc-validator-blue)" />
                   <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#0f172a', textTransform: 'uppercase' }}>
-                    Designated Arc Escrow Wallet
+                    Designated BOT Chain Escrow Wallet
                   </span>
                 </div>
                 <span style={{ fontSize: '0.72rem', fontWeight: 800, background: '#e2e8f0', color: '#1b3158', padding: '3px 8px', borderRadius: '4px' }}>
-                  Circle Arc L1 &bull; 5042
+                  BOT Chain EVM &bull; 677 / 968
                 </span>
               </div>
 
               <p style={{ fontSize: '0.8rem', color: '#475569', lineHeight: 1.4, margin: '0 0 10px 0' }}>
-                To fund this bounty challenge, send the total reward of <strong style={{ color: '#0f172a' }}>${effectiveTotalAmount().toLocaleString()} USDC</strong> to the platform Escrow Treasury wallet:
+                To fund this bounty challenge, send the total reward of <strong style={{ color: '#0f172a' }}>${effectiveTotalAmount().toLocaleString()} USDT / $BOT</strong> to the platform Escrow Treasury wallet:
               </p>
 
               {/* Address Box with Copy */}
@@ -1084,7 +1084,7 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
               marginBottom: '24px'
             }}>
               <h4 style={{ fontSize: '0.8rem', fontWeight: 900, color: '#000000', textTransform: 'uppercase', marginBottom: '10px' }}>
-                Next Steps on Circle Arc
+                Next Steps on BOT Chain
               </h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.82rem', color: '#334155' }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>

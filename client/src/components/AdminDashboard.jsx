@@ -235,7 +235,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
         fetchAdminData();
         handleSelectBounty(multiWinnerModal.bounty);
         triggerSync({ action: 'multi_winner_distributed', bountyId: multiWinnerModal.bounty.id });
-        alert('Multi-winner reward split successfully disbursed on Circle Arc L1!');
+        alert('Multi-winner reward split successfully disbursed on BOT Chain!');
       } else {
         alert(data.error || 'Failed to disburse multi-winner rewards');
       }
@@ -247,18 +247,18 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
   };
 
   const handlePingWebhook = async () => {
-    setPingStatus('Testing GitHub webhook endpoint on Circle Arc L1...');
+    setPingStatus('Testing GitHub webhook endpoint on BOT Chain...');
     try {
       const res = await fetch(`${API_BASE}/api/bounties/github-webhook`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'ping',
-          repository: { full_name: 'arc-ecosystem/arcbounty' }
+          repository: { full_name: 'bot-ecosystem/botbounty' }
         })
       });
       const data = await res.json();
-      setPingStatus(`Active: ${data.message || 'Webhook listening on Circle Arc L1'}`);
+      setPingStatus(`Active: ${data.message || 'Webhook listening on BOT Chain'}`);
     } catch (err) {
       setPingStatus('Ping failed: ' + err.message);
     }
@@ -584,7 +584,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
               <span>Restricted Access</span>
             </div>
             <span style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 700 }}>
-              Circle Arc L1 (5042)
+              BOT Chain (677 / 968)
             </span>
           </div>
 
@@ -808,7 +808,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
               ADMIN CONSOLE
             </span>
             <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 700 }}>
-              Circle Arc Protocol (Chain ID 5042)
+              BOT Chain Protocol (Chain ID 677 / 968)
             </span>
           </div>
 
@@ -816,7 +816,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
             Escrow Treasury &amp; Prize Disbursement
           </h1>
           <p style={{ fontSize: '0.9rem', color: '#475569', margin: '4px 0 0 0' }}>
-            Oversee deposited challenge bounties, review creator participants, and disburse USDC payouts with sub-second finality.
+            Oversee deposited challenge bounties, review creator participants, and disburse USDT &amp; $BOT payouts with sub-second finality.
           </p>
         </div>
 
@@ -856,7 +856,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
               alignItems: 'center',
               gap: '6px'
             }}
-            title="Inspect all registered creators and users on Circle Arc L1"
+            title="Inspect all registered creators and users on BOT Chain"
           >
             <UserCheck size={14} color="#1b3158" />
             <span>Creators Directory ({stats ? (stats.totalUsers ?? usersList.length) : (usersList.length || '---')})</span>
@@ -966,10 +966,10 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
             <DollarSign size={18} color="#1b3158" />
           </div>
           <div style={{ fontSize: '1.85rem', fontWeight: 900, color: '#0f172a' }}>
-            ${stats ? stats.totalEscrowedUsdc.toLocaleString() : '---'} <span style={{ fontSize: '1rem', color: '#64748b' }}>USDC</span>
+            ${stats ? stats.totalEscrowedUsdc.toLocaleString() : '---'} <span style={{ fontSize: '1rem', color: '#64748b' }}>USDT / $BOT</span>
           </div>
           <div style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 700, marginTop: '4px' }}>
-            Secured on Circle Arc L1
+            Secured on BOT Chain
           </div>
         </div>
 
@@ -1015,7 +1015,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
             e.currentTarget.style.transform = 'none';
             e.currentTarget.style.boxShadow = '3px 3px 0px #000000';
           }}
-          title="Click to view all registered creators and community members on Circle Arc L1"
+          title="Click to view all registered creators and community members on BOT Chain"
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
             <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>
@@ -1140,7 +1140,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
           </button>
 
           <a
-            href={`https://explorer.arc.io/address/${stats?.escrowWallet || '0x7Cd0F0db26f47dFa757014a8f756506B9F32F823'}`}
+            href={`https://scan.bohr.life/address/${stats?.escrowWallet || '0x909661b453bBe13Ee247551754b35370557A9aA2'}`}
             target="_blank"
             rel="noopener noreferrer"
             style={{
@@ -2055,7 +2055,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
                               </button>
 
                               <a
-                                href={`https://explorer.arc.io/address/${sub.wallet_address}`}
+                                href={`https://scan.bohr.life/address/${sub.wallet_address}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 style={{
@@ -2143,7 +2143,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
                   Confirm USDC Prize Payout
                 </h3>
                 <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
-                  Execution on Circle Arc Protocol (Chain ID 5042)
+                  Execution on BOT Chain Protocol (Chain ID 677 / 968)
                 </span>
               </div>
             </div>
@@ -2484,7 +2484,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
             </div>
 
             <p style={{ fontSize: '0.84rem', color: '#475569', marginBottom: '18px', lineHeight: 1.45 }}>
-              Allocate the escrow prize pool across ranked winners. Each winner will receive their allocated USDC share disbursed to their Circle Arc L1 wallet address.
+              Allocate the escrow prize pool across ranked winners. Each winner will receive their allocated share disbursed to their BOT Chain wallet address.
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '20px' }}>
@@ -2639,7 +2639,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
                     GitHub Bot &amp; Webhook Engine
                   </h3>
                   <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
-                    Automated pull request lifecycle on Circle Arc
+                    Automated pull request lifecycle on BOT Chain
                   </span>
                 </div>
               </div>
@@ -2808,7 +2808,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
                     </span>
                   </div>
                   <p style={{ fontSize: isMobile ? '0.72rem' : '0.8rem', color: '#64748b', margin: '3px 0 0 0', fontWeight: 600 }}>
-                    Circle Arc L1 verified creators, solvers, and community members
+                    BOT Chain verified creators, solvers, and community members
                   </p>
                 </div>
               </div>
@@ -3079,7 +3079,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
                                 <span>{copiedUserWallet === u.id ? 'Copied' : 'Copy'}</span>
                               </button>
                               <a
-                                href={`https://explorer.arc.io/address/${u.wallet_address}`}
+                                href={`https://scan.bohr.life/address/${u.wallet_address}`}
                                 target="_blank"
                                 rel="noreferrer"
                                 style={{
@@ -3091,7 +3091,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
                                   textDecoration: 'underline',
                                   fontSize: '0.74rem'
                                 }}
-                                title="View on Arc Explorer"
+                                title="View on Bohr Explorer"
                               >
                                 <span>Explorer</span>
                                 <ExternalLink size={10} />

@@ -930,36 +930,40 @@ export function seedInitialBountiesIfEmpty() {
   }
 }
 
-// Auto seed bounties if table is empty
 try {
   seedInitialBountiesIfEmpty();
 } catch (e) {
   console.warn('[Database] Seed check warning:', e.message);
 }
 
-/**
- * Synchronize all bounties whose deadline has expired from 'Open' to 'Closed'
- */
+export function ensureActiveBounties() {
+  if (process.env.DB_PATH === ":memory:") return;
+  try {
+    const openCount = db.prepare("SELECT count(*) as count FROM bounties WHERE status = 'Open'").get();
+    if (!openCount || openCount.count < 3) {
+      const now = Date.now();
+      const openIds = ["bounty-arc-001", "bounty-arc-002", "bounty-arc-005", "bounty-arc-0974", "bounty-arc-4237"];
+      const daysMap = { "bounty-arc-001": 6, "bounty-arc-002": 5, "bounty-arc-005": 9, "bounty-arc-0974": 7, "bounty-arc-4237": 4 };
+      openIds.forEach((id) => {
+        const days = daysMap[id] || 5;
+        db.prepare("UPDATE bounties SET status = 'Open', deadline = ?, created_at = ? WHERE id = ?").run(now + days * 86400000, now - 86400000, id);
+      });
+    }
+  } catch (e) {
+    console.warn("[Database] ensureActiveBounties warning:", e.message);
+  }
+}
+
+try {
+  ensureActiveBounties();
+} catch (e) {}
+
 export function syncExpiredBounties() {
   try {
     const now = Date.now();
-    const updateStmt = db.prepare(`
-      UPDATE bounties
-      SET status = 'Closed'
-      WHERE status IN ('Open', 'InReview')
-        AND deadline > 0
-        AND deadline <= ?
-    `);
+    const updateStmt = db.prepare("UPDATE bounties SET status = 'Closed' WHERE status IN ('Open', 'InReview') AND deadline > 0 AND deadline <= ?");
     const info = updateStmt.run(now);
-
-    // Keep bounties Open while deadline is still in the future and submissions are ongoing
-    db.prepare(`
-      UPDATE bounties
-      SET status = 'Open'
-      WHERE status = 'InReview'
-        AND deadline > ?
-    `).run(now);
-
+    db.prepare("UPDATE bounties SET status = 'Open' WHERE status = 'InReview' AND deadline > ?").run(now);
     return info.changes;
   } catch (e) {
     return 0;

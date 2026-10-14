@@ -116,7 +116,7 @@ export default function MobileDock({
         }}
       >
         <Trophy size={21} color={activeTab === 'leaderboard' ? '#000000' : '#6b7280'} strokeWidth={activeTab === 'leaderboard' ? 3 : 2} />
-        <span style={{ borderBottom: activeTab === 'leaderboard' ? '2px solid #000' : 'none', paddingBottom: '1px' }}>RANKS</span>
+        <span style={{ borderBottom: activeTab === 'leaderboard' ? '2px solid #000' : 'none', paddingBottom: '1px' }}>LEADERBOARD</span>
       </button>
 
       {/* 5. Wallet */}

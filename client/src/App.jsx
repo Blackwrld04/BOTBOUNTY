@@ -67,10 +67,14 @@ export default function App() {
 
   const [bounties, setBounties] = useState(() => {
     try {
-      const saved = localStorage.getItem('arcbounty_items_v4');
+      localStorage.removeItem('arcbounty_items_v4');
+      const saved = localStorage.getItem('botbounty_items_v5');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const hasOpen = parsed.some((b) => b.status === 'Open' && (!b.deadline || b.deadline > Date.now()));
+          if (hasOpen) return parsed;
+        }
       }
     } catch (e) {}
     return INITIAL_BOUNTIES;
@@ -172,17 +176,28 @@ export default function App() {
     };
   }, [activeView]);
 
+  const navigateToView = (view) => {
+    setActiveView(view);
+    if (typeof window !== 'undefined') {
+      const pathMap = {
+        explore: '/',
+        leaderboard: '/leaderboard',
+        profile: '/profile',
+        account: '/account',
+        'account-referrals': '/referrals',
+        admin: '/admin'
+      };
+      const targetPath = pathMap[view] || '/';
+      if (window.location.pathname !== targetPath) {
+        window.history.pushState({}, '', targetPath);
+      }
+    }
+  };
+
   const handleBackToExplore = () => {
     syncAllData();
     triggerSync({ action: 'nav_to_explore' });
-    setActiveView('explore');
-    if (typeof window !== 'undefined') {
-      if (window.location.pathname !== '/') {
-        window.history.pushState({}, '', '/');
-      } else if (window.location.hash) {
-        window.location.hash = '';
-      }
-    }
+    navigateToView('explore');
   };
 
   // Modals & Drawers state
@@ -225,6 +240,7 @@ export default function App() {
           return true;
         });
         setBounties(unique);
+        localStorage.setItem('botbounty_items_v5', JSON.stringify(unique));
       }
     } catch (e) {
       console.warn('[App] SQLite bounties sync fallback:', e);
@@ -289,7 +305,7 @@ export default function App() {
 
   // Sync to local storage
   useEffect(() => {
-    localStorage.setItem('arcbounty_items_v4', JSON.stringify(bounties));
+    localStorage.setItem('botbounty_items_v5', JSON.stringify(bounties));
   }, [bounties]);
 
   // Handle posting a new bounty with Escrow deposit
@@ -394,7 +410,7 @@ export default function App() {
         }
         await syncAllData();
         triggerSync({ action: 'bounty_settled', bountyId });
-        showToast(`Settlement confirmed on Arc Mainnet in 382ms! USDC disbursed.`, 'success', `https://explorer.arc.io/tx/${data.settlement.txHash}`);
+        showToast(`Settlement confirmed on BOT Chain in 382ms! USDT disbursed.`, 'success', `https://scan.bohr.life/tx/${data.settlement.txHash}`);
         return;
       } else if (data.error) {
         showToast(data.error, 'error');
@@ -505,7 +521,7 @@ export default function App() {
           wallet={wallet}
           network={network}
           activeView={activeView}
-          setActiveView={setActiveView}
+          setActiveView={navigateToView}
           openAuthModal={handleOpenAuth}
           openWalletDrawer={() => setWalletDrawerOpen(true)}
           openConnectWalletModal={() => setConnectWalletModalOpen(true)}
@@ -552,7 +568,7 @@ export default function App() {
                 }}
                 searchQuery={searchQuery}
                 setSearchQuery={setSearchQuery}
-                setActiveTab={setActiveView}
+                setActiveTab={navigateToView}
               />
             </div>
           </>
@@ -564,9 +580,9 @@ export default function App() {
             setUser={setUser}
             wallet={wallet}
             bounties={bounties}
-            onBackToFeed={() => setActiveView('explore')}
+            onBackToFeed={() => navigateToView('explore')}
             onSelectBounty={(bounty) => setSelectedBounty(bounty)}
-            onOpenSettings={() => setActiveView('account')}
+            onOpenSettings={() => navigateToView('account')}
             onLogout={handleLogout}
             openAuthModal={handleOpenAuth}
           />
@@ -579,7 +595,7 @@ export default function App() {
             wallet={wallet}
             setWallet={setWallet}
             initialTab={activeView === 'account-referrals' ? 'referrals' : 'account'}
-            onBackToFeed={() => setActiveView('explore')}
+            onBackToFeed={() => navigateToView('explore')}
             onLogout={handleLogout}
             openAuthModal={handleOpenAuth}
           />
@@ -684,7 +700,7 @@ export default function App() {
               rel="noopener noreferrer"
               style={{ color: 'var(--arc-sky-sync)', textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', gap: '3px', flexShrink: 0 }}
             >
-              <span>View ArcScan</span>
+              <span>View Bohr Scan</span>
               <ExternalLink size={12} />
             </a>
           )}
@@ -732,10 +748,10 @@ export default function App() {
                 padding: 0
               }}
             >
-              Arc<span style={{ color: 'var(--arc-blockstream-gold)' }}>Bounty</span>
+              Bot<span style={{ color: 'var(--arc-blockstream-gold)' }}>Bounty</span>
             </span>
             <span style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600, lineHeight: 1, display: 'inline-flex', alignItems: 'center' }}>
-              © 2026 ArcBounty. All rights reserved.
+              © 2026 BotBounty. All rights reserved.
             </span>
           </div>
 
@@ -829,6 +845,21 @@ export default function App() {
               Support
             </button>
 
+            <a
+              href="https://scan.bohr.life"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                color: '#475569',
+                textDecoration: 'none',
+                transition: 'color 0.15s ease'
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = '#000000')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = '#475569')}
+            >
+              BOT Chain Docs ↗
+            </a>
+
             <span style={{ color: '#cbd5e1' }}>•</span>
 
             <a
@@ -883,7 +914,7 @@ export default function App() {
       {activeView !== 'admin' && (
         <MobileDock
           activeTab={activeView}
-          setActiveTab={setActiveView}
+          setActiveTab={navigateToView}
           openCreateModal={() => {
             if (!user) {
               handleOpenAuth('signup');

@@ -60,7 +60,7 @@ export default function Hero({ openCreateModal, onExploreClick, openAuthModal, u
                 marginBottom: isMobile ? '18px' : '26px',
                 fontWeight: 500
               }}>
-                Lock canonical USDC in escrow. Deliver high-impact work in <strong>Content, Design, Development, and All Social</strong> campaigns. Receive instant disbursements with sub-second Malachite BFT finality.
+                Lock USDT &amp; $BOT in smart escrow on BOT Chain. Deliver high-impact work in <strong>Content, Design, Development, and All Social</strong> campaigns. Receive instant disbursements with deterministic EVM finality on BOT Chain (677 / 968).
               </p>
             </div>
 
@@ -130,7 +130,7 @@ export default function Hero({ openCreateModal, onExploreClick, openAuthModal, u
                   />
                 </div>
                 <span style={{ fontSize: '0.78rem', color: '#acc6e9', fontWeight: 600 }}>
-                  Join 2,400+ Web3 creators on Arc
+                  Join 2,400+ Web3 creators on BOT Chain
                 </span>
               </div>
             </div>
@@ -158,7 +158,7 @@ export default function Hero({ openCreateModal, onExploreClick, openAuthModal, u
                   TOTAL VALUE SETTLED
                 </p>
                 <p className="font-space" style={{ fontSize: '1.45rem', fontWeight: 900, color: '#000000', margin: '2px 0 0 0' }}>
-                  ${(stats?.totalDistributedUsdc ?? stats?.totalSettledUsdc ?? 0).toLocaleString()} <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b' }}>USDC</span>
+                  ${(stats?.totalDistributedUsdc ?? stats?.totalSettledUsdc ?? 0).toLocaleString()} <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b' }}>USDT / $BOT</span>
                 </p>
               </div>
             </div>
@@ -208,7 +208,7 @@ export default function Hero({ openCreateModal, onExploreClick, openAuthModal, u
                   DETERMINISTIC FINALITY
                 </p>
                 <p className="font-space" style={{ fontSize: '1.45rem', fontWeight: 900, color: '#000000', margin: '2px 0 0 0' }}>
-                  &lt;400ms <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b' }}>Malachite BFT</span>
+                  &lt;1s <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b' }}>BOT Chain EVM</span>
                 </p>
               </div>
             </div>

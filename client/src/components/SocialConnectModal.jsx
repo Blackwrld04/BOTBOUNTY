@@ -208,7 +208,7 @@ export default function SocialConnectModal({
               {isConnected ? `Manage ${config.name}` : `Connect ${config.name}`}
             </h3>
             <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '2px 0 0 0' }}>
-              Circle Arc Creator Guild Identity
+              BOT Chain Creator Guild Identity
             </p>
           </div>
         </div>

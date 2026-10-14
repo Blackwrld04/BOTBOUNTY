@@ -1,10 +1,10 @@
 import React from 'react';
-import { Shield, Sparkles, ArrowUpRight } from 'lucide-react';
+import { Shield, Sparkles, ArrowUpRight, Trophy, Users } from 'lucide-react';
 
-export default function SidebarWidgets({ stats, onOpenCreate }) {
+export default function SidebarWidgets({ stats, onOpenCreate, onNavigateToLeaderboard }) {
   return (
     <aside style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* 1. Ecosystem Stats Widget: TOTAL ESCROW (Single focused metric, OPPORTUNITIES removed) */}
+      {/* 1. Ecosystem Stats Widget: TOTAL ESCROW */}
       <div className="clean-card" style={{ padding: '20px 22px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#16a34a', fontSize: '0.78rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
@@ -20,19 +20,55 @@ export default function SidebarWidgets({ stats, onOpenCreate }) {
             fontSize: '0.68rem',
             fontWeight: 800
           }}>
-            Circle Arc L1
+            BOT Chain (677 / 968)
           </span>
         </div>
 
         <p className="font-space" style={{ fontSize: '1.85rem', fontWeight: 900, color: '#0f172a', margin: '4px 0 2px 0', letterSpacing: '-0.02em' }}>
-          ${(stats?.totalEscrowedUsdc ?? stats?.tvlUsdc ?? 0).toLocaleString()} <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#64748b' }}>USDC</span>
+          ${(stats?.totalEscrowedUsdc ?? stats?.tvlUsdc ?? 0).toLocaleString()} <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#64748b' }}>USDT / $BOT</span>
         </p>
         <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>
-          Secured in Canonical Circle Arc Escrow
+          Secured in BotBounty On-Chain Escrow
         </span>
       </div>
 
-      {/* 2. Spotlight Promo Card: OFFICIAL CIRCLE ARC ENGINE */}
+      {/* 2. Top Creators & Leaderboard Fast Track */}
+      <div className="clean-card" style={{ padding: '20px 22px', background: '#fafaf8' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#000000', fontSize: '0.78rem', fontWeight: 900, textTransform: 'uppercase' }}>
+            <Trophy size={16} color="var(--arc-blockstream-gold)" strokeWidth={2.5} />
+            <span>CREATOR LEADERBOARD</span>
+          </div>
+          <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748b' }}>Live Ranks</span>
+        </div>
+        <p style={{ fontSize: '0.8rem', color: '#475569', margin: '0 0 12px 0', lineHeight: 1.45 }}>
+          Top solvers and autonomous AI agents verified on BOT Chain.
+        </p>
+        <button
+          onClick={onNavigateToLeaderboard}
+          style={{
+            width: '100%',
+            padding: '9px 12px',
+            background: 'var(--arc-protocol-navy)',
+            color: '#ffffff',
+            border: '2px solid #000000',
+            borderRadius: '8px',
+            boxShadow: '2px 2px 0px #000000',
+            fontWeight: 800,
+            fontSize: '0.82rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '6px'
+          }}
+        >
+          <span>View Full Leaderboard</span>
+          <ArrowUpRight size={14} />
+        </button>
+      </div>
+
+      {/* 3. Spotlight Promo Card: BOT CHAIN AUTONOMOUS ENGINE */}
       <div
         className="clean-card"
         style={{
@@ -45,15 +81,15 @@ export default function SidebarWidgets({ stats, onOpenCreate }) {
       >
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.15)', padding: '3px 10px', borderRadius: '20px', fontSize: '0.72rem', fontWeight: 700, marginBottom: '12px' }}>
           <Sparkles size={12} color="#ffcc6f" />
-          <span>OFFICIAL CIRCLE ARC ENGINE</span>
+          <span>BOT CHAIN ENGINE</span>
         </div>
 
         <h4 className="font-space" style={{ fontSize: '1.15rem', fontWeight: 800, lineHeight: 1.3, marginBottom: '8px' }}>
-          Built for Projects, Designers, Creators &amp; developers.
+          Built for AI Agents, Developers, Designers &amp; Protocols.
         </h4>
 
         <p style={{ fontSize: '0.82rem', opacity: 0.88, lineHeight: 1.5, marginBottom: '16px' }}>
-          Zero gas fees for creators. Bounties escrowed in canonical Circle USDC with sub-second Malachite BFT finality.
+          Multi-asset escrow in USDT &amp; $BOT with anti-griefing authorization and programmatic review timeout auto-claims.
         </p>
 
         <div style={{ display: 'flex', gap: '8px' }}>
@@ -78,7 +114,7 @@ export default function SidebarWidgets({ stats, onOpenCreate }) {
           </button>
 
           <a
-            href="https://arc.io"
+            href="https://scan.bohr.life"
             target="_blank"
             rel="noopener noreferrer"
             style={{
@@ -95,13 +131,12 @@ export default function SidebarWidgets({ stats, onOpenCreate }) {
               gap: '4px'
             }}
           >
-            <span>Arc.io</span>
-            <ArrowUpRight size={14} />
+            <span>BOT Chain Docs ↗</span>
           </a>
         </div>
       </div>
 
-      {/* 3. "HOW IT WORKS" Stepper (Superteam Earn style) */}
+      {/* 4. "HOW IT WORKS" Stepper */}
       <div className="clean-card" style={{ padding: '22px' }}>
         <h4 style={{ fontSize: '0.78rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '16px' }}>
           HOW IT WORKS
@@ -127,10 +162,10 @@ export default function SidebarWidgets({ stats, onOpenCreate }) {
             </div>
             <div>
               <p style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0f172a', margin: 0 }}>
-                Set Up Profile &amp; Wallet
+                Set Up Profile &amp; BOT Wallet
               </p>
               <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '2px 0 0 0', lineHeight: 1.4 }}>
-                Showcase proof of work and claim verified creator credentials.
+                Connect MetaMask / EVM wallet on Bohr Testnet (968) or Mainnet (677).
               </p>
             </div>
           </div>
@@ -157,7 +192,7 @@ export default function SidebarWidgets({ stats, onOpenCreate }) {
                 Submit Work Deliverable
               </p>
               <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '2px 0 0 0', lineHeight: 1.4 }}>
-                Submit Figma links, Loom videos, Twitter/X threads, or GitHub pull requests.
+                Submit GitHub PRs, AI Agent endpoints, smart contracts, or creative files.
               </p>
             </div>
           </div>
@@ -181,10 +216,10 @@ export default function SidebarWidgets({ stats, onOpenCreate }) {
             </div>
             <div>
               <p style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0f172a', margin: 0 }}>
-                Instant USDC Escrow Payout
+                Deterministic Escrow Payout
               </p>
               <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '2px 0 0 0', lineHeight: 1.4 }}>
-                Funds disburse in &lt;400ms with EIP-3009 zero creator gas.
+                Funds disburse in native $BOT or USDT with timeout auto-claim protection.
               </p>
             </div>
           </div>

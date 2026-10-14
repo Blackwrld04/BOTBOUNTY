@@ -36,9 +36,9 @@ export default function AccountSettings({
 }) {
   const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState(initialTab); // 'account', 'wallet', 'notifications', 'referrals'
-  const [name, setName] = useState(user?.name || 'Arc Creator');
+  const [name, setName] = useState(user?.name || 'Bot Creator');
   const [username, setUsername] = useState(user?.username || 'creator');
-  const [bio, setBio] = useState(user?.bio || 'Web3 Creator on Circle Arc L1');
+  const [bio, setBio] = useState(user?.bio || 'Web3 Creator on BOT Chain (677 / 968)');
   const [avatar, setAvatar] = useState(user?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80');
   const avatarFileRef = React.useRef(null);
   const [usernameStatus, setUsernameStatus] = useState({ state: 'idle', message: '' }); // 'idle', 'checking', 'available', 'taken', 'invalid'
@@ -750,10 +750,10 @@ export default function AccountSettings({
           <div className="clean-card" style={{ padding: '28px' }}>
             <div style={{ marginBottom: '18px' }}>
               <h3 className="font-space" style={{ fontSize: '1.25rem', fontWeight: 900, color: '#0f172a', margin: 0 }}>
-                Primary Web3 Wallet (Arc L1)
+                Primary Web3 Wallet (BOT Chain EVM)
               </h3>
               <p style={{ fontSize: '0.84rem', color: '#64748b', margin: '3px 0 0 0' }}>
-                Connected to Circle Arc Mainnet (Chain ID 5042). All payments and escrow locks settle here.
+                Connected to BOT Chain (Chain ID 677 / 968). All payments and escrow locks settle here.
               </p>
             </div>
 
@@ -864,7 +864,7 @@ export default function AccountSettings({
                 <div>
                   <p style={{ fontSize: '0.92rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>Product Updates</p>
                   <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '2px 0 0 0' }}>
-                    Receive occasional announcements about Circle Arc upgrades and hackathons
+                    Receive occasional announcements about BOT Chain upgrades and hackathons
                   </p>
                 </div>
                 <label className="toggle-switch">
@@ -888,7 +888,7 @@ export default function AccountSettings({
                 Earn every time your referrals get paid
               </h3>
               <p style={{ fontSize: '0.86rem', color: '#64748b', margin: '4px 0 22px 0' }}>
-                Share ArcBounty with creator friends and collect rewards instantly as users create or complete work on Circle Arc.
+                Share BotBounty with creator friends and collect rewards instantly as users create or complete work on BOT Chain.
               </p>
 
               <div style={{ display: 'flex', gap: '10px' }}>

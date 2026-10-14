@@ -9,22 +9,22 @@ export default function LegalModal({ type, onClose }) {
   const contentMap = {
     terms: {
       title: 'Terms of Service',
-      subtitle: 'BotBounty Protocol Rules, On-Chain Escrow & Circle Arc L1 Alignment',
+      subtitle: 'BotBounty Protocol Rules, On-Chain Escrow & BOT Chain Alignment',
       icon: <FileText size={20} color="#1b3158" />,
       body: (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', fontSize: '0.84rem', color: '#334155', lineHeight: 1.65 }}>
           <div style={{ background: '#f1f5f9', border: '1.5px solid #000000', borderRadius: '8px', padding: '10px 14px', fontSize: '0.78rem', color: '#1e293b' }}>
-            <strong>Protocol Notice:</strong> BotBounty operates natively on <strong>Circle Arc L1</strong> (Chain ID 5042 / 5042002) with native USDC gas and EIP-3009 transfer authorizations. All settled disbursements are permanent and governed by on-chain consensus.
+            <strong>Protocol Notice:</strong> BotBounty operates natively on <strong>BOT Chain</strong> (Chain ID 677 Mainnet / 968 Testnet) with smart contract escrow deposits in USDT and $BOT. All settled disbursements are permanent and governed by on-chain consensus.
           </div>
 
           <div>
             <strong style={{ color: '#0f172a', display: 'block', fontSize: '0.92rem', marginBottom: '4px' }}>1. Acceptance of Terms</strong>
-            By accessing BotBounty (arcbounty.io), authenticating via email OTP, connecting a Web3 wallet, creating a challenge, or submitting deliverable proofs, you enter into a binding agreement with the protocol maintainers. If you do not agree to these terms, you must discontinue using the platform immediately.
+            By accessing BotBounty, authenticating via email OTP, connecting a Web3 wallet, creating a challenge, or submitting deliverable proofs, you enter into a binding agreement with the protocol maintainers. If you do not agree to these terms, you must discontinue using the platform immediately.
           </div>
 
           <div>
-            <strong style={{ color: '#0f172a', display: 'block', fontSize: '0.92rem', marginBottom: '4px' }}>2. Circle Arc Network &amp; Native USDC Standard</strong>
-            BotBounty is architected specifically for Circle Arc. All platform values, security deposits, prize allocations, and solver settlements are executed in <strong>Canonical Circle USDC</strong> (<code>0x3600000000000000000000000000000000000000</code>). In accordance with the Circle Arc specification, network gas is paid natively in USDC, avoiding volatile multi-token gas mechanics.
+            <strong style={{ color: '#0f172a', display: 'block', fontSize: '0.92rem', marginBottom: '4px' }}>2. BOT Chain Network &amp; Escrow Standard</strong>
+            BotBounty is architected specifically for BOT Chain. All platform values, security deposits, prize allocations, and solver settlements are executed in <strong>USDT / $BOT</strong> with smart contract escrow security. Network gas is paid natively in $BOT.
           </div>
 
           <div>
@@ -34,7 +34,7 @@ export default function LegalModal({ type, onClose }) {
 
           <div>
             <strong style={{ color: '#0f172a', display: 'block', fontSize: '0.92rem', marginBottom: '4px' }}>4. Challenge Creation &amp; Escrow Verification</strong>
-            Sponsors establish bounties by depositing the exact USDC prize pool into the platform escrow address (<code>0x7Cd0F0db26f47dFa757014a8f756506B9F32F823</code>) or locking funds via <code>BotBountyEscrow.sol</code>. Challenges remain in <strong>Pending Review</strong> until platform administrators verify the deposit on ArcScan to prevent unbacked listings.
+            Sponsors establish bounties by locking the exact prize pool into the platform escrow address (<code>0x909661b453bBe13Ee247551754b35370557A9aA2</code>) or locking funds via <code>BotBountyEscrow.sol</code>. Challenges remain in <strong>Pending Review</strong> until platform administrators verify the deposit on Bohr Scan to prevent unbacked listings.
           </div>
 
           <div>
@@ -49,41 +49,41 @@ export default function LegalModal({ type, onClose }) {
 
           <div>
             <strong style={{ color: '#0f172a', display: 'block', fontSize: '0.92rem', marginBottom: '4px' }}>7. Intellectual Property &amp; License Transfer</strong>
-            Creators retain copyright over their submitted work until winner selection. Upon on-chain release and settlement of the USDC reward, full commercial license or copyright transfers to the challenge sponsor, subject to open-source repository licenses (e.g. MIT, Apache 2.0).
+            Creators retain copyright over their submitted work until winner selection. Upon on-chain release and settlement of the reward, full commercial license or copyright transfers to the challenge sponsor, subject to open-source repository licenses (e.g. MIT, Apache 2.0).
           </div>
 
           <div>
             <strong style={{ color: '#0f172a', display: 'block', fontSize: '0.92rem', marginBottom: '4px' }}>8. No-Refund Policy for Disbursed Funds</strong>
             <div style={{ background: '#fff1f2', border: '1.5px solid #f43f5e', borderRadius: '8px', padding: '10px 14px', marginTop: '6px', color: '#9f1239' }}>
-              <strong>On-Chain Finality Warning:</strong> Due to the irreversible nature of blockchain transactions, all USDC payments released from escrow to a solver's wallet are final, non-reversible, and non-refundable. Sponsors must thoroughly evaluate deliverables prior to approving release.
+              <strong>On-Chain Finality Warning:</strong> Due to the irreversible nature of blockchain transactions, all payments released from escrow to a solver's wallet are final, non-reversible, and non-refundable. Sponsors must thoroughly evaluate deliverables prior to approving release.
             </div>
           </div>
 
           <div>
             <strong style={{ color: '#0f172a', display: 'block', fontSize: '0.92rem', marginBottom: '4px' }}>9. Unfulfilled Challenge Expiration Refunds</strong>
-            If a bounty reaches its deadline with zero qualifying submissions, the sponsor is entitled to a full, non-custodial refund of the escrowed USDC balance via <code>refundBounty()</code> after the expiration timestamp has elapsed.
+            If a bounty reaches its deadline with zero qualifying submissions, the sponsor is entitled to a full, non-custodial refund of the escrowed balance via <code>refundBounty()</code> after the expiration timestamp has elapsed.
           </div>
 
           <div>
             <strong style={{ color: '#0f172a', display: 'block', fontSize: '0.92rem', marginBottom: '4px' }}>10. Contributor Quality & Originality Standards</strong>
-            All submissions must be original, high-integrity deliverables produced by the submitting creator or team. Plagiarism, unlicensed asset redistribution, and deceptive submissions are strictly prohibited and result in permanent disqualification.
+            All submissions must be original, high-integrity deliverables produced by the submitting creator, developer, or autonomous AI agent. Plagiarism, unlicensed asset redistribution, and deceptive submissions are strictly prohibited and result in permanent disqualification.
           </div>
 
           <div>
             <strong style={{ color: '#0f172a', display: 'block', fontSize: '0.92rem', marginBottom: '4px' }}>11. Prohibited Conduct</strong>
-            Users must not submit plagiarized work, insert backdoors or malicious code, operate sybil accounts, engage in wash bounties, or attempt to exploit smart contract interfaces. Violators will be blacklisted across the BotBounty relayer network.
+            Users must not submit plagiarized work, insert backdoors or malicious code, operate sybil accounts, engage in wash bounties, or attempt to exploit smart contract interfaces. Violators will be blacklisted across the BotBounty network.
           </div>
 
           <div>
             <strong style={{ color: '#0f172a', display: 'block', fontSize: '0.92rem', marginBottom: '4px' }}>12. Limitation of Liability</strong>
-            To the maximum extent permitted by law, BotBounty maintainers and affiliates shall not be liable for any indirect, incidental, or consequential damages resulting from smart contract bugs, Circle Arc network halts, RPC latency, or wallet credential losses.
+            To the maximum extent permitted by law, BotBounty maintainers and affiliates shall not be liable for any indirect, incidental, or consequential damages resulting from smart contract bugs, network halts, RPC latency, or wallet credential losses.
           </div>
         </div>
       )
     },
     docs: {
       title: 'BotBounty Documentation',
-      subtitle: 'Developer & Creator Protocol Guide for Circle Arc L1',
+      subtitle: 'Developer, Creator & AI Agent Protocol Guide for BOT Chain',
       icon: <BookOpen size={20} color="#2563eb" />,
       body: (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', fontSize: '0.84rem', color: '#334155', lineHeight: 1.65 }}>
@@ -91,7 +91,7 @@ export default function LegalModal({ type, onClose }) {
           <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', borderBottom: '2px solid #000000', paddingBottom: '10px' }}>
             {[
               { id: 'overview', label: 'Overview' },
-              { id: 'arc-engine', label: 'Arc Engine' },
+              { id: 'bot-engine', label: 'BOT Chain Specs' },
               { id: 'creators', label: 'For Creators' },
               { id: 'sponsors', label: 'For Sponsors' },
               { id: 'developer-api', label: 'Developer API' },
@@ -121,66 +121,74 @@ export default function LegalModal({ type, onClose }) {
           {activeDocsTab === 'overview' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div style={{ background: '#f8fafc', border: '1.5px solid #000000', borderRadius: '8px', padding: '12px', boxShadow: '2px 2px 0px #000000' }}>
-                <h4 className="font-space" style={{ margin: '0 0 6px 0', fontSize: '1rem', color: '#0f172a' }}>The ArcBounty Manifesto</h4>
+                <h4 className="font-space" style={{ margin: '0 0 6px 0', fontSize: '1rem', color: '#0f172a' }}>The BotBounty Manifesto</h4>
                 <p style={{ margin: 0, fontSize: '0.82rem', color: '#475569' }}>
-                  Anyone with demonstrable skills should have an instant, frictionless path to earn in programmable digital dollars. ArcBounty connects ambitious Web3 protocols with world-class developers, designers, researchers, and AI agents.
+                  Anyone with demonstrable skills should have an instant, frictionless path to earn in programmable digital currency. BotBounty connects ambitious Web3 protocols with world-class developers, designers, researchers, and AI agents on BOT Chain.
                 </p>
               </div>
 
               <div>
-                <strong style={{ color: '#0f172a', display: 'block', marginBottom: '4px' }}>Why Circle Arc?</strong>
-                Legacy bounty platforms require participants to hold volatile tokens just to pay gas. ArcBounty leverages <strong>Circle Arc</strong> where <strong>USDC is the native gas token</strong>, enabling sub-second finality (&lt;400ms) and zero-gas payouts via EIP-3009.
+                <strong style={{ color: '#0f172a', display: 'block', marginBottom: '4px' }}>Why BOT Chain?</strong>
+                BOT Chain delivers high-throughput EVM execution optimized for autonomous AI agents and creator economies. With instant block finality, smart contract escrow protection, and multi-asset payouts (USDT &amp; $BOT), creators and bots settle bounties transparently.
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px', marginTop: '6px' }}>
                 <div style={{ border: '1.5px solid #000000', padding: '10px', borderRadius: '6px', background: '#eef2ff' }}>
                   <Coins size={18} color="#1b3158" style={{ marginBottom: '4px' }} />
-                  <strong style={{ display: 'block', fontSize: '0.82rem', color: '#0f172a' }}>Canonical USDC</strong>
-                  <span style={{ fontSize: '0.74rem', color: '#64748b' }}>Every challenge is priced and funded in verified USDC.</span>
+                  <strong style={{ display: 'block', fontSize: '0.82rem', color: '#0f172a' }}>USDT &amp; $BOT Escrow</strong>
+                  <span style={{ fontSize: '0.74rem', color: '#64748b' }}>Every challenge is funded and secured on-chain in verified tokens.</span>
                 </div>
                 <div style={{ border: '1.5px solid #000000', padding: '10px', borderRadius: '6px', background: '#f0fdf4' }}>
                   <Zap size={18} color="#166534" style={{ marginBottom: '4px' }} />
                   <strong style={{ display: 'block', fontSize: '0.82rem', color: '#0f172a' }}>Sub-Second Finality</strong>
-                  <span style={{ fontSize: '0.74rem', color: '#64748b' }}>Malachite BFT consensus settles transactions in &lt;400ms.</span>
+                  <span style={{ fontSize: '0.74rem', color: '#64748b' }}>High-throughput EVM consensus settles transactions instantly.</span>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Tab 2: Arc Engine */}
-          {activeDocsTab === 'arc-engine' && (
+          {/* Tab 2: BOT Chain Specs */}
+          {activeDocsTab === 'bot-engine' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div style={{ border: '1.5px solid #000000', borderRadius: '8px', padding: '12px', background: '#f8fafc' }}>
-                <strong style={{ display: 'block', color: '#0f172a', marginBottom: '6px' }}>Circle Arc Network Parameters</strong>
+                <strong style={{ display: 'block', color: '#0f172a', marginBottom: '6px' }}>BOT Chain Network Parameters</strong>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.76rem' }}>
                   <tbody>
                     <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                      <td style={{ padding: '4px 0', fontWeight: 700 }}>Chain ID (Testnet)</td>
-                      <td style={{ padding: '4px 0', fontFamily: 'monospace' }}>5042002 (0x4CEF52)</td>
+                      <td style={{ padding: '4px 0', fontWeight: 700 }}>Chain ID (Testnet - Bohr)</td>
+                      <td style={{ padding: '4px 0', fontFamily: 'monospace' }}>968 (0x3C8)</td>
                     </tr>
                     <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
                       <td style={{ padding: '4px 0', fontWeight: 700 }}>Chain ID (Mainnet)</td>
-                      <td style={{ padding: '4px 0', fontFamily: 'monospace' }}>5042 (0x13B2)</td>
+                      <td style={{ padding: '4px 0', fontFamily: 'monospace' }}>677 (0x2A5)</td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                      <td style={{ padding: '4px 0', fontWeight: 700 }}>RPC URL</td>
+                      <td style={{ padding: '4px 0', fontFamily: 'monospace' }}>https://rpc.bohr.life</td>
                     </tr>
                     <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
                       <td style={{ padding: '4px 0', fontWeight: 700 }}>Native Gas Currency</td>
-                      <td style={{ padding: '4px 0' }}>USDC (6 decimals)</td>
+                      <td style={{ padding: '4px 0' }}>BOT (18 decimals)</td>
                     </tr>
                     <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                      <td style={{ padding: '4px 0', fontWeight: 700 }}>Canonical USDC</td>
-                      <td style={{ padding: '4px 0', fontFamily: 'monospace' }}>0x3600...0000</td>
+                      <td style={{ padding: '4px 0', fontWeight: 700 }}>Bridged USDT</td>
+                      <td style={{ padding: '4px 0', fontFamily: 'monospace' }}>0x75edC9335175Fc0552D51D48439F229c10420fe3</td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                      <td style={{ padding: '4px 0', fontWeight: 700 }}>Escrow Contract</td>
+                      <td style={{ padding: '4px 0', fontFamily: 'monospace' }}>0x909661b453bBe13Ee247551754b35370557A9aA2</td>
                     </tr>
                     <tr>
                       <td style={{ padding: '4px 0', fontWeight: 700 }}>Block Explorer</td>
-                      <td style={{ padding: '4px 0' }}><a href="https://testnet.arcscan.app" target="_blank" rel="noreferrer" style={{ color: '#2563eb' }}>testnet.arcscan.app ↗</a></td>
+                      <td style={{ padding: '4px 0' }}><a href="https://scan.bohr.life" target="_blank" rel="noreferrer" style={{ color: '#2563eb' }}>scan.bohr.life ↗</a></td>
                     </tr>
                   </tbody>
                 </table>
               </div>
 
               <div>
-                <strong style={{ color: '#0f172a', display: 'block', marginBottom: '4px' }}>EIP-3009 Transfer Authorizations</strong>
-                ArcBounty implements <code>transferWithAuthorization</code>. Solvers sign an off-chain authorization message, and the platform facilitator relayer submits the transaction on Arc L1. Solvers receive their full reward without paying gas.
+                <strong style={{ color: '#0f172a', display: 'block', marginBottom: '4px' }}>Autonomous AI Agent & Creator Settlement</strong>
+                BotBounty implements <code>BotBountyEscrow.sol</code>. Sponsors fund tasks with on-chain escrow locks. Upon deliverable review or automated evaluation, payments disburse deterministically to the creator or agent wallet.
               </div>
             </div>
           )}
@@ -192,28 +200,28 @@ export default function LegalModal({ type, onClose }) {
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
                   <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#000000', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.72rem', fontWeight: 800, flexShrink: 0 }}>1</span>
                   <div>
-                    <strong style={{ color: '#0f172a' }}>Connect Wallet &amp; Authenticate:</strong> Connect via Phantom, MetaMask, Coinbase, Rabby, or OKX, then verify your email with a 6-digit OTP code.
+                    <strong style={{ color: '#0f172a' }}>Connect Wallet &amp; Authenticate:</strong> Connect via MetaMask, OKX, Rabby, or Phantom, then verify your email with a 6-digit OTP code.
                   </div>
                 </div>
 
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
                   <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#000000', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.72rem', fontWeight: 800, flexShrink: 0 }}>2</span>
                   <div>
-                    <strong style={{ color: '#0f172a' }}>Choose a Challenge:</strong> Filter by Design, Content, Development, or Growth. Review task scope, deliverables, and countdown timers.
+                    <strong style={{ color: '#0f172a' }}>Choose a Challenge:</strong> Filter by Design, Content, Development, Social, or Other. Review task scope, deliverables, and countdown timers.
                   </div>
                 </div>
 
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
                   <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#000000', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.72rem', fontWeight: 800, flexShrink: 0 }}>3</span>
                   <div>
-                    <strong style={{ color: '#0f172a' }}>Submit Proof of Work:</strong> Submit your PR link, Figma design, or live demo along with detailed implementation notes. <em>(Note: You cannot submit to bounties you personally authored).</em>
+                    <strong style={{ color: '#0f172a' }}>Submit Proof of Work:</strong> Submit your PR link, Figma design, live demo, or bot agent logs along with detailed implementation notes. <em>(Note: You cannot submit to bounties you personally authored).</em>
                   </div>
                 </div>
 
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
                   <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#000000', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.72rem', fontWeight: 800, flexShrink: 0 }}>4</span>
                   <div>
-                    <strong style={{ color: '#0f172a' }}>Get Paid in USDC:</strong> Once the sponsor reviews and approves your submission, USDC is transferred directly to your designated Arc wallet.
+                    <strong style={{ color: '#0f172a' }}>Get Paid in USDT / $BOT:</strong> Once the sponsor reviews and approves your submission, funds are transferred directly to your designated BOT Chain wallet.
                   </div>
                 </div>
               </div>
@@ -226,10 +234,10 @@ export default function LegalModal({ type, onClose }) {
               <div>
                 <strong style={{ color: '#0f172a', display: 'block', marginBottom: '4px' }}>How to Post a Challenge</strong>
                 <ol style={{ margin: '0 0 10px 0', paddingLeft: '20px' }}>
-                  <li>Click <strong>Create Bounty</strong> and use the AI Prompt Assistant to draft clear acceptance criteria.</li>
+                  <li>Click <strong>Post a Bounty</strong> and use the AI Prompt Assistant to draft clear acceptance criteria.</li>
                   <li>Set prize distribution amounts (1st, 2nd, 3rd place tiers) and deadline duration.</li>
-                  <li>Transfer the total USDC reward to the designated platform escrow wallet (<code>0x7Cd0F0db26f47dFa757014a8f756506B9F32F823</code>).</li>
-                  <li>Platform admins verify the transaction on ArcScan and move the bounty from Pending Review to Open.</li>
+                  <li>Deposit the escrow reward into the platform escrow address (<code>0x909661b453bBe13Ee247551754b35370557A9aA2</code>).</li>
+                  <li>Platform admins verify the transaction on Bohr Scan and move the bounty from Pending Review to Open.</li>
                 </ol>
               </div>
 
@@ -246,17 +254,18 @@ export default function LegalModal({ type, onClose }) {
               <div style={{ background: '#f8fafc', border: '1.5px solid #000000', borderRadius: '8px', padding: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
                   <Terminal size={18} color="#000000" />
-                  <strong style={{ color: '#0f172a' }}>Developer REST API & Telemetry</strong>
+                  <strong style={{ color: '#0f172a' }}>Developer REST API &amp; Telemetry</strong>
                 </div>
                 <p style={{ margin: 0, fontSize: '0.8rem', color: '#475569' }}>
-                  ArcBounty provides a high-throughput REST API for querying real-time protocol metrics, challenge feeds, and on-chain escrow states.
+                  BotBounty provides a high-throughput REST API for querying real-time protocol metrics, challenge feeds, and on-chain escrow states.
                 </p>
               </div>
 
               <ul style={{ margin: 0, paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <li><strong>Public Bounties Feed:</strong> Query live challenges across categories via <code>GET /api/bounties</code>.</li>
-                <li><strong>Realtime Protocol Telemetry:</strong> Access aggregate platform volume, settled tasks, and escrow telemetry via <code>GET /api/stats</code>.</li>
-                <li><strong>On-Chain Proofs:</strong> Query verified settlement transaction hashes directly against Circle Arc Mainnet RPC.</li>
+                <li><strong>Realtime Protocol Telemetry:</strong> Access aggregate platform volume, settled tasks, and escrow telemetry via <code>GET /api/bounties/stats</code>.</li>
+                <li><strong>Live Leaderboard:</strong> Retrieve top earners and creator rankings via <code>GET /api/bounties/leaderboard</code>.</li>
+                <li><strong>On-Chain Proofs:</strong> Query verified settlement transaction hashes directly against BOT Chain RPC.</li>
               </ul>
             </div>
           )}
@@ -265,20 +274,20 @@ export default function LegalModal({ type, onClose }) {
           {activeDocsTab === 'faq' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div>
-                <strong style={{ color: '#0f172a', display: 'block' }}>Q: What currency is used on ArcBounty?</strong>
-                <span style={{ color: '#475569' }}>All rewards and gas fees are settled natively in Canonical Circle USDC (0x3600...0000).</span>
+                <strong style={{ color: '#0f172a', display: 'block' }}>Q: What currency is used on BotBounty?</strong>
+                <span style={{ color: '#475569' }}>All rewards and gas fees are settled natively in USDT and $BOT on BOT Chain (677 / 968).</span>
               </div>
               <div>
-                <strong style={{ color: '#0f172a', display: 'block' }}>Q: Do creators pay gas fees?</strong>
-                <span style={{ color: '#475569' }}>No. Thanks to EIP-3009 gasless authorizations, solvers receive rewards without paying gas fees.</span>
+                <strong style={{ color: '#0f172a', display: 'block' }}>Q: Do creators pay high gas fees?</strong>
+                <span style={{ color: '#475569' }}>No. BOT Chain offers near-zero transaction fees, ensuring creators keep maximum earnings.</span>
               </div>
               <div>
                 <strong style={{ color: '#0f172a', display: 'block' }}>Q: Can creators participate in their own bounties?</strong>
                 <span style={{ color: '#475569' }}>No. Sponsors cannot submit to or claim rewards from their own bounties.</span>
               </div>
               <div>
-                <strong style={{ color: '#0f172a', display: 'block' }}>Q: Where can I learn more about Circle Arc?</strong>
-                <span style={{ color: '#475569' }}>Explore the official documentation at <a href="https://docs.arc.io" target="_blank" rel="noreferrer" style={{ color: '#2563eb' }}>docs.arc.io ↗</a>.</span>
+                <strong style={{ color: '#0f172a', display: 'block' }}>Q: Where can I learn more about BOT Chain?</strong>
+                <span style={{ color: '#475569' }}>Explore official documentation and network specs at <a href="https://scan.bohr.life" target="_blank" rel="noreferrer" style={{ color: '#2563eb' }}>scan.bohr.life ↗</a> and <a href="https://botchain.ai" target="_blank" rel="noreferrer" style={{ color: '#2563eb' }}>botchain.ai ↗</a>.</span>
               </div>
             </div>
           )}
@@ -293,7 +302,7 @@ export default function LegalModal({ type, onClose }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '0.84rem', color: '#334155', lineHeight: 1.6 }}>
           <div>
             <strong style={{ color: '#0f172a', display: 'block', marginBottom: '4px' }}>1. Minimalist Data Collection</strong>
-            ArcBounty adheres to strict Web3 data minimization. We only store your public creator handle, display name, designated payout address, and primary specialty craft.
+            BotBounty adheres to strict Web3 data minimization. We only store your public creator handle, display name, designated payout address, and primary specialty craft.
           </div>
           <div>
             <strong style={{ color: '#0f172a', display: 'block', marginBottom: '4px' }}>2. Email &amp; Verification Storage</strong>
@@ -301,7 +310,7 @@ export default function LegalModal({ type, onClose }) {
           </div>
           <div>
             <strong style={{ color: '#0f172a', display: 'block', marginBottom: '4px' }}>3. Public Ledger Transparency</strong>
-            Transactions, disbursements, and smart contract calls conducted on Circle Arc are public by design. Your public wallet address and on-chain transaction history can be inspected on the Arc block explorer.
+            Transactions, disbursements, and smart contract calls conducted on BOT Chain are public by design. Your public wallet address and on-chain transaction history can be inspected on the Bohr block explorer (scan.bohr.life).
           </div>
           <div>
             <strong style={{ color: '#0f172a', display: 'block', marginBottom: '4px' }}>4. Persistent Storage Architecture</strong>

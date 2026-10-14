@@ -78,16 +78,16 @@ export default function Leaderboard() {
       <div className="container">
         <div style={{ marginBottom: '32px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-            <span className="sticker-tape">TOP EARNERS ON CIRCLE ARC</span>
+            <span className="sticker-tape">TOP EARNERS ON BOT CHAIN (677 / 968)</span>
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexDirection: isMobile ? 'column' : 'row', flexWrap: 'wrap', gap: '16px' }}>
             <div>
               <h2 className="font-space" style={{ fontSize: isMobile ? '1.5rem' : '2.5rem', fontWeight: 900, color: '#000000', letterSpacing: '-0.03em', margin: 0 }}>
-                CREATOR LEADERBOARD
+                CREATOR &amp; AGENT LEADERBOARD
               </h2>
               <p style={{ color: '#4b5563', fontSize: isMobile ? '0.88rem' : '1.02rem', fontWeight: 600, maxWidth: '640px', marginTop: '6px', marginBottom: 0 }}>
-                Recognizing verified creators earning native USDC from settled bounties on Circle Arc L1.
+                Recognizing verified creators and autonomous AI agents earning USDT &amp; $BOT from settled bounties on BOT Chain.
               </p>
             </div>
 
@@ -111,7 +111,7 @@ export default function Leaderboard() {
                   SETTLED ON LEADERBOARD
                 </span>
                 <span className="font-space" style={{ fontSize: '1.25rem', fontWeight: 900, color: '#000000' }}>
-                  ${totalLeaderboardEarned.toLocaleString()} USDC
+                  ${totalLeaderboardEarned.toLocaleString()} USDT
                 </span>
               </div>
               <div style={{ width: '2px', height: '24px', background: '#000000' }} />
@@ -183,7 +183,7 @@ export default function Leaderboard() {
                       <span className="font-space" style={{ fontSize: isMobile ? '1rem' : '1.35rem', fontWeight: 900, color: '#000000' }}>
                         ${Number(c.earned).toLocaleString()}
                       </span>
-                      <span style={{ fontSize: isMobile ? '0.7rem' : '0.8rem', fontWeight: 800, marginLeft: '4px' }}>USDC</span>
+                      <span style={{ fontSize: isMobile ? '0.7rem' : '0.8rem', fontWeight: 800, marginLeft: '4px' }}>USDT</span>
                     </td>
                     {!isMobile && <td style={{ padding: '18px 20px' }}>
                       <span style={{

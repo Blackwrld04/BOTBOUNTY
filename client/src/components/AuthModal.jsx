@@ -669,13 +669,13 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
             </h3>
 
             <p style={{ fontSize: '0.82rem', opacity: 0.9, lineHeight: 1.5, marginBottom: '22px' }}>
-              Join the institutional creative layer on Circle Arc with sub-second payouts and verified proof of work.
+              Join the creative &amp; autonomous agent layer on BOT Chain with deterministic payouts and verified proof of work.
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '0.78rem' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
                 <ShieldCheck size={16} color="#ffcc6f" strokeWidth={2.5} style={{ flexShrink: 0, marginTop: '2px' }} />
-                <span>Step-by-step guided onboarding designed for creators.</span>
+                <span>Step-by-step guided onboarding designed for creators &amp; builders.</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
                 <ShieldCheck size={16} color="#ffcc6f" strokeWidth={2.5} style={{ flexShrink: 0, marginTop: '2px' }} />
@@ -683,7 +683,7 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
               </div>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
                 <ShieldCheck size={16} color="#ffcc6f" strokeWidth={2.5} style={{ flexShrink: 0, marginTop: '2px' }} />
-                <span>Gasless USDC escrow payments direct to your Arc wallet.</span>
+                <span>USDT &amp; $BOT escrow payments direct to your BOT Chain wallet.</span>
               </div>
             </div>
           </div>
@@ -715,7 +715,7 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
             </div>
             <div>
               <p style={{ fontSize: '0.8rem', fontWeight: 800, margin: 0, color: '#ffffff' }}>Verified Creator Auth</p>
-              <p style={{ fontSize: '0.7rem', opacity: 0.85, margin: 0, color: '#acc6e9' }}>Circle Arc Protocol (5042)</p>
+              <p style={{ fontSize: '0.7rem', opacity: 0.85, margin: 0, color: '#acc6e9' }}>BOT Chain Protocol (677 / 968)</p>
             </div>
           </div>
         </div>
@@ -1148,7 +1148,7 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
                       What should we call you?
                     </h3>
                     <p style={{ fontSize: '0.82rem', color: '#4b5563', marginTop: '3px', fontWeight: 500 }}>
-                      Set your public display name and creator handle on Circle Arc.
+                      Set your public display name and creator handle on BOT Chain.
                     </p>
                   </div>
 

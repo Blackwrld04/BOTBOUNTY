@@ -60,7 +60,7 @@ export function subscribeToSync(callback) {
 
   // 3. Cross-tab storage listener
   const handleStorage = (e) => {
-    if (e.key === 'arcbounty_sync_beacon' || e.key === 'arcbounty_items_v4') {
+    if (e.key === 'botbounty_sync_beacon' || e.key === 'botbounty_items_v5' || e.key === 'arcbounty_sync_beacon' || e.key === 'arcbounty_items_v4') {
       callback({ source: 'storage', key: e.key });
     }
   };

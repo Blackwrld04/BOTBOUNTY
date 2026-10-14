@@ -88,7 +88,7 @@ export default function WalletDrawer({ isOpen, onClose, wallet, setWallet, netwo
               </button>
             </div>
             <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '4px', margin: '4px 0 0 0', lineHeight: 1.4 }}>
-              Native Circle Arc L1 (Chain ID 5042). Payouts for completed challenges are distributed here by the admin.
+              Native BOT Chain (Chain ID 677 / 968). Payouts for completed challenges are distributed here by the admin.
             </p>
           </div>
 
@@ -132,7 +132,7 @@ export default function WalletDrawer({ isOpen, onClose, wallet, setWallet, netwo
                 TOTAL EARNINGS COLLECTED
               </span>
               <span style={{ fontSize: '0.72rem', background: 'rgba(255,255,255,0.15)', padding: '2px 8px', borderRadius: '12px', fontWeight: 700 }}>
-                {network?.name || 'Circle Arc'}
+                {network?.name || 'BOT Chain'}
               </span>
             </div>
 
@@ -329,10 +329,10 @@ export default function WalletDrawer({ isOpen, onClose, wallet, setWallet, netwo
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ fontWeight: 700, color: '#0f172a' }}>Escrow:</span>
-            <span style={{ fontFamily: 'monospace' }}>0x8b41...31cE</span>
+            <span style={{ fontFamily: 'monospace' }}>0x9096...9aA2</span>
           </div>
           <a
-            href="https://explorer.arc.io"
+            href="https://scan.bohr.life"
             target="_blank"
             rel="noopener noreferrer"
             style={{
@@ -344,7 +344,7 @@ export default function WalletDrawer({ isOpen, onClose, wallet, setWallet, netwo
               gap: '4px'
             }}
           >
-            <span>View on ArcScan</span>
+            <span>View on Bohr Explorer</span>
             <ExternalLink size={13} />
           </a>
         </div>

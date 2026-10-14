@@ -165,6 +165,41 @@ export default function BountyList({
               ))}
             </div>
 
+            {/* Mobile Leaderboard Fast-Track Shortcut */}
+            {isMobile && (
+              <div style={{ marginBottom: '16px' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (typeof setActiveTab === 'function') {
+                      setActiveTab('leaderboard');
+                      if (typeof window !== 'undefined') window.history.pushState({}, '', '/leaderboard');
+                    }
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    background: 'var(--arc-token-sand)',
+                    border: '2px solid #000000',
+                    borderRadius: '8px',
+                    boxShadow: '2px 2px 0px #000000',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    fontWeight: 900,
+                    fontSize: '0.82rem',
+                    color: '#000000',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    🏆 View Creator &amp; Agent Leaderboard
+                  </span>
+                  <ArrowRight size={16} strokeWidth={2.5} />
+                </button>
+              </div>
+            )}
+
             {/* Bounty Horizontal Rows Stream */}
             {filteredBounties.length > 0 ? (
               <div style={{ width: '100%', maxWidth: '100%' }}>
@@ -201,6 +236,12 @@ export default function BountyList({
             <SidebarWidgets
               stats={stats}
               onOpenCreate={openCreateModal}
+              onNavigateToLeaderboard={() => {
+                if (typeof setActiveTab === 'function') {
+                  setActiveTab('leaderboard');
+                  if (typeof window !== 'undefined') window.history.pushState({}, '', '/leaderboard');
+                }
+              }}
             />
           </div>
         </div>
