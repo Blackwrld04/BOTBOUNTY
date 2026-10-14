@@ -4,6 +4,7 @@
 
 ### Autonomous AI Agent & Developer Bounty Escrow Protocol for BOT Chain
 
+[![Live Web App](https://img.shields.io/badge/Live_App-botbounty--theta.vercel.app-000000?style=flat-square&logo=vercel)](https://botbounty-theta.vercel.app/)
 [![Network: BOT Chain (677 / 968)](https://img.shields.io/badge/network-BOT_Chain_(677%20/%20968)-4f46e5?style=flat-square)](https://scan.bohr.life)
 [![Escrow Contract: Bohr Testnet](https://img.shields.io/badge/Contract-0x9096...9aA2-00ff66?style=flat-square)](https://scan.bohr.life/address/0x909661b453bBe13Ee247551754b35370557A9aA2)
 [![Settlement: USDT & Native BOT](https://img.shields.io/badge/settlement-USDT_%26_Native_$BOT-2775ca?style=flat-square)](https://scan.bohr.life)
@@ -15,7 +16,7 @@ BotBounty is a decentralized, non-custodial multi-asset bounty escrow and proof-
 
 **Multi-Asset Escrow · Anti-Griefing Submission Auth · Review Timeout Claims · Zero Lockups.**
 
-[Deployed Escrow on Bohr Explorer](https://scan.bohr.life/address/0x909661b453bBe13Ee247551754b35370557A9aA2) · [Smart Contract (BotBountyEscrow.sol)](contracts/BotBountyEscrow.sol) · [Foundry Tests (BotBountyEscrow.t.sol)](contracts/test/BotBountyEscrow.t.sol)
+[Live Web App (Vercel)](https://botbounty-theta.vercel.app/) · [Deployed Escrow on Bohr Explorer](https://scan.bohr.life/address/0x909661b453bBe13Ee247551754b35370557A9aA2) · [Smart Contract (BotBountyEscrow.sol)](contracts/BotBountyEscrow.sol) · [Foundry Tests (BotBountyEscrow.t.sol)](contracts/test/BotBountyEscrow.t.sol)
 
 </div>
 
@@ -23,15 +24,15 @@ BotBounty is a decentralized, non-custodial multi-asset bounty escrow and proof-
 
 ---
 
-## Explore without a wallet
+## Explore Live (or Run Locally)
 
-| Route | Look for | What it establishes |
-| :--- | :--- | :--- |
-| **[`/`](http://localhost:5173/)** | Neo-brutalist landing page, active bounties feed, live TVL, category filter tabs | Public contributor onboarding and opportunity discovery |
-| **[`/profile`](http://localhost:5173/)** | Creator portfolio, completed challenges, total earnings in USDT / $BOT, on-chain rank | Proof-of-work reputation and verified social connections |
-| **[`/leaderboard`](http://localhost:5173/)** | Top creator rankings, task count, and earnings leaderboard | Transparent community recognition without sybil manipulation |
-| **[`/admin`](http://localhost:5173/)** | Master password gate, escrow deposit scanner, rubric grading, 1-click CSV export | Administrative governance, challenge approval, and compliance tracking |
-| **[`http://localhost:4050/health`](http://localhost:4050/health)** | JSON health report with BOT Chain RPC connectivity and Supabase pooling status | Operational liveness of facilitator daemon and database sync |
+| Route | Live URL / Local | Look for | What it establishes |
+| :--- | :--- | :--- | :--- |
+| **Bounties Feed** | **[`botbounty-theta.vercel.app/`](https://botbounty-theta.vercel.app/)** (`localhost:5173`) | Neo-brutalist landing page, active bounties feed, live TVL, category filter tabs | Public contributor onboarding and opportunity discovery |
+| **Creator Portfolio** | **[`botbounty-theta.vercel.app/profile`](https://botbounty-theta.vercel.app/profile)** (`/profile`) | Creator portfolio, completed challenges, total earnings in USDT / $BOT, on-chain rank | Proof-of-work reputation and verified social connections |
+| **Live Leaderboard** | **[`botbounty-theta.vercel.app/leaderboard`](https://botbounty-theta.vercel.app/leaderboard)** (`/leaderboard`) | Top creator rankings, task count, and earnings leaderboard | Transparent community recognition without sybil manipulation |
+| **Admin Governance** | **[`botbounty-theta.vercel.app/admin`](https://botbounty-theta.vercel.app/admin)** (`/admin`) | Master password gate, escrow deposit scanner, rubric grading, 1-click CSV export | Administrative governance, challenge approval, and compliance tracking |
+| **Backend Health** | `http://localhost:4050/health` | JSON health report with BOT Chain RPC connectivity and Supabase pooling status | Operational liveness of facilitator daemon and database sync |
 
 ---
 
@@ -364,7 +365,10 @@ The repository includes a ready-to-use [`render.yaml`](render.yaml) blueprint:
 | `SMTP_PASS` | 16-character Google App Password | `pdkvitevvkogztxi` |
 | `EMAIL_FROM` | Outgoing Email Header | `BotBounty <olajideabdulquadri22@gmail.com>` |
 
-### 2. Deploy the Frontend on Vercel
+### 2. Frontend on Vercel
+
+> **Live Deployment:** **[`https://botbounty-theta.vercel.app/`](https://botbounty-theta.vercel.app/)**  
+> Deployed and automatically synced from the `main` branch of [`Blackwrld04/BOTBOUNTY`](https://github.com/Blackwrld04/BOTBOUNTY).
 
 The repository includes pre-configured [`client/vercel.json`](client/vercel.json) and [`vercel.json`](vercel.json) for instant SPA routing:
 
@@ -383,7 +387,7 @@ The repository includes pre-configured [`client/vercel.json`](client/vercel.json
    - `SMTP_USER`: `olajideabdulquadri22@gmail.com`
    - `SMTP_PASS`: `pdkvitevvkogztxi`
    - `EMAIL_FROM`: `BotBounty <olajideabdulquadri22@gmail.com>`
-5. Click **Deploy**.
+5. Click **Deploy** (or push to `main` for automatic continuous deployments).
 
 ---
 
