@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>BotBounty — BOT Chain Technical Review Response</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 1.2cm 1.3cm 1.4cm 1.3cm;
+      @bottom-right {
+        content: "Page " counter(page) " of " counter(pages);
+        font-size: 8pt;
+        color: #64748b;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      }
+      @bottom-left {
+        content: "BotBounty • BOT Chain Bohr Testnet Review Response";
+        font-size: 8pt;
+        color: #64748b;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      }
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      color: #0f172a;
+      line-height: 1.42;
+      font-size: 8.8pt;
+      margin: 0;
+      padding: 0;
+    }
+
+    .page-break {
+      page-break-before: always;
+    }
+
+    /* Header styling */
+    .header {
+      border-bottom: 2px solid #0284c7;
+      padding-bottom: 8px;
+      margin-bottom: 10px;
+    }
+
+    .brand-title {
+      font-size: 18pt;
+      font-weight: 800;
+      color: #0369a1;
+      margin: 0 0 2px 0;
+      letter-spacing: -0.4px;
+    }
+
+    .brand-subtitle {
+      font-size: 9.8pt;
+      color: #475569;
+      font-weight: 500;
+      margin: 0 0 8px 0;
+    }
+
+    .meta-grid {
+      display: table;
+      width: 100%;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 8px 10px;
+      box-sizing: border-box;
+      margin-top: 4px;
+    }
+
+    .meta-row {
+      display: table-row;
+    }
+
+    .meta-label {
+      display: table-cell;
+      font-weight: 700;
+      color: #334155;
+      width: 17%;
+      padding: 2px 0;
+      font-size: 8.2pt;
+    }
+
+    .meta-value {
+      display: table-cell;
+      color: #0f172a;
+      padding: 2px 0;
+      font-size: 8.2pt;
+    }
+
+    .code-inline {
+      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      background: #f1f5f9;
+      padding: 1px 3px;
+      border-radius: 3px;
+      border: 1px solid #e2e8f0;
+      font-size: 7.8pt;
+      color: #0369a1;
+    }
+
+    h2 {
+      font-size: 11.5pt;
+      font-weight: 700;
+      color: #0f172a;
+      border-bottom: 1px solid #cbd5e1;
+      padding-bottom: 3px;
+      margin-top: 12px;
+      margin-bottom: 6px;
+    }
+
+    p {
+      margin: 0 0 6px 0;
+    }
+
+    ul {
+      margin: 0 0 6px 0;
+      padding-left: 18px;
+    }
+
+    li {
+      margin-bottom: 3px;
+    }
+
+    /* Badges */
+    .badge-fixed {
+      background-color: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 7.2pt;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      display: inline-block;
+    }
+
+    .badge-simulated {
+      background-color: #eff6ff;
+      color: #1e40af;
+      border: 1px solid #bfdbfe;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 7.2pt;
+      display: inline-block;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 6px 0 10px 0;
+      font-size: 7.8pt;
+    }
+
+    tr {
+      page-break-inside: avoid;
+    }
+
+    th {
+      background-color: #0f172a;
+      color: #ffffff;
+      font-weight: 600;
+      text-align: left;
+      padding: 5px 6px;
+      border: 1px solid #0f172a;
+    }
+
+    td {
+      padding: 4px 6px;
+      border: 1px solid #cbd5e1;
+      vertical-align: top;
+      line-height: 1.35;
+    }
+
+    tr:nth-child(even) td {
+      background-color: #f8fafc;
+    }
+
+    .callout {
+      background-color: #f0fdf4;
+      border-left: 3.5px solid #16a34a;
+      padding: 6px 10px;
+      margin: 8px 0;
+      font-size: 8.2pt;
+      color: #14532d;
+      border-radius: 0 4px 4px 0;
+    }
+
+    .callout-info {
+      background-color: #f0f9ff;
+      border-left: 3.5px solid #0284c7;
+      padding: 6px 10px;
+      margin: 6px 0 8px 0;
+      font-size: 8pt;
+      color: #075985;
+      border-radius: 0 4px 4px 0;
+    }
+
+    a {
+      color: #0284c7;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .hash-cell {
+      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      font-size: 7.2pt;
+      word-break: break-all;
+    }
+
+    .test-box {
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+      border-radius: 6px;
+      padding: 6px 10px;
+      margin-top: 6px;
+      margin-bottom: 8px;
+      display: table;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .test-col {
+      display: table-cell;
+      width: 50%;
+      padding-right: 8px;
+      vertical-align: top;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PAGE 1 -->
+  <div class="header">
+    <div class="brand-title">BotBounty • BOT Chain Technical Review Response</div>
+    <div class="brand-subtitle">Addressed to Leon, @Roy4by4, and @Josh_0zh (BOT Chain Ecosystem Team)</div>
+    
+    <div class="meta-grid">
+      <div class="meta-row">
+        <div class="meta-label">Date:</div>
+        <div class="meta-value">October 16, 2026</div>
+      </div>
+      <div class="meta-row">
+        <div class="meta-label">Pinned Commit:</div>
+        <div class="meta-value"><span class="code-inline">0c47003c2a64a1ed72c7ec2d28628bcbcabc592f</span> (Branch: <span class="code-inline">main</span>)</div>
+      </div>
+      <div class="meta-row">
+        <div class="meta-label">Bohr Escrow Contract:</div>
+        <div class="meta-value"><span class="code-inline">0xB128F2f442554B6517D779788F28F2EB2612164A</span> (Chain ID: 968)</div>
+      </div>
+      <div class="meta-row">
+        <div class="meta-label">Live Web App:</div>
+        <div class="meta-value"><a href="https://botbounty-theta.vercel.app/">https://botbounty-theta.vercel.app/</a></div>
+      </div>
+      <div class="meta-row">
+        <div class="meta-label">GitHub Repository:</div>
+        <div class="meta-value"><a href="https://github.com/Blackwrld04/BOTBOUNTY">https://github.com/Blackwrld04/BOTBOUNTY</a></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>Executive Summary:</strong> All four review items from commit <span class="code-inline">a8597f6</span> have been completely resolved, unit-tested, and deployed on Bohr Testnet. The build is ready for verification immediately with live on-chain transaction hashes covering the full lifecycle (funding, submission, payout, rejection, and refund).
+  </div>
+
+  <h2>1. Status of Review Checklist Items</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 27%;">Item / Finding</th>
+        <th style="width: 13%;">Status</th>
+        <th>Engineering Resolution</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>1. Frontend Funding & Real Payout</strong><br><span style="font-size:7pt; color:#64748b;">Placeholder "0xarc" text & DB-only payouts</span></td>
+        <td><span class="badge-fixed">Resolved</span></td>
+        <td>
+          • Replaced all legacy "0xarc" references and direct-transfer instructions in <span class="code-inline">CreateBountyModal.jsx</span> with a 1-click Web3 wallet funding flow directly calling <span class="code-inline">createBounty(...)</span> with on-chain explorer receipts.<br>
+          • Payout releases in <span class="code-inline">bounties.js</span> and <span class="code-inline">db.js</span> now trigger real on-chain transfers (<span class="code-inline">releaseBounty(...)</span>) and persist the verified 66-character Bohr transaction hash in the audit ledger rather than updating virtual DB balances.
+        </td>
+      </tr>
+      <tr>
+        <td><strong>2. Submission Ownership & Session Auth</strong><br><span style="font-size:7pt; color:#64748b;">Spoofable wallet/email parameters</span></td>
+        <td><span class="badge-fixed">Resolved</span></td>
+        <td>
+          • Stripped spoofable query parameters (<span class="code-inline">?email=</span>, <span class="code-inline">?wallet=</span>) and headers (<span class="code-inline">x-user-email</span>, <span class="code-inline">x-wallet-address</span>). Reads return empty (<span class="code-inline">[]</span>) to unauthenticated callers; solvers see only their own submissions; admins see all.<br>
+          • Submission edits require authenticated session tokens (<span class="code-inline">401</span>) and strict ownership verification (<span class="code-inline">403</span> if editing another solver's work). Body spoofing is completely ignored.<br>
+          • Enforced anti-self-solve lockout preventing bounty maintainers from solving their own bounties. Added 12 automated negative tests (48/48 backend tests passing).
+        </td>
+      </tr>
+      <tr>
+        <td><strong>3. Privacy & Blind Submissions</strong><br><span style="font-size:7pt; color:#64748b;">Public PR URLs in storage/events</span></td>
+        <td><span class="badge-fixed">Resolved</span></td>
+        <td>
+          • Clarified privacy wording across UI and documentation: portal deliverables are confidential between solver and maintainer during review to prevent competitor sniping, while final settlement details and recipient addresses are public on-chain for DAO auditability.<br>
+          • Implemented cryptographic blind commit-reveal escrow in <span class="code-inline">BotBountyEscrow.sol</span> (<span class="code-inline">submitSolutionCommitment</span> / <span class="code-inline">releaseBountyWithProof</span>) with <span class="code-inline">keccak256(solver, prUrl, salt)</span> so deliverable URLs are never published on-chain during review.
+        </td>
+      </tr>
+      <tr>
+        <td><strong>4. Supported Tokens & Policies</strong><br><span style="font-size:7pt; color:#64748b;">Token validation, timeout & rejection</span></td>
+        <td><span class="badge-fixed">Resolved</span></td>
+        <td>
+          • Formally configured native $BOT (<span class="code-inline">address(0)</span>) and Bridged USDT (<span class="code-inline">0x75edC9335175Fc0552D51D48439F229c10420fe3</span>).<br>
+          • Added <span class="code-inline">settlementToken.code.length &gt; 0</span> check to reject invalid/EOA token addresses.<br>
+          • Protected against fee-on-transfer discrepancies via balance delta checks (<span class="code-inline">balanceAfter - balanceBefore == amount</span>).<br>
+          • Added anti-junk URL guard (<span class="code-inline">length &gt;= 10</span>), 1–30 day maintainer review period, rejection with on-chain feedback reasons, timeout auto-claim, and maintainer deadline refund.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- PAGE BREAK TO PAGE 2 -->
+  <div class="page-break"></div>
+
+  <h2>2. End-to-End Bohr Testnet Transaction Evidence</h2>
+
+  <div class="callout-info">
+    <strong>Separation of Real On-Chain vs. Simulated Paths:</strong> All 8 transactions in the table below were executed live on Bohr Testnet (Chain ID 968) with verified state transitions and balance transfers. The Review Timeout Claim flow enforces an on-chain lock (<span class="code-inline">MIN_REVIEW_PERIOD = 1 days</span>) to protect maintainers against instant timeout griefing; therefore, its full lifecycle is verified deterministically in the automated Foundry test suite using <span class="code-inline">vm.warp(block.timestamp + 8 days)</span>.
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 21%;">Lifecycle Path</th>
+        <th style="width: 25%;">Function Called</th>
+        <th>Transaction Hash & Bohr Explorer Link</th>
+        <th style="width: 15%;">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Escrow Deployment</strong></td>
+        <td><span class="code-inline">constructor()</span></td>
+        <td class="hash-cell"><a href="https://scan.bohr.life/tx/0x6b40a134cdb7b0ec20e8aaa9391ff9481f3d5d59f37c76d09e6c8fb36e6cc14f">0x6b40a134cdb7b0ec20e8aaa9391ff9481f3d5d59f37c76d09e6c8fb36e6cc14f</a></td>
+        <td><span class="badge-fixed">Success</span></td>
+      </tr>
+      <tr>
+        <td><strong>Bounty 1: Funding</strong></td>
+        <td><span class="code-inline">createBounty</span> (0.01 tBOT)</td>
+        <td class="hash-cell"><a href="https://scan.bohr.life/tx/0xcd6897b537b4d03db87a0202bd1d41fb3eb545a97076619ef08fd744787fc78c">0xcd6897b537b4d03db87a0202bd1d41fb3eb545a97076619ef08fd744787fc78c</a></td>
+        <td><span class="badge-fixed">Success</span></td>
+      </tr>
+      <tr>
+        <td><strong>Bounty 1: Submit Work</strong></td>
+        <td><span class="code-inline">submitSolution</span></td>
+        <td class="hash-cell"><a href="https://scan.bohr.life/tx/0x1685b4bdda7e94fd20c0cec6383b532831f5371d090d7f376eba364c68d6ad71">0x1685b4bdda7e94fd20c0cec6383b532831f5371d090d7f376eba364c68d6ad71</a></td>
+        <td><span class="badge-fixed">Success</span></td>
+      </tr>
+      <tr>
+        <td><strong>Bounty 1: Release & Payout</strong></td>
+        <td><span class="code-inline">releaseBounty</span> (Solver Paid)</td>
+        <td class="hash-cell"><a href="https://scan.bohr.life/tx/0xc9c86fa10c4006cc5e76464785064e2d008bd6bc3d42953570b83f3c28a42dd7">0xc9c86fa10c4006cc5e76464785064e2d008bd6bc3d42953570b83f3c28a42dd7</a></td>
+        <td><span class="badge-fixed">Success (Paid)</span></td>
+      </tr>
+      <tr>
+        <td><strong>Bounty 2: Funding</strong></td>
+        <td><span class="code-inline">createBounty</span> (0.005 tBOT)</td>
+        <td class="hash-cell"><a href="https://scan.bohr.life/tx/0x03db374933374810f03d770ac1126a4d1cd51770fc6b73d6ac01d5ab3f517ff1">0x03db374933374810f03d770ac1126a4d1cd51770fc6b73d6ac01d5ab3f517ff1</a></td>
+        <td><span class="badge-fixed">Success</span></td>
+      </tr>
+      <tr>
+        <td><strong>Bounty 2: Submit Work</strong></td>
+        <td><span class="code-inline">submitSolution</span></td>
+        <td class="hash-cell"><a href="https://scan.bohr.life/tx/0xfea4c93518b4e531a67285a404a9aa8b86ad967eb83405b2fd46f474d7a8c5ca">0xfea4c93518b4e531a67285a404a9aa8b86ad967eb83405b2fd46f474d7a8c5ca</a></td>
+        <td><span class="badge-fixed">Success</span></td>
+      </tr>
+      <tr>
+        <td><strong>Bounty 2: Rejection</strong></td>
+        <td><span class="code-inline">rejectSolution</span> (with Reason)</td>
+        <td class="hash-cell"><a href="https://scan.bohr.life/tx/0x3a8d6b186c11e2aa0a756fff89e63b0bd3c5db5245d48817f7cd0fe2de29586b">0x3a8d6b186c11e2aa0a756fff89e63b0bd3c5db5245d48817f7cd0fe2de29586b</a></td>
+        <td><span class="badge-fixed">Success (Reopened)</span></td>
+      </tr>
+      <tr>
+        <td><strong>Bounty 3: Funding</strong></td>
+        <td><span class="code-inline">createBounty</span> (0.005 tBOT)</td>
+        <td class="hash-cell"><a href="https://scan.bohr.life/tx/0x293b85b92c5eb3f8f461db2a1947bc1ba18690e84d4b6e420e8dec836fc2603c">0x293b85b92c5eb3f8f461db2a1947bc1ba18690e84d4b6e420e8dec836fc2603c</a></td>
+        <td><span class="badge-fixed">Success</span></td>
+      </tr>
+      <tr>
+        <td><strong>Bounty 3: Expire & Refund</strong></td>
+        <td><span class="code-inline">refundBounty</span></td>
+        <td class="hash-cell"><a href="https://scan.bohr.life/tx/0xecc602c5384512aa0f932628bdf0a7fe2d8e4627fd9cf9057638c82040e890c2">0xecc602c5384512aa0f932628bdf0a7fe2d8e4627fd9cf9057638c82040e890c2</a></td>
+        <td><span class="badge-fixed">Success (Refunded)</span></td>
+      </tr>
+      <tr>
+        <td><strong>Timeout Auto-Claim</strong></td>
+        <td><span class="code-inline">claimTimeoutRelease</span></td>
+        <td>Simulated via Foundry test suite (<span class="code-inline">testReviewTimeoutClaim</span> with <span class="code-inline">vm.warp</span>)</td>
+        <td><span class="badge-simulated">Passing Test</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>3. Automated Test Verification Summary</h2>
+
+  <div class="test-box">
+    <div class="test-col">
+      <strong>Smart Contracts (Foundry): 21/21 Passed</strong>
+      <ul style="margin-top: 3px; font-size: 7.6pt;">
+        <li><span class="code-inline">testNativeBotBountyFlow</span>: Full deposit & payout</li>
+        <li><span class="code-inline">testUSDTBountyFlowWithApproval</span>: ERC-20 flow</li>
+        <li><span class="code-inline">testRevertOnFeeOnTransferTokenActualAmountMismatch</span></li>
+        <li><span class="code-inline">testRevertOnInvalidTokenAddressNoCode</span></li>
+        <li><span class="code-inline">testRevertOnJunkOrEmptySubmission</span></li>
+        <li><span class="code-inline">testRevertOnMaintainerSolvingOwnBounty</span></li>
+        <li><span class="code-inline">testBlindCommitmentAndReleaseWithProof</span></li>
+        <li><span class="code-inline">testReviewTimeoutClaim</span> & <span class="code-inline">testMaintainerRefundAfterDeadline</span></li>
+      </ul>
+    </div>
+    <div class="test-col">
+      <strong>Backend & Security (Node.js): 48/48 Passed</strong>
+      <ul style="margin-top: 3px; font-size: 7.6pt;">
+        <li>Unauthenticated requests receive empty submission list</li>
+        <li>Query/Header spoofing (<span class="code-inline">?email=</span>, headers) strictly blocked</li>
+        <li>Solver A sees only their own work; Solver B cannot see Solver A</li>
+        <li>Unauthorized submission modification blocked (<span class="code-inline">401/403</span>)</li>
+        <li>Body payload identity spoofing ignored</li>
+        <li>Junk URL submissions (&lt;10 chars) rejected (<span class="code-inline">400</span>)</li>
+        <li>Maintainer self-solve prevention enforced (<span class="code-inline">403</span>)</li>
+        <li>On-chain settlement transaction hash recorded in audit ledger</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>4. Next Steps & Mainnet Deployment Gas Request</h2>
+  <p style="font-size: 8.2pt; margin-bottom: 4px;">
+    With all technical items verified, contract deployed on Bohr, and end-to-end evidence established, the build is ready for verification by @Roy4by4 and @Josh_0zh.
+  </p>
+  <p style="font-size: 8.2pt; margin-bottom: 0;">
+    We welcome any further review questions and look forward to coordinating the remaining technical milestones, deployment-gas support, and scheduling the limited mainnet pilot.
+  </p>
+
+</body>
+</html>
