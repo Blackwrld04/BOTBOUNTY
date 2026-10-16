@@ -23,5 +23,6 @@ export const config = {
 
   // Facilitator & Escrow Contracts
   facilitatorPrivateKey: process.env.FACILITATOR_PRIVATE_KEY || '0x0000000000000000000000000000000000000000000000000000000000000001',
-  escrowContractAddress: process.env.ESCROW_CONTRACT_ADDRESS || '0x909661b453bBe13Ee247551754b35370557A9aA2',
+  escrowContractAddress: process.env.ESCROW_CONTRACT_ADDRESS || '0xB128F2f442554B6517D779788F28F2EB2612164A',
 };
+

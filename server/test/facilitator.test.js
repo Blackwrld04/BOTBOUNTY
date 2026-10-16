@@ -29,8 +29,8 @@ describe('ArcBounty Facilitator & Settlement Tests', () => {
 
     const result = await relayGaslessSettlement(mockParams);
     assert.equal(result.status, 'confirmed');
-    assert.ok(result.txHash.startsWith('0xarc'));
+    assert.ok(result.txHash.startsWith('0x'));
     assert.ok(result.settlementTimeMs <= 500, 'Settlement must be sub-second (<500ms)');
-    assert.equal(result.network, 'Arc Mainnet (5042)');
+    assert.ok(result.network.includes('BOT'));
   });
 });

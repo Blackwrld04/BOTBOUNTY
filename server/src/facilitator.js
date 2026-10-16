@@ -117,7 +117,7 @@ export async function relayGaslessSettlement({
     isMockSignature ||
     process.env.NODE_ENV === 'test'
   ) {
-    const mockHash = `0xarc${Date.now().toString(16)}${Math.random().toString(16).slice(2, 10)}88ad`;
+    const mockHash = `0xbot${Date.now().toString(16)}${Math.random().toString(16).slice(2, 10)}88ad`;
     return {
       status: 'confirmed',
       simulated: true,
@@ -128,7 +128,7 @@ export async function relayGaslessSettlement({
       from,
       to,
       value: value.toString(),
-      network: 'Arc Mainnet (5042)',
+      network: 'BOT Bohr Testnet (968)',
     };
   }
 

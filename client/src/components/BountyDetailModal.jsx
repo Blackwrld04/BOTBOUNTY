@@ -945,7 +945,7 @@ export default function BountyDetailModal({
                     </div>
 
                     <p style={{ margin: 0, fontSize: '0.76rem', color: '#475569', lineHeight: 1.45 }}>
-                      🔒 <strong>Privacy Protected:</strong> For fair judging and creator confidentiality, participant identities, code repositories, and deliverable links remain sealed from other participants until awards are finalized.
+                      🔒 <strong>Portal Privacy &amp; On-Chain Transparency:</strong> To prevent solution sniping during active competition, submissions and notes submitted via the portal remain sealed between the solver and maintainer. Upon payout settlement, winner deliverables and addresses are publicly verified on-chain via the Bohr Escrow Contract. Direct on-chain solvers can also submit cryptographic commitments (keccak256).
                     </p>
                   </div>
 
@@ -1603,7 +1603,7 @@ export default function BountyDetailModal({
                         >
                           <span>
                             {isSubmitting
-                              ? 'Saving on Arc L1...'
+                              ? 'Saving on BOT Chain...'
                               : isRevisionMode
                               ? `Save Revision #${(userSubmission?.revision_count || 1) + 1}`
                               : 'Submit Work for Review'}

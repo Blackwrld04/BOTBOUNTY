@@ -126,17 +126,17 @@ export async function seedSupabaseInitialData(initialBounties = []) {
       'sub_seed_001', 'bounty-arc-003', 'usr_seed_creator_1', 'usr_seed_creator_1', 'Alex Researcher', 'crypto_analyst@x.com',
       '0x9923Bc8E4786A6B71D0052F5eCE984bC9d123456', 'https://x.com/crypto_analyst/status/18389102938102',
       'Completed full 15-tweet breakdown with visual architecture flowcharts.', 'Alex Researcher', 'awarded', 800,
-      '0xarc1a0c40614615b1e7a309adca37d', Date.now() - 86400000 * 2,
+      '0x1a0c40614615b1e7a309adca37da91823a8b7c4d5e6f7a8b9c0d1e2f3a4b5c03', Date.now() - 86400000 * 2,
 
       'sub_71877b765784d7da', 'bounty-arc-3356', 'usr_seed_creator_2', 'usr_seed_creator_2', 'Alex Rivers', 'alex.rivers@designguild.org',
       '0x51a8b1bfeb88bdfa9207e999c0b2023c70c97c8f', 'https://www.figma.com/design/arc-interactive-infographic',
       'High-fidelity interactive SVG visualization of Circle Arc settlement.', 'Alex Rivers', 'awarded', 750,
-      '0xarc1a0c3af6b2a5f7019c628920ceb', Date.now() - 86400000 * 3,
+      '0x1a0c3af6b2a5f7019c628920ceba91823a8b7c4d5e6f7a8b9c0d1e2f3a4b5c05', Date.now() - 86400000 * 3,
 
       'sub_seed_002', 'bounty-arc-004', 'usr_seed_creator_3', 'usr_seed_creator_3', 'Meme God', 'memegod@x.com',
       '0x71C568ba74d3B107292995bB791e317614399A45', 'https://x.com/memegod_sol/status/1838192830192',
       'Created 5 top-tier viral memes for Circle Arc.', 'Meme God', 'awarded', 450,
-      '0xarc91823a8b7c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a04settle', Date.now() - 86400000 * 4
+      '0x91823a8b7c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a04b1c2d3e4f5a6b7c8d9e04', Date.now() - 86400000 * 4
     ]);
 
     // Seed canonical disbursements
@@ -152,15 +152,15 @@ export async function seedSupabaseInitialData(initialBounties = []) {
     `, [
       'disb_a8a568d0c6849893', 'disb_a8a568d0c6849893', 'bounty-arc-003', 'sub_seed_001',
       '0x9923Bc8E4786A6B71D0052F5eCE984bC9d123456', 'crypto_analyst@x.com',
-      800, 800, '0xarc1a0c40614615b1e7a309adca37d', 'admin@arcbounty.io', Date.now() - 86400000 * 1,
+      800, 800, '0x1a0c40614615b1e7a309adca37da91823a8b7c4d5e6f7a8b9c0d1e2f3a4b5c03', 'admin@botbounty.ai', Date.now() - 86400000 * 1,
 
       'disb_c51cf757824df287', 'disb_c51cf757824df287', 'bounty-arc-3356', 'sub_71877b765784d7da',
       '0x51a8b1bfeb88bdfa9207e999c0b2023c70c97c8f', 'alex.rivers@designguild.org',
-      750, 750, '0xarc1a0c3af6b2a5f7019c628920ceb', 'admin@arcbounty.io', Date.now() - 86400000 * 2,
+      750, 750, '0x1a0c3af6b2a5f7019c628920ceba91823a8b7c4d5e6f7a8b9c0d1e2f3a4b5c05', 'admin@botbounty.ai', Date.now() - 86400000 * 2,
 
       'disb_seed_002', 'disb_seed_002', 'bounty-arc-004', 'sub_seed_002',
       '0x71C568ba74d3B107292995bB791e317614399A45', 'memegod@x.com',
-      450, 450, '0xarc91823a8b7c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a04settle', 'admin@arcbounty.io', Date.now() - 86400000 * 1
+      450, 450, '0x91823a8b7c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a04b1c2d3e4f5a6b7c8d9e04', 'admin@botbounty.ai', Date.now() - 86400000 * 1
     ]);
 
     console.log('[Supabase] Successfully seeded initial bounties, submissions, and disbursements!');

@@ -30,7 +30,7 @@ export const INITIAL_BOUNTIES = [
     createdAt: Date.now() - 86400000 * 1,
     deadline: Date.now() + 86400000 * 5,
     deadlineDays: 6,
-    description: 'Create an iconic 3D mascot embodying Arc L1 institutional foundation and sub-second speed. Deliverable: Blender GLTF + 15 expressive Telegram & Discord stickers.'
+    description: 'Create an iconic 3D mascot embodying BOT Chain institutional foundation and sub-second speed. Deliverable: Blender GLTF + 15 expressive Telegram & Discord stickers.'
   },
   {
     id: 'bounty-arc-002',
@@ -133,12 +133,12 @@ export const INITIAL_BOUNTIES = [
     categoryName: 'Design',
     categoryColor: '#664c88',
     categoryTextColor: '#ffffff',
-    title: 'Interactive Arc L1 Architecture Infographic',
+    title: 'Interactive BOT Chain Architecture Infographic',
     repo: 'circlefin/arc-visuals',
     submissionType: 'Deliverable URL',
     issueUrl: 'https://arcbounty.io/task/bounty-arc-3356',
     amount: 750,
-    tags: ['Design', 'Arc', 'Infographic'],
+    tags: ['Design', 'BOT', 'Infographic'],
     status: 'Settled',
     maintainer: '0x461cd48D95993242bB04774cc68042795586BbAd',
     maintainerName: 'Circle Creative Guild',

@@ -1027,7 +1027,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
             {stats ? (stats.totalUsers ?? usersList.length) : (usersList.length || '---')}
           </div>
           <div style={{ fontSize: '0.75rem', color: '#1b3158', fontWeight: 700, marginTop: '4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span>{stats?.totalUsers ?? usersList.length} Registered on Arc L1</span>
+            <span>{stats?.totalUsers ?? usersList.length} Registered on BOT Chain</span>
             <span style={{ textDecoration: 'underline', fontSize: '0.72rem' }}>Directory &rarr;</span>
           </div>
         </div>
@@ -1471,7 +1471,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 900, color: '#166534', marginBottom: '4px' }}>
                   <CheckCircle2 size={18} />
-                  <span>USDC Disbursed to Creator!</span>
+                  <span>Reward Disbursed on BOT Chain!</span>
                 </div>
                 <p style={{ fontSize: '0.8rem', color: '#14532d', margin: 0 }}>
                   Prize of <strong>${settlementResult.amount} USDC</strong> successfully transferred to <code>{settlementResult.recipient}</code>.
@@ -1519,7 +1519,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
                       }}
                     >
                       <Radar size={13} />
-                      <span>{isScanningDeposits ? 'Scanning Arc L1...' : 'Auto-Detect Arc Deposits'}</span>
+                      <span>{isScanningDeposits ? 'Scanning BOT Chain...' : 'Auto-Detect BOT Deposits'}</span>
                     </button>
                   </div>
                   <p style={{ fontSize: '0.82rem', color: '#713f12', margin: 0, lineHeight: 1.45 }}>
@@ -2597,7 +2597,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
                 style={{ flex: 1, padding: '12px', borderRadius: '8px', background: '#10b981' }}
               >
                 <Award size={16} />
-                <span>{isDisbursingMulti ? 'Settling on Arc L1...' : 'Confirm & Disburse Split Rewards'}</span>
+                <span>{isDisbursingMulti ? 'Settling on BOT Chain...' : 'Confirm & Disburse Split Rewards'}</span>
               </button>
             </div>
           </div>
@@ -2693,7 +2693,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
                 <strong>&bull; PR Opened:</strong> Automatically marks targeted bounty as <em>InReview</em> and logs the pull request URL.
               </div>
               <div style={{ padding: '10px 12px', background: '#eff6ff', border: '1.5px solid #93c5fd', borderRadius: '6px', fontSize: '0.8rem', color: '#1e40af' }}>
-                <strong>&bull; PR Merged:</strong> Automatically flags solver deliverable for final payout settlement on Arc L1.
+                <strong>&bull; PR Merged:</strong> Automatically flags solver deliverable for final payout settlement on BOT Chain.
               </div>
             </div>
 
@@ -2854,7 +2854,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
                 <Search size={15} color="#64748b" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
                 <input
                   type="text"
-                  placeholder={isMobile ? "Search creators..." : "Search by name, @handle, email, or Arc L1 address..."}
+                  placeholder={isMobile ? "Search creators..." : "Search by name, @handle, email, or BOT address..."}
                   value={userSearchQuery}
                   onChange={(e) => setUserSearchQuery(e.target.value)}
                   style={{
@@ -3042,7 +3042,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
                         fontSize: '0.78rem'
                       }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', minWidth: 0, width: isMobile ? '100%' : 'auto' }}>
-                          <span style={{ fontWeight: 800, color: '#64748b', flexShrink: 0 }}>Arc L1 Wallet:</span>
+                          <span style={{ fontWeight: 800, color: '#64748b', flexShrink: 0 }}>BOT Wallet:</span>
                           {u.wallet_address ? (
                             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                               <span style={{

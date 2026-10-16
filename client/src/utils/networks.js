@@ -9,7 +9,7 @@ export const BOT_TESTNET = {
   nativeGasToken: 'BOT',
   nativeSymbol: 'tBOT',
   usdtAddress: '0x75edC9335175Fc0552D51D48439F229c10420fe3',
-  escrowAddress: '0x909661b453bBe13Ee247551754b35370557A9aA2',
+  escrowAddress: '0xB128F2f442554B6517D779788F28F2EB2612164A',
   faucetUrl: 'https://faucet.botchain.ai',
   isTestnet: true
 };

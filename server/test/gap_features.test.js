@@ -161,6 +161,6 @@ describe('ArcBounty Integrated Gap Features Tests', () => {
     const ledger = getAuditLedgerData();
     assert.ok(Array.isArray(ledger));
     assert.ok(ledger.length >= 2, 'Audit ledger should contain the multi-winner disbursements');
-    assert.ok(ledger[0].tx_hash.startsWith('0xarc'));
+    assert.ok(ledger[0].tx_hash.startsWith('0x'));
   });
 });

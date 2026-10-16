@@ -50,11 +50,46 @@ contract MockUSDT is IERC20 {
     }
 }
 
+contract MockFeeOnTransferToken is IERC20 {
+    mapping(address => uint256) public override balanceOf;
+    mapping(address => mapping(address => uint256)) public allowance;
+
+    function mint(address to, uint256 amount) external {
+        balanceOf[to] += amount;
+    }
+
+    function transfer(address to, uint256 amount) external override returns (bool) {
+        require(balanceOf[msg.sender] >= amount, "FOT: insufficient balance");
+        balanceOf[msg.sender] -= amount;
+        uint256 fee = (amount * 5) / 100; // 5% fee
+        balanceOf[to] += (amount - fee);
+        return true;
+    }
+
+    function approve(address spender, uint256 amount) external returns (bool) {
+        allowance[msg.sender][spender] = amount;
+        return true;
+    }
+
+    function transferFrom(address from, address to, uint256 amount) external override returns (bool) {
+        require(balanceOf[from] >= amount, "FOT: insufficient balance");
+        if (allowance[from][msg.sender] != type(uint256).max) {
+            require(allowance[from][msg.sender] >= amount, "FOT: insufficient allowance");
+            allowance[from][msg.sender] -= amount;
+        }
+        balanceOf[from] -= amount;
+        uint256 fee = (amount * 5) / 100;
+        balanceOf[to] += (amount - fee);
+        return true;
+    }
+}
+
 contract BotBountyEscrowTest {
     Vm constant vm = Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
 
     BotBountyEscrow public escrow;
     MockUSDT public usdt;
+    MockFeeOnTransferToken public fotToken;
 
     address public maintainer = address(0x1111);
     address public solver1 = address(0x2222);
@@ -66,12 +101,14 @@ contract BotBountyEscrowTest {
     function setUp() public {
         escrow = new BotBountyEscrow();
         usdt = new MockUSDT();
+        fotToken = new MockFeeOnTransferToken();
 
         vm.deal(maintainer, 100 ether);
         vm.deal(solver1, 10 ether);
         vm.deal(solver2, 10 ether);
 
         usdt.mint(maintainer, 50_000 * 1e6); // 50,000 USDT
+        fotToken.mint(maintainer, 50_000 * 1e6);
     }
 
     function testNativeBotBountyFlow() public {
@@ -300,11 +337,11 @@ contract BotBountyEscrowTest {
             1 ether,
             block.timestamp + 5 days,
             0,
-            "url"
+            "https://github.com/botchain/bounties/issues/100"
         );
 
         vm.prank(solver1);
-        escrow.submitSolution(bountyId, "pr-url");
+        escrow.submitSolution(bountyId, "https://github.com/botchain/bounties/pull/100");
 
         vm.prank(attacker);
         vm.expectRevert("Only maintainer can release");
@@ -320,11 +357,11 @@ contract BotBountyEscrowTest {
             1 ether,
             block.timestamp + 5 days,
             0,
-            "url"
+            "https://github.com/botchain/bounties/issues/101"
         );
 
         vm.prank(solver1);
-        escrow.submitSolution(bountyId, "pr-url");
+        escrow.submitSolution(bountyId, "https://github.com/botchain/bounties/pull/101");
 
         vm.prank(attacker);
         vm.expectRevert("Only maintainer can reject");
@@ -341,14 +378,14 @@ contract BotBountyEscrowTest {
             1 ether,
             deadline,
             0,
-            "url"
+            "https://github.com/botchain/bounties/issues/102"
         );
 
         vm.warp(deadline + 1);
 
         vm.prank(solver1);
         vm.expectRevert("Bounty expired");
-        escrow.submitSolution(bountyId, "pr-url");
+        escrow.submitSolution(bountyId, "https://github.com/botchain/bounties/pull/102");
     }
 
     function testCannotSubmitIfNotOpen() public {
@@ -360,16 +397,235 @@ contract BotBountyEscrowTest {
             1 ether,
             block.timestamp + 5 days,
             0,
-            "url"
+            "https://github.com/botchain/bounties/issues/103"
         );
 
         vm.prank(solver1);
-        escrow.submitSolution(bountyId, "pr-url");
+        escrow.submitSolution(bountyId, "https://github.com/botchain/bounties/pull/103");
 
         // Now InReview, solver2 cannot hijack or overwrite
         vm.prank(solver2);
         vm.expectRevert("Bounty not open for submissions");
-        escrow.submitSolution(bountyId, "pr-url-2");
+        escrow.submitSolution(bountyId, "https://github.com/botchain/bounties/pull/103-hacked");
+    }
+
+    function testRevertOnFeeOnTransferTokenActualAmountMismatch() public {
+        bytes32 bountyId = keccak256("fot-revert-test");
+        uint256 amount = 1_000 * 1e6;
+
+        vm.startPrank(maintainer);
+        fotToken.approve(address(escrow), amount);
+        vm.expectRevert("Actual received amount mismatch");
+        escrow.createBounty(
+            bountyId,
+            address(fotToken),
+            amount,
+            block.timestamp + 5 days,
+            0,
+            "https://github.com/botchain/bounties/issues/fot"
+        );
+        vm.stopPrank();
+    }
+
+    function testRevertOnInvalidTokenAddressNoCode() public {
+        bytes32 bountyId = keccak256("no-code-token-test");
+        uint256 amount = 500 * 1e6;
+
+        vm.startPrank(maintainer);
+        vm.expectRevert("Invalid token contract address");
+        escrow.createBounty(
+            bountyId,
+            attacker, // EOA without contract code
+            amount,
+            block.timestamp + 5 days,
+            0,
+            "https://github.com/botchain/bounties/issues/bad-token"
+        );
+        vm.stopPrank();
+    }
+
+    function testRevertOnJunkOrEmptySubmission() public {
+        bytes32 bountyId = keccak256("junk-sub-test");
+        vm.prank(maintainer);
+        escrow.createBounty{value: 1 ether}(
+            bountyId,
+            address(0),
+            1 ether,
+            block.timestamp + 5 days,
+            0,
+            "https://github.com/botchain/bounties/issues/junk"
+        );
+
+        vm.prank(solver1);
+        vm.expectRevert("Invalid or junk submission URL");
+        escrow.submitSolution(bountyId, "pr"); // too short (< 10 chars)
+    }
+
+    function testRevertOnMaintainerSolvingOwnBounty() public {
+        bytes32 bountyId = keccak256("self-solve-test");
+        vm.prank(maintainer);
+        escrow.createBounty{value: 1 ether}(
+            bountyId,
+            address(0),
+            1 ether,
+            block.timestamp + 5 days,
+            0,
+            "https://github.com/botchain/bounties/issues/self"
+        );
+
+        vm.prank(maintainer);
+        vm.expectRevert("Maintainer cannot solve own bounty");
+        escrow.submitSolution(bountyId, "https://github.com/botchain/bounties/pull/self");
+    }
+
+    function testBlindCommitmentAndReleaseWithProof() public {
+        bytes32 bountyId = keccak256("blind-commitment-test");
+        uint256 amount = 1 ether;
+        vm.prank(maintainer);
+        escrow.createBounty{value: amount}(
+            bountyId,
+            address(0),
+            amount,
+            block.timestamp + 5 days,
+            0,
+            "https://github.com/botchain/bounties/issues/blind"
+        );
+
+        string memory prUrl = "https://github.com/botchain/bounties/pull/secret-agent-pr";
+        bytes32 salt = keccak256("super-secret-salt-2026");
+        bytes32 commitment = keccak256(abi.encodePacked(solver1, prUrl, salt));
+
+        // Solver commits hash (URL is hidden on-chain)
+        vm.prank(solver1);
+        escrow.submitSolutionCommitment(bountyId, commitment);
+
+        BotBountyEscrow.Bounty memory b = escrow.getBounty(bountyId);
+        assertEq(b.solver, solver1);
+        assertEq(b.prUrl, "");
+        assertEq(b.solutionCommitment, commitment);
+
+        // Maintainer releases with verified preimage
+        uint256 balBefore = solver1.balance;
+        vm.prank(maintainer);
+        escrow.releaseBountyWithProof(bountyId, prUrl, salt);
+
+        assertEq(solver1.balance - balBefore, amount);
+        b = escrow.getBounty(bountyId);
+        assertEq(uint(b.status), uint(BotBountyEscrow.BountyStatus.Settled));
+        assertEq(b.prUrl, prUrl);
+    }
+
+    function testRevertOnInvalidBlindCommitmentProof() public {
+        bytes32 bountyId = keccak256("blind-proof-fail-test");
+        uint256 amount = 1 ether;
+        vm.prank(maintainer);
+        escrow.createBounty{value: amount}(
+            bountyId,
+            address(0),
+            amount,
+            block.timestamp + 5 days,
+            0,
+            "https://github.com/botchain/bounties/issues/blind-fail"
+        );
+
+        string memory prUrl = "https://github.com/botchain/bounties/pull/secret-agent-pr";
+        bytes32 salt = keccak256("real-salt");
+        bytes32 commitment = keccak256(abi.encodePacked(solver1, prUrl, salt));
+
+        vm.prank(solver1);
+        escrow.submitSolutionCommitment(bountyId, commitment);
+
+        // Attempting to release with forged/wrong salt must revert
+        vm.prank(maintainer);
+        vm.expectRevert("Solution commitment verification failed");
+        escrow.releaseBountyWithProof(bountyId, prUrl, keccak256("wrong-salt"));
+    }
+
+    function testRevertOnUnauthorisedTimeoutClaim() public {
+        bytes32 bountyId = keccak256("unauth-timeout-test");
+        vm.prank(maintainer);
+        escrow.createBounty{value: 1 ether}(
+            bountyId,
+            address(0),
+            1 ether,
+            block.timestamp + 10 days,
+            1 days,
+            "https://github.com/botchain/bounties/issues/timeout"
+        );
+
+        vm.prank(solver1);
+        escrow.submitSolution(bountyId, "https://github.com/botchain/bounties/pull/timeout");
+
+        vm.warp(block.timestamp + 2 days);
+
+        // Attacker attempts timeout claim
+        vm.prank(attacker);
+        vm.expectRevert("Only solver can claim timeout");
+        escrow.claimTimeoutRelease(bountyId);
+    }
+
+    function testRevertOnUnauthorisedRefund() public {
+        bytes32 bountyId = keccak256("unauth-refund-test");
+        uint256 deadline = block.timestamp + 5 days;
+        vm.prank(maintainer);
+        escrow.createBounty{value: 1 ether}(
+            bountyId,
+            address(0),
+            1 ether,
+            deadline,
+            1 days,
+            "https://github.com/botchain/bounties/issues/refund"
+        );
+
+        vm.warp(deadline + 1);
+
+        // Attacker attempts refund
+        vm.prank(attacker);
+        vm.expectRevert("Only maintainer can refund");
+        escrow.refundBounty(bountyId);
+    }
+
+    function testRevertOnZeroReward() public {
+        bytes32 bountyId = keccak256("zero-reward-test");
+        vm.prank(maintainer);
+        vm.expectRevert("Reward must be > 0");
+        escrow.createBounty{value: 0}(
+            bountyId,
+            address(0),
+            0,
+            block.timestamp + 5 days,
+            1 days,
+            "https://github.com/botchain/bounties/issues/zero"
+        );
+    }
+
+    function testRevertOnPastDeadline() public {
+        bytes32 bountyId = keccak256("past-deadline-test");
+        vm.prank(maintainer);
+        vm.expectRevert("Deadline must be in future");
+        escrow.createBounty{value: 1 ether}(
+            bountyId,
+            address(0),
+            1 ether,
+            block.timestamp - 1,
+            1 days,
+            "https://github.com/botchain/bounties/issues/past"
+        );
+    }
+
+    function testRevertOnInvalidReviewPeriod() public {
+        bytes32 bountyId = keccak256("invalid-review-test");
+        vm.prank(maintainer);
+        // Review period < 1 days (e.g. 10 seconds)
+        vm.expectRevert("Invalid review period");
+        escrow.createBounty{value: 1 ether}(
+            bountyId,
+            address(0),
+            1 ether,
+            block.timestamp + 5 days,
+            10,
+            "https://github.com/botchain/bounties/issues/invalid-review"
+        );
     }
 
     function assertEq(uint256 a, uint256 b) internal pure {

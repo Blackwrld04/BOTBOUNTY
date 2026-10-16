@@ -611,7 +611,7 @@ export default function ConnectWalletModal({
                 }}
               >
                 <Zap size={16} strokeWidth={2.5} />
-                <span>Activate Instant Arc L1 Creator Wallet (1-Tap)</span>
+                <span>Activate Instant BOT Chain Creator Wallet (1-Tap)</span>
               </button>
             </>
           ) : (

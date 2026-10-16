@@ -157,20 +157,21 @@ bountyRouter.get('/:id', (req, res) => {
     const allSubmissions = Array.isArray(bounty.submissions) ? bounty.submissions : [];
     const submissionsCount = typeof bounty.submissionsCount === 'number' ? bounty.submissionsCount : allSubmissions.length;
 
-    // Blind submission privacy: non-admin callers only receive their own submission
+    // Blind submission privacy: unauthenticated users never receive raw submissions;
+    // authenticated users only receive their own submission; admin sees all.
     let filteredSubmissions = [];
     if (isAdmin) {
       filteredSubmissions = allSubmissions;
-    } else {
-      const uEmail = (authUser?.email || req.query.email || req.headers['x-user-email'] || '').trim().toLowerCase();
-      const uWallet = (authUser?.wallet_address || req.query.wallet || req.query.activeWallet || req.headers['x-wallet-address'] || '').trim().toLowerCase();
-      if (uEmail || uWallet) {
-        filteredSubmissions = allSubmissions.filter((s) => {
-          const sEmail = (s.creator_email || '').trim().toLowerCase();
-          const sWallet = (s.wallet_address || '').trim().toLowerCase();
-          return (uEmail && sEmail === uEmail) || (uWallet && sWallet === uWallet);
-        });
-      }
+    } else if (authUser) {
+      const uEmail = (authUser.email || '').trim().toLowerCase();
+      const uWallet = (authUser.wallet_address || '').trim().toLowerCase();
+      const uId = authUser.id;
+      filteredSubmissions = allSubmissions.filter((s) => {
+        const sEmail = (s.creator_email || '').trim().toLowerCase();
+        const sWallet = (s.wallet_address || '').trim().toLowerCase();
+        const sCreatorId = s.creator_id;
+        return (uId && sCreatorId === uId) || (uEmail && sEmail === uEmail) || (uWallet && sWallet === uWallet);
+      });
     }
 
     res.json({
@@ -246,8 +247,11 @@ bountyRouter.post('/:id/participate', (req, res) => {
   try {
     const { submissionUrl, walletAddress, notes, creatorName, creatorEmail, solverType } = req.body;
 
-    if (!submissionUrl) {
-      return res.status(400).json({ success: false, error: 'Deliverable submission URL is required' });
+    if (!submissionUrl || typeof submissionUrl !== 'string' || submissionUrl.trim().length < 10) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid or junk submission URL. Deliverable reference must be at least 10 characters.'
+      });
     }
     if (!walletAddress) {
       return res.status(400).json({ success: false, error: 'Payout wallet address is required' });
@@ -273,7 +277,7 @@ bountyRouter.post('/:id/participate', (req, res) => {
       });
     }
 
-    // Check optional session token
+    // Check session token
     let authUser = null;
     const authHeader = req.headers.authorization;
     if (authHeader && authHeader.startsWith('Bearer ')) {
@@ -281,8 +285,8 @@ bountyRouter.post('/:id/participate', (req, res) => {
     }
 
     // Bounty creators are strictly prohibited from participating in their own bounties
-    const submitterEmail = (creatorEmail || authUser?.email || '').trim().toLowerCase();
-    const submitterWallet = (walletAddress || authUser?.wallet_address || '').trim().toLowerCase();
+    const submitterEmail = (authUser?.email || creatorEmail || '').trim().toLowerCase();
+    const submitterWallet = (authUser?.wallet_address || walletAddress || '').trim().toLowerCase();
     const bountyCreatorEmail = (bounty.maintainerEmail || '').trim().toLowerCase();
     const bountyCreatorWallet = (bounty.maintainer || '').trim().toLowerCase();
 
@@ -299,9 +303,9 @@ bountyRouter.post('/:id/participate', (req, res) => {
     const submission = createBountySubmission({
       bountyId: req.params.id,
       creatorId: authUser?.id || null,
-      creatorName: creatorName || authUser?.name || 'Anonymous Creator',
-      creatorEmail: creatorEmail || authUser?.email || null,
-      walletAddress: walletAddress || authUser?.wallet_address,
+      creatorName: authUser?.name || creatorName || 'Anonymous Creator',
+      creatorEmail: authUser?.email || creatorEmail || null,
+      walletAddress: authUser?.wallet_address || walletAddress,
       submissionUrl,
       notes,
       solverType: solverType || 'Human Creator',
@@ -328,12 +332,34 @@ bountyRouter.post('/:id/participate', (req, res) => {
 bountyRouter.put('/:id/submissions/:submissionId', (req, res) => {
   try {
     let authUser = null;
+    let isAdmin = false;
     const authHeader = req.headers.authorization;
     if (authHeader && authHeader.startsWith('Bearer ')) {
-      authUser = getUserByToken(authHeader.split(' ')[1]);
+      const token = authHeader.split(' ')[1];
+      if (activeAdminTokens.has(token)) {
+        isAdmin = true;
+      } else {
+        authUser = getUserByToken(token);
+        if (authUser && isAdminUser(authUser.email, authUser.wallet_address)) {
+          isAdmin = true;
+        }
+      }
     }
 
-    const { submissionUrl, notes, collaborators, submitterEmail, submitterWallet } = req.body;
+    if (!authUser && !isAdmin) {
+      return res.status(401).json({
+        success: false,
+        error: 'Authentication required to modify this submission.'
+      });
+    }
+
+    const { submissionUrl, notes, collaborators } = req.body;
+    if (submissionUrl && (typeof submissionUrl !== 'string' || submissionUrl.trim().length < 10)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid or junk submission URL. Deliverable reference must be at least 10 characters.'
+      });
+    }
 
     const updated = updateBountySubmission({
       bountyId: req.params.id,
@@ -341,8 +367,9 @@ bountyRouter.put('/:id/submissions/:submissionId', (req, res) => {
       submissionUrl,
       notes,
       collaborators,
-      submitterEmail: submitterEmail || authUser?.email,
-      submitterWallet: submitterWallet || authUser?.wallet_address
+      submitterEmail: isAdmin ? null : authUser?.email,
+      submitterWallet: isAdmin ? null : authUser?.wallet_address,
+      isAdmin
     });
 
     res.json({
@@ -351,7 +378,8 @@ bountyRouter.put('/:id/submissions/:submissionId', (req, res) => {
       submission: updated
     });
   } catch (err) {
-    res.status(400).json({ success: false, error: err.message });
+    const status = err.status || (err.message.includes('Unauthorized') ? 403 : 400);
+    res.status(status).json({ success: false, error: err.message });
   }
 });
 
@@ -477,8 +505,11 @@ bountyRouter.post('/:id/claim', (req, res) => {
     const effectiveUrl = submissionUrl || prUrl;
     const effectiveWallet = walletAddress || solverAddress;
 
-    if (!effectiveUrl) {
-      return res.status(400).json({ success: false, error: 'Deliverable proof URL is required' });
+    if (!effectiveUrl || typeof effectiveUrl !== 'string' || effectiveUrl.trim().length < 10) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid or junk submission URL. Deliverable reference must be at least 10 characters.'
+      });
     }
     if (!effectiveWallet) {
       return res.status(400).json({ success: false, error: 'Wallet address is required' });
@@ -501,6 +532,15 @@ bountyRouter.post('/:id/claim', (req, res) => {
       return res.status(400).json({
         success: false,
         error: `Submissions are closed. Challenge status is currently "${bounty.status}".`
+      });
+    }
+
+    const bountyCreatorWallet = (bounty.maintainer || '').trim().toLowerCase();
+    const submitterWallet = (effectiveWallet || '').trim().toLowerCase();
+    if (bountyCreatorWallet && submitterWallet && bountyCreatorWallet === submitterWallet) {
+      return res.status(403).json({
+        success: false,
+        error: 'Bounty creators cannot participate in or submit solutions to their own bounties.'
       });
     }
 
@@ -584,7 +624,7 @@ bountyRouter.post('/:id/approve', async (req, res) => {
 
 /**
  * POST /api/bounties/:id/release
- * Platform administrator approves deliverable and disburses USDC bounty on Arc Mainnet
+ * Platform administrator / challenge maintainer approves deliverable and disburses reward on Bohr Testnet
  */
 bountyRouter.post('/:id/release', (req, res) => {
   try {
@@ -609,7 +649,7 @@ bountyRouter.post('/:id/release', (req, res) => {
     if (!isAdmin) {
       return res.status(403).json({
         success: false,
-        error: 'Approval and disbursal strictly belong to the platform administrator (olajideabdulquadri22@gmail.com).'
+        error: 'Approval and disbursal strictly belong to the platform administrator or challenge maintainer.'
       });
     }
 
@@ -622,27 +662,29 @@ bountyRouter.post('/:id/release', (req, res) => {
     if (bounty.submissions && bounty.submissions.length > 0) {
       winningSub = bounty.submissions[0];
     } else {
-      const recipientWallet = req.body.walletAddress || req.body.solverAddress || bounty.solver || '0x461cd48D95993242bB04774cc68042795586BbAd';
+      const recipientWallet = req.body.walletAddress || req.body.solverAddress || bounty.solver || '0x53e3800847e5Bb6fAfA0853d3e5a884B22aF8a20';
       winningSub = createBountySubmission({
         bountyId: bounty.id,
         walletAddress: recipientWallet,
-        submissionUrl: bounty.prUrl || req.body.submissionUrl || 'https://explorer.arc.io',
-        solverType: bounty.solverType || 'Verified Creator',
+        submissionUrl: bounty.prUrl || req.body.submissionUrl || 'https://scan.bohr.life',
+        solverType: bounty.solverType || 'Verified Solver',
         notes: 'Deliverable approved for direct release'
       });
     }
 
+    const providedTx = req.body.settlementTx || req.body.txHash;
     const result = disburseBountyReward({
       bountyId: bounty.id,
       submissionId: winningSub.id,
-      adminEmail: adminEmail || 'olajideabdulquadri22@gmail.com'
+      adminEmail: adminEmail || 'olajideabdulquadri22@gmail.com',
+      txHash: providedTx
     });
 
     const updatedBounty = getBountyById(bounty.id);
 
     res.json({
       success: true,
-      message: 'USDC reward disbursed to creator on Arc Mainnet',
+      message: 'Escrow reward disbursed to solver on Bohr Testnet',
       settlement: result,
       bounty: updatedBounty
     });

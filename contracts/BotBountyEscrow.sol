@@ -77,6 +77,7 @@ contract BotBountyEscrow is ReentrancyGuard {
         BountyStatus status;
         string issueUrl;
         string prUrl;
+        bytes32 solutionCommitment; // Optional cryptographic commitment hash for blind submission
     }
 
     // Default review duration: 7 days (604800 seconds)
@@ -106,6 +107,13 @@ contract BotBountyEscrow is ReentrancyGuard {
         bytes32 indexed bountyId,
         address indexed solver,
         string prUrl,
+        uint256 submittedAt
+    );
+
+    event SolutionCommitted(
+        bytes32 indexed bountyId,
+        address indexed solver,
+        bytes32 indexed solutionCommitment,
         uint256 submittedAt
     );
 
@@ -158,12 +166,17 @@ contract BotBountyEscrow is ReentrancyGuard {
             "Invalid review period"
         );
 
-        // Handle funding
+        // Handle funding with token code and actual received amount verification
         if (settlementToken == address(0)) {
             require(msg.value == amount, "Incorrect native BOT value sent");
         } else {
             require(msg.value == 0, "Native value sent for ERC20 bounty");
+            require(settlementToken.code.length > 0, "Invalid token contract address");
+
+            uint256 balanceBefore = IERC20(settlementToken).balanceOf(address(this));
             settlementToken.safeTransferFrom(msg.sender, address(this), amount);
+            uint256 balanceAfter = IERC20(settlementToken).balanceOf(address(this));
+            require(balanceAfter - balanceBefore == amount, "Actual received amount mismatch");
         }
 
         bounties[bountyId] = Bounty({
@@ -178,7 +191,8 @@ contract BotBountyEscrow is ReentrancyGuard {
             reviewPeriod: effectiveReviewPeriod,
             status: BountyStatus.Open,
             issueUrl: issueUrl,
-            prUrl: ""
+            prUrl: "",
+            solutionCommitment: bytes32(0)
         });
 
         allBountyIds.push(bountyId);
@@ -209,10 +223,12 @@ contract BotBountyEscrow is ReentrancyGuard {
         require(b.createdAt != 0, "Bounty does not exist");
         require(b.status == BountyStatus.Open, "Bounty not open for submissions");
         require(block.timestamp <= b.deadline, "Bounty expired");
-        require(bytes(prUrl).length > 0, "Empty PR URL");
+        require(msg.sender != b.maintainer, "Maintainer cannot solve own bounty");
+        require(bytes(prUrl).length >= 10, "Invalid or junk submission URL");
 
         b.solver = msg.sender;
         b.prUrl = prUrl;
+        b.solutionCommitment = bytes32(0);
         b.submittedAt = block.timestamp;
         b.status = BountyStatus.InReview;
 
@@ -222,10 +238,61 @@ contract BotBountyEscrow is ReentrancyGuard {
     }
 
     /**
+     * @notice Submit a private cryptographic commitment hash (Blind On-Chain Submission).
+     * @dev Solvers commit keccak256(solver, prUrl, salt) so sensitive deliverable links remain hidden on-chain until maintainer review.
+     * @param bountyId Unique identifier hash
+     * @param solutionCommitment Cryptographic commitment hash
+     */
+    function submitSolutionCommitment(
+        bytes32 bountyId,
+        bytes32 solutionCommitment
+    ) external nonReentrant {
+        Bounty storage b = bounties[bountyId];
+        require(b.createdAt != 0, "Bounty does not exist");
+        require(b.status == BountyStatus.Open, "Bounty not open for submissions");
+        require(block.timestamp <= b.deadline, "Bounty expired");
+        require(msg.sender != b.maintainer, "Maintainer cannot solve own bounty");
+        require(solutionCommitment != bytes32(0), "Invalid solution commitment hash");
+
+        b.solver = msg.sender;
+        b.prUrl = "";
+        b.solutionCommitment = solutionCommitment;
+        b.submittedAt = block.timestamp;
+        b.status = BountyStatus.InReview;
+
+        _solverBounties[msg.sender].push(bountyId);
+
+        emit SolutionCommitted(bountyId, msg.sender, solutionCommitment, block.timestamp);
+    }
+
+    /**
      * @notice Maintainer approves the solution and disburses escrowed reward to solver.
      * @param bountyId Unique identifier hash
      */
     function releaseBounty(bytes32 bountyId) external nonReentrant {
+        _executeRelease(bountyId, "");
+    }
+
+    /**
+     * @notice Maintainer approves a blind-committed solution, revealing the verified PR reference and salt.
+     * @param bountyId Unique identifier hash
+     * @param prUrl Verified Pull Request deliverable URL
+     * @param salt Cryptographic preimage salt
+     */
+    function releaseBountyWithProof(
+        bytes32 bountyId,
+        string calldata prUrl,
+        bytes32 salt
+    ) external nonReentrant {
+        Bounty storage b = bounties[bountyId];
+        if (b.solutionCommitment != bytes32(0)) {
+            bytes32 computed = keccak256(abi.encodePacked(b.solver, prUrl, salt));
+            require(computed == b.solutionCommitment, "Solution commitment verification failed");
+        }
+        _executeRelease(bountyId, prUrl);
+    }
+
+    function _executeRelease(bytes32 bountyId, string memory revealedPrUrl) internal {
         Bounty storage b = bounties[bountyId];
         require(b.createdAt != 0, "Bounty does not exist");
         require(msg.sender == b.maintainer, "Only maintainer can release");
@@ -235,11 +302,14 @@ contract BotBountyEscrow is ReentrancyGuard {
         address solver = b.solver;
         address token = b.settlementToken;
         uint256 amount = b.amount;
-        string memory prUrl = b.prUrl;
+        if (bytes(revealedPrUrl).length > 0) {
+            b.prUrl = revealedPrUrl;
+        }
+        string memory finalPrUrl = b.prUrl;
 
         b.status = BountyStatus.Settled;
 
-        emit BountySettled(bountyId, solver, token, amount, prUrl, false);
+        emit BountySettled(bountyId, solver, token, amount, finalPrUrl, false);
 
         _payout(token, solver, amount);
     }
@@ -264,6 +334,7 @@ contract BotBountyEscrow is ReentrancyGuard {
         // Reset state so others (or original solver after fixes) can submit
         b.solver = address(0);
         b.prUrl = "";
+        b.solutionCommitment = bytes32(0);
         b.submittedAt = 0;
         b.status = BountyStatus.Open;
 

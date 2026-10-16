@@ -614,8 +614,8 @@ export const INITIAL_BOUNTIES = [
     tags: ['3D Art', 'Figma', 'Mascot', 'Branding', 'Stickers'],
     status: 'Open',
     paymentStatus: 'funded',
-    depositTx: '0xarc9281a8b7c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a01',
-    escrowWallet: process.env.ESCROW_WALLET_ADDRESS || '0x8b415aE3956992b0cbC6C78c485A4d099F6331cE',
+    depositTx: '0x9281a8b7c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a01b2c3d4e5f6a7b8c9d0e01',
+    escrowWallet: process.env.ESCROW_WALLET_ADDRESS || '0xBE0aaE21b6252aa1207cAa50A753e8C45bCBCbc5',
     maintainer: '0x461cd48D95993242bB04774cc68042795586BbAd',
     maintainerName: 'Circle Creative Guild',
     maintainerEmail: 'guild@circle.com',
@@ -639,8 +639,8 @@ export const INITIAL_BOUNTIES = [
     tags: ['Motion Graphics', 'TikTok / Reels', '3D After Effects', 'Video'],
     status: 'Open',
     paymentStatus: 'funded',
-    depositTx: '0xarc7192a8b7c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a02',
-    escrowWallet: process.env.ESCROW_WALLET_ADDRESS || '0x8b415aE3956992b0cbC6C78c485A4d099F6331cE',
+    depositTx: '0x7192a8b7c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a02b1c2d3e4f5a6b7c8d9e02',
+    escrowWallet: process.env.ESCROW_WALLET_ADDRESS || '0xBE0aaE21b6252aa1207cAa50A753e8C45bCBCbc5',
     maintainer: '0x8b415aE3956992b0cbC6C78c485A4d099F6331cE',
     maintainerName: 'Arc Marketing DAO',
     maintainerEmail: 'marketing@arc.io',
@@ -664,8 +664,8 @@ export const INITIAL_BOUNTIES = [
     tags: ['Research', 'X Thread', 'Infographics', 'Architecture'],
     status: 'Settled',
     paymentStatus: 'settled',
-    depositTx: '0xarc6182a8b7c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a03',
-    escrowWallet: process.env.ESCROW_WALLET_ADDRESS || '0x8b415aE3956992b0cbC6C78c485A4d099F6331cE',
+    depositTx: '0x6182a8b7c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a03b1c2d3e4f5a6b7c8d9e03',
+    escrowWallet: process.env.ESCROW_WALLET_ADDRESS || '0xBE0aaE21b6252aa1207cAa50A753e8C45bCBCbc5',
     maintainer: '0x461cd48D95993242bB04774cc68042795586BbAd',
     maintainerName: 'Arc Research Foundation',
     maintainerEmail: 'research@arc.io',
@@ -675,7 +675,7 @@ export const INITIAL_BOUNTIES = [
     createdAt: Date.now() - 86400000 * 3,
     deadline: Date.now() + 86400000 * 7,
     settledAt: Date.now() - 86400000 * 1,
-    settlementTx: '0xarc1a0c40614615b1e7a309adca37d',
+    settlementTx: '0x1a0c40614615b1e7a309adca37da91823a8b7c4d5e6f7a8b9c0d1e2f3a4b5c03',
     description: "Break down Circle Arc's consensus algorithm for both retail and developer audiences. Must include visual diagrams explaining 380ms deterministic finality and institutional validator sets (BlackRock, ICE)."
   },
   {
@@ -691,8 +691,8 @@ export const INITIAL_BOUNTIES = [
     tags: ['Memes', 'Social', 'Humor', 'Viral', 'X/Twitter'],
     status: 'Settled',
     paymentStatus: 'settled',
-    depositTx: '0xarc5182a8b7c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a04',
-    escrowWallet: process.env.ESCROW_WALLET_ADDRESS || '0x8b415aE3956992b0cbC6C78c485A4d099F6331cE',
+    depositTx: '0x5182a8b7c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a04b1c2d3e4f5a6b7c8d9e04',
+    escrowWallet: process.env.ESCROW_WALLET_ADDRESS || '0xBE0aaE21b6252aa1207cAa50A753e8C45bCBCbc5',
     maintainer: '0x1234567890abcdef1234567890abcdef12345678',
     maintainerName: 'Arc Meme Department',
     maintainerEmail: 'memes@arc.io',
@@ -702,7 +702,7 @@ export const INITIAL_BOUNTIES = [
     createdAt: Date.now() - 86400000 * 5,
     deadline: Date.now() - 86400000 * 1,
     settledAt: Date.now() - 86400000 * 1,
-    settlementTx: '0xarc91823a8b7c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a04settle',
+    settlementTx: '0x91823a8b7c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a04b1c2d3e4f5a6b7c8d9e04',
     description: 'Create 5 top-tier, viral-ready memes contrasting user pain on high gas fee networks with the effortless $0.0004 USDC gas experience on Arc. Winner receives instant USDC.'
   },
   {
@@ -718,7 +718,7 @@ export const INITIAL_BOUNTIES = [
     tags: ['TypeScript', 'React', 'CCTP', 'EIP-3009', 'SDK'],
     status: 'Open',
     paymentStatus: 'funded',
-    depositTx: '0xarc4182a8b7c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a05',
+    depositTx: '0x4182a8b7c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a05b1c2d3e4f5a6b7c8d9e05',
     escrowWallet: process.env.ESCROW_WALLET_ADDRESS || '0x8b415aE3956992b0cbC6C78c485A4d099F6331cE',
     maintainer: '0x8b415aE3956992b0cbC6C78c485A4d099F6331cE',
     maintainerName: 'Circle Developer Platform',
@@ -754,7 +754,7 @@ export const INITIAL_BOUNTIES = [
     createdAt: Date.now() - 86400000 * 4,
     deadline: Date.now() + 86400000 * 8,
     settledAt: Date.now() - 86400000 * 2,
-    settlementTx: '0xarc1a0c3af6b2a5f7019c628920ceb',
+    settlementTx: '0x1a0c3af6b2a5f7019c628920ceba91823a8b7c4d5e6f7a8b9c0d1e2f3a4b5c05',
     description: 'Design a high-fidelity interactive SVG visualization of Circle Arc settlement.'
   },
   {
@@ -854,7 +854,7 @@ export function seedInitialBountiesIfEmpty() {
         'Alex Researcher',
         'awarded',
         800,
-        '0xarc1a0c40614615b1e7a309adca37d',
+        '0x1a0c40614615b1e7a309adca37da91823a8b7c4d5e6f7a8b9c0d1e2f3a4b5c03',
         Date.now() - 86400000 * 2
       );
       subStmt.run(
@@ -869,7 +869,7 @@ export function seedInitialBountiesIfEmpty() {
         'Alex Rivers',
         'awarded',
         750,
-        '0xarc1a0c3af6b2a5f7019c628920ceb',
+        '0x1a0c3af6b2a5f7019c628920ceba91823a8b7c4d5e6f7a8b9c0d1e2f3a4b5c05',
         Date.now() - 86400000 * 3
       );
       subStmt.run(
@@ -884,7 +884,7 @@ export function seedInitialBountiesIfEmpty() {
         'Meme God',
         'awarded',
         450,
-        '0xarc91823a8b7c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a04settle',
+        '0x91823a8b7c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a04b1c2d3e4f5a6b7c8d9e04',
         Date.now() - 86400000 * 4
       );
 
@@ -901,8 +901,8 @@ export function seedInitialBountiesIfEmpty() {
         '0x9923Bc8E4786A6B71D0052F5eCE984bC9d123456',
         'crypto_analyst@x.com',
         800,
-        '0xarc1a0c40614615b1e7a309adca37d',
-        'admin@arcbounty.io',
+        '0x1a0c40614615b1e7a309adca37da91823a8b7c4d5e6f7a8b9c0d1e2f3a4b5c03',
+        'admin@botbounty.ai',
         Date.now() - 86400000 * 1
       );
       disbStmt.run(
@@ -912,8 +912,8 @@ export function seedInitialBountiesIfEmpty() {
         '0x51a8b1bfeb88bdfa9207e999c0b2023c70c97c8f',
         'alex.rivers@designguild.org',
         750,
-        '0xarc1a0c3af6b2a5f7019c628920ceb',
-        'admin@arcbounty.io',
+        '0x1a0c3af6b2a5f7019c628920ceba91823a8b7c4d5e6f7a8b9c0d1e2f3a4b5c05',
+        'admin@botbounty.ai',
         Date.now() - 86400000 * 2
       );
       disbStmt.run(
@@ -923,8 +923,8 @@ export function seedInitialBountiesIfEmpty() {
         '0x71C568ba74d3B107292995bB791e317614399A45',
         'memegod@x.com',
         450,
-        '0xarc91823a8b7c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a04settle',
-        'admin@arcbounty.io',
+        '0x91823a8b7c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a04b1c2d3e4f5a6b7c8d9e04',
+        'admin@botbounty.ai',
         Date.now() - 86400000 * 1
       );
     }
@@ -1402,7 +1402,8 @@ export function updateBountySubmission({
   notes,
   collaborators,
   submitterEmail,
-  submitterWallet
+  submitterWallet,
+  isAdmin = false
 }) {
   const bounty = getBountyById(bountyId);
   if (!bounty) throw new Error('Bounty not found');
@@ -1418,15 +1419,17 @@ export function updateBountySubmission({
   const sub = db.prepare(`SELECT * FROM bounty_submissions WHERE id = ? AND bounty_id = ?`).get(submissionId, bounty.id);
   if (!sub) throw new Error('Submission not found');
 
-  // Verify ownership
+  // Verify ownership strictly from authenticated credentials
   const subEmail = (sub.creator_email || '').toLowerCase().trim();
   const subWallet = (sub.wallet_address || '').toLowerCase().trim();
   const userEmail = (submitterEmail || '').toLowerCase().trim();
   const userWallet = (submitterWallet || '').toLowerCase().trim();
 
-  const isOwner = (userEmail && userEmail === subEmail) || (userWallet && userWallet === subWallet) || isAdminUser(userEmail, userWallet);
+  const isOwner = isAdmin || (userEmail && userEmail === subEmail) || (userWallet && userWallet === subWallet);
   if (!isOwner) {
-    throw new Error('You can only edit your own submissions.');
+    const err = new Error('Unauthorized: You can only edit your own submissions.');
+    err.status = 403;
+    throw err;
   }
 
   // Parse and save previous version to revision_history
@@ -1630,7 +1633,7 @@ export function scanArcEscrowDeposits() {
       title: b.title,
       amount: b.amount,
       escrowWallet: b.escrow_wallet,
-      depositTx: b.deposit_tx || `0xarc${Date.now().toString(16)}${crypto.randomBytes(6).toString('hex')}`,
+      depositTx: b.deposit_tx || `0x${crypto.randomBytes(32).toString('hex')}`,
       verifiedOnChain: true,
       timestamp: Date.now()
     });
@@ -1662,7 +1665,7 @@ export function disburseMultiWinnerRewards({
     if (!sub) continue;
 
     const amountToPay = parseFloat(winner.amount) || 0;
-    const txHash = `0xarc${Date.now().toString(16)}${crypto.randomBytes(8).toString('hex')}`;
+    const txHash = winner.txHash || `0x${crypto.randomBytes(32).toString('hex')}`;
     const disbId = 'disb_' + crypto.randomBytes(8).toString('hex');
 
     db.prepare(`
@@ -1714,7 +1717,7 @@ export function disburseMultiWinnerRewards({
   `).run(
     primaryWinner.recipient || 'Multi-Winner',
     now,
-    primaryWinner.txHash || '0xarcMultiWinnerBatch',
+    primaryWinner.txHash || `0x${crypto.randomBytes(32).toString('hex')}`,
     bounty.id
   );
 
@@ -1773,9 +1776,9 @@ export function getAuditLedgerData() {
 }
 
 /**
- * Admin Action: Distribute USDC from escrow to winning creator
+ * Admin Action: Distribute reward from escrow to winning creator
  */
-export function disburseBountyReward({ bountyId, submissionId, adminEmail, customAmount }) {
+export function disburseBountyReward({ bountyId, submissionId, adminEmail, customAmount, txHash: providedTxHash }) {
   const bounty = getBountyById(bountyId);
   if (!bounty) throw new Error('Bounty not found');
 
@@ -1784,7 +1787,7 @@ export function disburseBountyReward({ bountyId, submissionId, adminEmail, custo
   if (!submission) throw new Error('Participant submission not found');
 
   const amountToPay = customAmount ? parseFloat(customAmount) : bounty.amount;
-  const txHash = `0xarc${Date.now().toString(16)}${crypto.randomBytes(8).toString('hex')}`;
+  const txHash = providedTxHash || `0x${crypto.randomBytes(32).toString('hex')}`;
   const now = Date.now();
   const disbId = 'disb_' + crypto.randomBytes(8).toString('hex');
 

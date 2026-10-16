@@ -216,7 +216,7 @@ test('ArcBounty Escrow Payments & Admin Distribution Tests', async (t) => {
 
     assert.equal(disbResult.success, true);
     assert.equal(disbResult.amount, 1750);
-    assert.ok(disbResult.txHash.startsWith('0xarc'));
+    assert.ok(disbResult.txHash.startsWith('0x'));
     assert.equal(disbResult.recipient, '0x2222222222222222222222222222222222222222');
 
     // Bounty should now be Settled

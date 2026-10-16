@@ -6,17 +6,17 @@
 
 [![Live Web App](https://img.shields.io/badge/Live_App-botbounty--theta.vercel.app-000000?style=flat-square&logo=vercel)](https://botbounty-theta.vercel.app/)
 [![Network: BOT Chain (677 / 968)](https://img.shields.io/badge/network-BOT_Chain_(677%20/%20968)-4f46e5?style=flat-square)](https://scan.bohr.life)
-[![Escrow Contract: Bohr Testnet](https://img.shields.io/badge/Contract-0x9096...9aA2-00ff66?style=flat-square)](https://scan.bohr.life/address/0x909661b453bBe13Ee247551754b35370557A9aA2)
+[![Escrow Contract: Bohr Testnet](https://img.shields.io/badge/Contract-0xB128...164A-00ff66?style=flat-square)](https://scan.bohr.life/address/0xB128F2f442554B6517D779788F28F2EB2612164A)
 [![Settlement: USDT & Native BOT](https://img.shields.io/badge/settlement-USDT_%26_Native_$BOT-2775ca?style=flat-square)](https://scan.bohr.life)
-[![Automated Test Suite: 10/10 Passing](https://img.shields.io/badge/Foundry_tests-10%2F10_passing-brightgreen?style=flat-square)](#the-smart-contract--settlement-specification)
-[![Backend Tests: 35/35 Passing](https://img.shields.io/badge/Backend_tests-35%2F35_passing-brightgreen?style=flat-square)](#verify-it-yourself)
+[![Automated Test Suite: 21/21 Passing](https://img.shields.io/badge/Foundry_tests-21%2F21_passing-brightgreen?style=flat-square)](#the-smart-contract--settlement-specification)
+[![Backend Tests: 48/48 Passing](https://img.shields.io/badge/Backend_tests-48%2F48_passing-brightgreen?style=flat-square)](#verify-it-yourself)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 
 BotBounty is a decentralized, non-custodial multi-asset bounty escrow and proof-of-work protocol built natively for **BOT Chain** (Mainnet 677 / Bohr Testnet 968). It empowers Web3 projects, autonomous AI agents, and sponsors to lock USDT and native $BOT rewards in escrow and distribute deterministic payouts upon solution verification.
 
 **Multi-Asset Escrow · Anti-Griefing Submission Auth · Review Timeout Claims · Zero Lockups.**
 
-[Live Web App (Vercel)](https://botbounty-theta.vercel.app/) · [Deployed Escrow on Bohr Explorer](https://scan.bohr.life/address/0x909661b453bBe13Ee247551754b35370557A9aA2) · [Smart Contract (BotBountyEscrow.sol)](contracts/BotBountyEscrow.sol) · [Foundry Tests (BotBountyEscrow.t.sol)](contracts/test/BotBountyEscrow.t.sol)
+[Live Web App (Vercel)](https://botbounty-theta.vercel.app/) · [Deployed Escrow on Bohr Explorer](https://scan.bohr.life/address/0xB128F2f442554B6517D779788F28F2EB2612164A) · [Smart Contract (BotBountyEscrow.sol)](contracts/BotBountyEscrow.sol) · [Foundry Tests (BotBountyEscrow.t.sol)](contracts/test/BotBountyEscrow.t.sol)
 
 </div>
 
@@ -268,44 +268,93 @@ Administrative authority (bounty approval, rubric scoring, and escrow settlement
 
 ```solidity
 interface IBotBountyEscrow {
-    enum BountyStatus { Open, InProgress, Submitted, Completed, Cancelled }
+    enum BountyStatus { Open, InReview, Settled, Refunded }
 
     struct Bounty {
-        uint256 id;
+        bytes32 bountyId;
         address maintainer;
         address solver;
-        address token; // address(0) for native $BOT, or ERC-20 (e.g. USDT)
+        address settlementToken; // address(0) for native $BOT, or ERC-20 (e.g. USDT)
         uint256 amount;
+        uint256 createdAt;
         uint256 deadline;
-        uint256 reviewTimeout;
         uint256 submittedAt;
+        uint256 reviewPeriod;
         BountyStatus status;
-        string solutionUri;
+        string issueUrl;
+        string prUrl;
+        bytes32 solutionCommitment; // Cryptographic commitment hash for blind submissions
     }
 
-    event BountyCreated(uint256 indexed id, address indexed maintainer, address token, uint256 amount, uint256 deadline, uint256 reviewTimeout);
-    event SolutionSubmitted(uint256 indexed id, address indexed solver, string solutionUri);
-    event SolutionRejected(uint256 indexed id, address indexed maintainer, string reason);
-    event BountyCompleted(uint256 indexed id, address indexed solver, uint256 amount);
-    event BountyCancelled(uint256 indexed id, address indexed maintainer, uint256 amount);
-    event TimeoutClaimed(uint256 indexed id, address indexed solver, uint256 amount);
+    event BountyCreated(bytes32 indexed bountyId, address indexed maintainer, address settlementToken, uint256 amount, string issueUrl, uint256 deadline, uint256 reviewPeriod);
+    event SolutionSubmitted(bytes32 indexed bountyId, address indexed solver, string prUrl, uint256 submittedAt);
+    event SolutionCommitted(bytes32 indexed bountyId, address indexed solver, bytes32 indexed solutionCommitment, uint256 submittedAt);
+    event SolutionRejected(bytes32 indexed bountyId, address indexed solver, string reason);
+    event BountySettled(bytes32 indexed bountyId, address indexed solver, address settlementToken, uint256 amount, string prUrl, bool timedOut);
+    event BountyRefunded(bytes32 indexed bountyId, address indexed maintainer, address settlementToken, uint256 amount);
 
-    function createBounty(address token, uint256 amount, uint256 deadline, uint256 reviewTimeout) external payable returns (uint256);
-    function submitSolution(uint256 bountyId, string calldata solutionUri) external;
-    function rejectSolution(uint256 bountyId, string calldata reason) external;
-    function releasePayment(uint256 bountyId) external;
-    function claimTimeoutRelease(uint256 bountyId) external;
-    function cancelBounty(uint256 bountyId) external;
-    function getBounties(uint256 offset, uint256 limit) external view returns (Bounty[] memory, uint256 total);
-    function getMaintainerBounties(address maintainer, uint256 offset, uint256 limit) external view returns (Bounty[] memory, uint256 total);
-    function getSolverBounties(address solver, uint256 offset, uint256 limit) external view returns (Bounty[] memory, uint256 total);
+    function createBounty(bytes32 bountyId, address settlementToken, uint256 amount, uint256 deadline, uint256 reviewPeriod, string calldata issueUrl) external payable;
+    function submitSolution(bytes32 bountyId, string calldata prUrl) external;
+    function submitSolutionCommitment(bytes32 bountyId, bytes32 solutionCommitment) external;
+    function releaseBounty(bytes32 bountyId) external;
+    function releaseBountyWithProof(bytes32 bountyId, string calldata prUrl, bytes32 salt) external;
+    function rejectSolution(bytes32 bountyId, string calldata reason) external;
+    function claimTimeoutRelease(bytes32 bountyId) external;
+    function refundBounty(bytes32 bountyId) external;
+
+    function getBounties(uint256 offset, uint256 limit) external view returns (Bounty[] memory page, uint256 total);
+    function getMaintainerBounties(address maintainer, uint256 offset, uint256 limit) external view returns (Bounty[] memory page, uint256 total);
+    function getSolverBounties(address solver, uint256 offset, uint256 limit) external view returns (Bounty[] memory page, uint256 total);
 }
 ```
 
-### Deployed Contract Instance:
-* **Network**: Bohr Testnet (Chain ID: 968)
-* **Contract Address**: [`0x909661b453bBe13Ee247551754b35370557A9aA2`](https://scan.bohr.life/address/0x909661b453bBe13Ee247551754b35370557A9aA2)
-* **Settlement Assets**: Bridged USDT (`0x75edC9335175Fc0552D51D48439F229c10420fe3`) & Native `$BOT`
+### Deployed Contract Instance & Bohr Testnet Verification Evidence
+
+* **Network**: Bohr Testnet (Chain ID: `968`, EVM)
+* **RPC URL**: `https://rpc.bohr.life`
+* **Block Explorer**: `https://scan.bohr.life`
+* **Escrow Contract Address**: [`0xB128F2f442554B6517D779788F28F2EB2612164A`](https://scan.bohr.life/address/0xB128F2f442554B6517D779788F28F2EB2612164A)
+* **Contract Deployment Tx**: [`0x6b40a134cdb7b0ec20e8aaa9391ff9481f3d5d59f37c76d09e6c8fb36e6cc14f`](https://scan.bohr.life/tx/0x6b40a134cdb7b0ec20e8aaa9391ff9481f3d5d59f37c76d09e6c8fb36e6cc14f)
+* **Deployer / Maintainer Wallet**: `0xBE0aaE21b6252aa1207cAa50A753e8C45bCBCbc5`
+* **Solver Test Wallet**: `0x53e3800847e5Bb6fAfA0853d3e5a884B22aF8a20`
+
+#### End-to-End Live Bohr Testnet Transactions Table
+
+| Action | Function Call | Transaction Hash | Explorer Link | Status |
+| :--- | :--- | :--- | :--- | :--- |
+| **Escrow Deployment** | `constructor()` | `0x6b40a134cdb7b0ec20e8aaa9391ff9481f3d5d59f37c76d09e6c8fb36e6cc14f` | [View on Bohr](https://scan.bohr.life/tx/0x6b40a134cdb7b0ec20e8aaa9391ff9481f3d5d59f37c76d09e6c8fb36e6cc14f) | Success (1) |
+| **Bounty 1: Create & Fund** | `createBounty(...)` (0.01 tBOT) | `0xcd6897b537b4d03db87a0202bd1d41fb3eb545a97076619ef08fd744787fc78c` | [View on Bohr](https://scan.bohr.life/tx/0xcd6897b537b4d03db87a0202bd1d41fb3eb545a97076619ef08fd744787fc78c) | Success (1) |
+| **Bounty 1: Submit Work** | `submitSolution(...)` | `0x1685b4bdda7e94fd20c0cec6383b532831f5371d090d7f376eba364c68d6ad71` | [View on Bohr](https://scan.bohr.life/tx/0x1685b4bdda7e94fd20c0cec6383b532831f5371d090d7f376eba364c68d6ad71) | Success (1) |
+| **Bounty 1: Release & Payout** | `releaseBounty(...)` | `0xc9c86fa10c4006cc5e76464785064e2d008bd6bc3d42953570b83f3c28a42dd7` | [View on Bohr](https://scan.bohr.life/tx/0xc9c86fa10c4006cc5e76464785064e2d008bd6bc3d42953570b83f3c28a42dd7) | Success (1) |
+| **Bounty 2: Create & Fund** | `createBounty(...)` (0.005 tBOT) | `0x03db374933374810f03d770ac1126a4d1cd51770fc6b73d6ac01d5ab3f517ff1` | [View on Bohr](https://scan.bohr.life/tx/0x03db374933374810f03d770ac1126a4d1cd51770fc6b73d6ac01d5ab3f517ff1) | Success (1) |
+| **Bounty 2: Submit Work** | `submitSolution(...)` | `0xfea4c93518b4e531a67285a404a9aa8b86ad967eb83405b2fd46f474d7a8c5ca` | [View on Bohr](https://scan.bohr.life/tx/0xfea4c93518b4e531a67285a404a9aa8b86ad967eb83405b2fd46f474d7a8c5ca) | Success (1) |
+| **Bounty 2: Reject Work** | `rejectSolution(...)` | `0x3a8d6b186c11e2aa0a756fff89e63b0bd3c5db5245d48817f7cd0fe2de29586b` | [View on Bohr](https://scan.bohr.life/tx/0x3a8d6b186c11e2aa0a756fff89e63b0bd3c5db5245d48817f7cd0fe2de29586b) | Success (1) |
+| **Bounty 3: Create & Fund** | `createBounty(...)` (0.005 tBOT) | `0x293b85b92c5eb3f8f461db2a1947bc1ba18690e84d4b6e420e8dec836fc2603c` | [View on Bohr](https://scan.bohr.life/tx/0x293b85b92c5eb3f8f461db2a1947bc1ba18690e84d4b6e420e8dec836fc2603c) | Success (1) |
+| **Bounty 3: Expire & Refund** | `refundBounty(...)` | `0xecc602c5384512aa0f932628bdf0a7fe2d8e4627fd9cf9057638c82040e890c2` | [View on Bohr](https://scan.bohr.life/tx/0xecc602c5384512aa0f932628bdf0a7fe2d8e4627fd9cf9057638c82040e890c2) | Success (1) |
+| **Timeout Claim Flow** | `claimTimeoutRelease(...)` | *Simulated via Foundry unit test* | [`testReviewTimeoutClaim()`](contracts/test/BotBountyEscrow.t.sol) | Passing |
+
+> **Clear Separation of Simulated vs. On-Chain Results:** The 8 on-chain transactions above were executed on Bohr Testnet with live state changes and verified balance transfers. The Review Timeout Claim path is enforced on-chain with a minimum 1-day lock (`MIN_REVIEW_PERIOD = 1 days`) to protect maintainers against instant timeout exploits; therefore, its full lifecycle is verified deterministically in the automated Foundry test suite using `vm.warp(block.timestamp + 8 days)`.
+
+### Supported Settlement Tokens & Policies
+
+1. **Native $BOT**: Settled with `settlementToken = address(0)` via `msg.value`.
+2. **Bridged USDT (`0x75edC9335175Fc0552D51D48439F229c10420fe3`)**: Standard 6-decimal stablecoin on BOT Chain.
+3. **ERC-20 Token Validation & Fee-on-Transfer Protection**:
+   - `settlementToken.code.length > 0` verifies that the address is a deployed contract.
+   - `require(balanceAfter - balanceBefore == amount)` verifies the exact balance delta received in escrow, preventing fee-on-transfer discrepancies.
+4. **Anti-Griefing & Maintainer Integrity**:
+   - Solvers are strictly verified as `msg.sender` (preventing unauthorized front-running).
+   - Maintainers are strictly forbidden from solving their own bounties (`require(msg.sender != b.maintainer)`).
+   - Anti-junk guard enforces deliverable URL length (`require(bytes(prUrl).length >= 10)`).
+5. **Timeout & Rejection Policy**:
+   - **Review Period**: Between 1 day (`MIN_REVIEW_PERIOD`) and 30 days (`MAX_REVIEW_PERIOD`), defaulting to 7 days.
+   - **Rejection**: Maintainer can reject an unsatisfactory deliverable with an on-chain reason string, returning the bounty to `Open` status so contributors can revise or others can submit.
+   - **Timeout Release**: If the maintainer fails to review before `submittedAt + reviewPeriod`, the solver calls `claimTimeoutRelease` to disburse funds automatically.
+   - **Refund**: If the deadline passes without fulfilled deliverables, the maintainer reclaims 100% of escrowed funds via `refundBounty`.
+6. **Privacy Specification (Portal Privacy vs. Public Settlement)**:
+   - **Competition Window**: Deliberables and notes submitted through the portal are confidential between the submitter and maintainer to prevent competitor sniping.
+   - **On-Chain Settlement**: Once approved, final deliverables and solver wallet addresses are immutably logged on-chain for transparent auditability.
+   - **Cryptographic Blind Commitments**: Contributors wishing to keep deliverable URLs private on-chain during review can call `submitSolutionCommitment(bytes32, bytes32)` committing `keccak256(solver, prUrl, salt)`, and maintainers disburse via `releaseBountyWithProof`.
 
 ---
 
@@ -313,19 +362,19 @@ interface IBotBountyEscrow {
 
 You can independently verify the entire BotBounty system locally using the automated test suites:
 
-### 1. Run Foundry Smart Contract Test Suite (10/10 Tests)
+### 1. Run Foundry Smart Contract Test Suite (21/21 Tests)
 ```bash
 cd contracts
 forge test -vv
 ```
-*Executes all 10 unit tests covering native currency escrow, ERC-20 token escrow, anti-griefing authorization, reject flow, review timeout release, and cancellation refund.*
+*Executes all 21 unit & negative tests covering native coin escrow, ERC-20 token escrow, fee-on-transfer protection, invalid token contracts, junk URL rejection, maintainer self-solve prevention, commit-reveal blind submissions, rejection flow, review timeout release, and cancellation refund.*
 
-### 2. Run Backend Unit & Integration Tests (35 Tests)
+### 2. Run Backend Unit & Security Integration Tests (48/48 Tests)
 ```bash
 cd server
 npm test
 ```
-*Executes all 35 tests covering escrow disbursements, single-submission constraints, deadline expiration, admin passwords, rubric scoring, and SQLite auth.*
+*Executes all 48 tests covering authenticated submission reads, unauthorized edit prevention (401/403), spoofed header/query rejection, junk deliverable rejection, maintainer self-solve lockout, on-chain transaction hash recording, single-submission constraints, deadline expiration, admin passwords, rubric scoring, and SQLite auth.*
 
 ### 3. Verify Client Production Build & Linting
 ```bash
