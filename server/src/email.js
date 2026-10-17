@@ -3,7 +3,7 @@ import 'dotenv/config';
 
 let transporter = null;
 
-const CLIENT_URL = process.env.CLIENT_URL || 'https://arc-bounty-pi.vercel.app';
+const CLIENT_URL = process.env.CLIENT_URL || 'https://botbounty-theta.vercel.app';
 
 /**
  * Local development fallback transport (in-memory JSON, 0ms latency, never hangs)

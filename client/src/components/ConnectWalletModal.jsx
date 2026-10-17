@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { ethers } from 'ethers';
 import {
   X,
   Check,
@@ -62,7 +63,7 @@ const WALLETS = [
     id: 'coinbase',
     name: 'Coinbase Wallet',
     url: 'https://www.coinbase.com/wallet/downloads',
-    desc: 'Passkey-ready with zero-gas creator settlement on Arc.',
+    desc: 'Passkey-ready with Native $BOT settlement on Bohr.',
     icon: (
       <img
         src="/wallets/coinbase.svg"
@@ -301,7 +302,7 @@ export default function ConnectWalletModal({
 
     try {
       // If user already logged in with address, activate immediately
-      const activeAddress = user?.address || '0x' + Array.from({ length: 40 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+      const activeAddress = user?.address || ethers.Wallet.createRandom().address;
 
       const res = await fetch(`${API_BASE}/api/auth/wallet`, {
         method: 'POST',
@@ -315,14 +316,14 @@ export default function ConnectWalletModal({
           connected: true,
           address: data.user.address,
           balance: data.user.balance || 1000,
-          type: 'arc_creator'
+          type: 'bot_creator'
         }, data.user, data.token);
       } else {
         onWalletConnected({
           connected: true,
           address: activeAddress,
           balance: 1000,
-          type: 'arc_creator'
+          type: 'bot_creator'
         }, user, null);
       }
       onClose();

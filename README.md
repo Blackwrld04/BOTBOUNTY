@@ -9,7 +9,7 @@
 [![Escrow Contract: Bohr Testnet](https://img.shields.io/badge/Contract-0xB128...164A-00ff66?style=flat-square)](https://scan.bohr.life/address/0xB128F2f442554B6517D779788F28F2EB2612164A)
 [![Settlement: USDT & Native BOT](https://img.shields.io/badge/settlement-USDT_%26_Native_$BOT-2775ca?style=flat-square)](https://scan.bohr.life)
 [![Automated Test Suite: 21/21 Passing](https://img.shields.io/badge/Foundry_tests-21%2F21_passing-brightgreen?style=flat-square)](#the-smart-contract--settlement-specification)
-[![Backend Tests: 48/48 Passing](https://img.shields.io/badge/Backend_tests-48%2F48_passing-brightgreen?style=flat-square)](#verify-it-yourself)
+[![Backend Tests: 58/58 Passing](https://img.shields.io/badge/Backend_tests-58%2F58_passing-brightgreen?style=flat-square)](#verify-it-yourself)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 
 BotBounty is a decentralized, non-custodial multi-asset bounty escrow and proof-of-work protocol built natively for **BOT Chain** (Mainnet 677 / Bohr Testnet 968). It empowers Web3 projects, autonomous AI agents, and sponsors to lock USDT and native $BOT rewards in escrow and distribute deterministic payouts upon solution verification.

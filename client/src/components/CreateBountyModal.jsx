@@ -666,10 +666,10 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
               {distributionType === 'single' && (
                 <div>
                   <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '6px' }}>
-                    1ST PLACE WINNER REWARD (USDC)
+                    1ST PLACE WINNER REWARD (BOT)
                   </label>
                   <div style={{ position: 'relative' }}>
-                    <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontWeight: 800, color: '#64748b' }}>$</span>
+                    <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontWeight: 800, color: '#64748b' }}>BOT</span>
                     <input
                       type="number"
                       min="10"
@@ -775,7 +775,7 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
                             min="5"
                             value={tier.amount}
                             onChange={(e) => handleUpdateTier(idx, 'amount', e.target.value)}
-                            placeholder="USDC"
+                            placeholder="BOT"
                             style={{
                               width: '100%',
                               padding: '6px 8px 6px 22px',
@@ -822,7 +822,7 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
                   }}>
                     <span style={{ fontWeight: 700, color: '#475569' }}>Total Tiered Prize Pool:</span>
                     <strong style={{ fontSize: '1rem', color: '#0f172a' }}>
-                      ${effectiveTotalAmount().toLocaleString()} USDC
+                      {effectiveTotalAmount().toLocaleString()} BOT
                     </strong>
                   </div>
                 </div>
@@ -858,10 +858,10 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
 
                     <div>
                       <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '6px' }}>
-                        USDC REWARD PER WINNER
+                        BOT REWARD PER WINNER
                       </label>
                       <div style={{ position: 'relative' }}>
-                        <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontWeight: 800, color: '#64748b' }}>$</span>
+                        <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontWeight: 800, color: '#64748b' }}>BOT</span>
                         <input
                           type="number"
                           min="5"
@@ -895,10 +895,10 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
                     fontSize: '0.82rem'
                   }}>
                     <span style={{ fontWeight: 700, color: '#475569' }}>
-                      {equalWinnerCount} creators &times; ${equalPerWinner} USDC each:
+                      {equalWinnerCount} creators &times; {equalPerWinner} BOT each:
                     </span>
                     <strong style={{ fontSize: '1rem', color: '#0f172a' }}>
-                      ${effectiveTotalAmount().toLocaleString()} USDC
+                      {effectiveTotalAmount().toLocaleString()} BOT
                     </strong>
                   </div>
                 </div>
@@ -1186,7 +1186,7 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
             </h2>
 
             <p style={{ fontSize: '0.88rem', color: '#475569', lineHeight: 1.5, maxWidth: '520px', margin: '0 auto 20px auto' }}>
-              Your challenge <strong>"{title}"</strong> for <strong>${effectiveTotalAmount().toLocaleString()} USDC</strong> has been submitted. The platform administrator will verify your escrow deposit and review conditions before it goes live.
+              Your challenge <strong>"{title}"</strong> for <strong>{effectiveTotalAmount().toLocaleString()} BOT</strong> has been submitted. The platform administrator will verify your escrow deposit and review conditions before it goes live.
             </p>
 
             <div style={{

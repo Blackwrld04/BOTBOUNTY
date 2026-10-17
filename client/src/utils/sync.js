@@ -32,7 +32,9 @@ export function triggerSync(payload = {}) {
 
   // 3. Storage event fallback for cross-tab notification
   try {
-    localStorage.setItem('arcbounty_sync_beacon', `${Date.now()}_${Math.random()}`);
+    const beacon = `${Date.now()}_${Math.random()}`;
+    localStorage.setItem('botbounty_sync_beacon', beacon);
+    localStorage.setItem('arcbounty_sync_beacon', beacon);
   } catch (e) {}
 }
 

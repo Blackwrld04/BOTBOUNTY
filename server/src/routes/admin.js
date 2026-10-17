@@ -96,10 +96,10 @@ export function requireAdmin(req, res, next) {
     if (Date.now() < session.expiresAt) {
       req.user = {
         id: 'admin_master',
-        email: process.env.GMAIL_USER || 'admin@arcbounty.io',
+        email: process.env.GMAIL_USER || 'admin@botbounty.tech',
         name: 'Master Administrator',
         role: 'admin',
-        wallet_address: process.env.ESCROW_WALLET_ADDRESS || '0x8b415aE3956992b0cbC6C78c485A4d099F6331cE'
+        wallet_address: process.env.ESCROW_WALLET_ADDRESS || '0xBE0aaE21b6252aa1207cAa50A753e8C45bCBCbc5'
       };
       return next();
     } else {
@@ -430,13 +430,32 @@ adminRouter.post('/bounties/:id/disburse-multi-winner', async (req, res) => {
       return res.status(400).json({ success: false, error: 'No winners provided for split disbursement' });
     }
 
+    const bounty = getBountyById(id);
+    if (!bounty) {
+      return res.status(404).json({ success: false, error: 'Bounty not found' });
+    }
+
+    let topTxHash = req.body.txHash || req.body.settlementTx;
+    if (!topTxHash && winners.some(w => !w.txHash)) {
+      try {
+        const onChainBountyId = bounty.onChainBountyId || bounty.bounty_id || ('0x' + '1'.repeat(64));
+        const executed = await executeOnChainRelease({ onChainBountyId });
+        topTxHash = executed.txHash;
+      } catch (err) {
+        // If server execution fails, on-chain hash must be supplied
+      }
+    }
+
     for (const w of winners) {
-      if (!w.txHash) {
+      const winnerTx = w.txHash || topTxHash;
+      if (!winnerTx) {
         return res.status(400).json({
           success: false,
           error: `Winner ${w.submissionId || w.walletAddress} is missing verified on-chain settlement txHash.`
         });
       }
+      w.txHash = winnerTx;
+
       await verifySettlementTransaction({
         txHash: w.txHash,
         expectedSolver: w.walletAddress,

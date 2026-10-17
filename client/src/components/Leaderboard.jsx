@@ -111,7 +111,7 @@ export default function Leaderboard() {
                   SETTLED ON LEADERBOARD
                 </span>
                 <span className="font-space" style={{ fontSize: '1.25rem', fontWeight: 900, color: '#000000' }}>
-                  ${totalLeaderboardEarned.toLocaleString()} USDT
+                  {totalLeaderboardEarned.toLocaleString()} BOT
                 </span>
               </div>
               <div style={{ width: '2px', height: '24px', background: '#000000' }} />
@@ -181,9 +181,9 @@ export default function Leaderboard() {
 
                     <td style={{ padding: isMobile ? '12px 10px' : '18px 20px' }}>
                       <span className="font-space" style={{ fontSize: isMobile ? '1rem' : '1.35rem', fontWeight: 900, color: '#000000' }}>
-                        ${Number(c.earned).toLocaleString()}
+                        {Number(c.earned).toLocaleString()}
                       </span>
-                      <span style={{ fontSize: isMobile ? '0.7rem' : '0.8rem', fontWeight: 800, marginLeft: '4px' }}>USDT</span>
+                      <span style={{ fontSize: isMobile ? '0.7rem' : '0.8rem', fontWeight: 800, marginLeft: '4px' }}>BOT</span>
                     </td>
                     {!isMobile && <td style={{ padding: '18px 20px' }}>
                       <span style={{

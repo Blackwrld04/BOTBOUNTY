@@ -696,7 +696,7 @@ export default function UserProfile({
                               <span>AWARDED &amp; DISBURSED</span>
                             </span>
                             <span className="font-space" style={{ fontSize: '1.15rem', fontWeight: 900, color: '#16a34a' }}>
-                              +${sub.reward_paid || sub.bounty_amount} USDC
+                              +{sub.reward_paid || sub.bounty_amount} BOT
                             </span>
                           </div>
                         ) : (
@@ -735,7 +735,7 @@ export default function UserProfile({
                   No bounty submissions recorded yet
                 </p>
                 <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '0 0 16px 0' }}>
-                  Submit high-impact work to open challenges across Content, Design, Development, and All Social to earn native USDC.
+                  Submit high-impact work to open challenges across Content, Design, Development, and All Social to earn native $BOT.
                 </p>
                 <button
                   type="button"

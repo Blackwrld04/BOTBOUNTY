@@ -37,10 +37,10 @@ export const bountyRouter = express.Router();
  * Retrieve platform escrow wallet address and chain metadata for deposit
  */
 bountyRouter.get('/escrow-wallet', (req, res) => {
-  const escrowWallet = process.env.ESCROW_WALLET_ADDRESS || '0xBE0aaE21b6252aa1207cAa50A753e8C45bCBCbc5';
+  const escrowWallet = config.escrowContractAddress || '0xB128F2f442554B6517D779788F28F2EB2612164A';
   res.json({
     success: true,
-    escrowWallet: config.escrowContractAddress || '0xB128F2f442554B6517D779788F28F2EB2612164A',
+    escrowWallet,
     chainId: parseInt(process.env.BOT_CHAIN_ID || '968', 10),
     networkName: 'BOT Chain (Bohr Testnet)',
     token: 'Native $BOT',

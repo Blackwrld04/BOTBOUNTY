@@ -326,28 +326,14 @@ export default function App() {
         triggerSync({ action: 'bounty_created', bountyId: data.bounty.id });
         showToast(`Bounty submitted! Awaiting Admin review & verification.`);
         return data.bounty;
+      } else {
+        throw new Error(data.error || 'Failed to create bounty on server');
       }
     } catch (e) {
-      console.warn('Backend create bounty failed:', e);
+      console.error('Create bounty failed:', e);
+      showToast(e.message || 'Failed to submit bounty', 'error');
+      throw e;
     }
-
-    // Local state fallback
-    const newBounty = {
-      id: `bounty-arc-${Date.now().toString().slice(-4)}`,
-      bountyId: `0x${Date.now().toString(16).padStart(64, '0')}`,
-      ...newBountyData,
-      status: 'Pending Review',
-      maintainerName: user?.name || 'Circle Creative Guild',
-      solver: null,
-      solverType: null,
-      prUrl: null,
-      createdAt: Date.now(),
-      deadline: Date.now() + newBountyData.deadlineDays * 86400000,
-    };
-
-    triggerSync({ action: 'bounty_created', bountyId: newBounty.id });
-    showToast(`Bounty submitted! Awaiting Admin review & verification.`);
-    return newBounty;
   };
 
   // Handle solver deliverable submission
@@ -398,13 +384,14 @@ export default function App() {
       let clientTxHash = null;
 
       // If maintainer has connected Web3 wallet, prompt direct on-chain release
-      if (typeof window !== 'undefined' && window.ethereum && selectedBounty?.onChainBountyId) {
+      const targetOnChainId = selectedBounty?.onChainBountyId || selectedBounty?.bountyId || selectedBounty?.bounty_id;
+      if (typeof window !== 'undefined' && window.ethereum && targetOnChainId) {
         try {
           const provider = new ethers.BrowserProvider(window.ethereum);
           const signer = await provider.getSigner();
           const escrowAbi = ['function releaseBounty(bytes32 bountyId) external'];
           const escrowContract = new ethers.Contract('0xB128F2f442554B6517D779788F28F2EB2612164A', escrowAbi, signer);
-          const tx = await escrowContract.releaseBounty(selectedBounty.onChainBountyId);
+          const tx = await escrowContract.releaseBounty(targetOnChainId);
           const receipt = await tx.wait();
           clientTxHash = receipt?.hash || tx.hash;
         } catch (walletErr) {

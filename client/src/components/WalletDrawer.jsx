@@ -307,7 +307,7 @@ export default function WalletDrawer({ isOpen, onClose, wallet, setWallet, netwo
                   No Bounty Payouts Collected Yet
                 </h5>
                 <p style={{ fontSize: '0.78rem', color: '#64748b', margin: 0, lineHeight: 1.45 }}>
-                  Participate in open challenges on BotBounty. When your work is approved, your USDT reward will be disbursed directly from escrow to your wallet and logged here.
+                  Participate in open challenges on BotBounty. When your work is approved, your Native $BOT reward will be disbursed directly from escrow to your wallet and logged here.
                 </p>
               </div>
             )}
