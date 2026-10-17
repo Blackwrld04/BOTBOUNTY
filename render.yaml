@@ -22,7 +22,7 @@ services:
       - key: BOT_MAINNET_CHAIN_ID
         value: "677"
       - key: ESCROW_CONTRACT_ADDRESS
-        value: "0x909661b453bBe13Ee247551754b35370557A9aA2"
+        value: "0xB128F2f442554B6517D779788F28F2EB2612164A"
       - key: USDT_ADDRESS
         value: "0x75edC9335175Fc0552D51D48439F229c10420fe3"
       - key: SMTP_HOST

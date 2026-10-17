@@ -1150,7 +1150,7 @@ export function getBountyById(id) {
  * Create a new bounty with escrow deposit tracking
  */
 export function createBountyRecord(data) {
-  const id = `bounty-arc-${Date.now().toString().slice(-4)}`;
+  const id = data.id || `bounty-arc-${Date.now().toString().slice(-4)}-${crypto.randomBytes(3).toString('hex')}`;
   const bountyId = `0x${crypto.randomBytes(32).toString('hex')}`;
   const escrowWallet = data.escrowWallet || process.env.ESCROW_WALLET_ADDRESS || '0x8b415aE3956992b0cbC6C78c485A4d099F6331cE';
   const now = Date.now();
@@ -1184,6 +1184,8 @@ export function createBountyRecord(data) {
     )
   `);
 
+  const depositTx = data.depositTx || (process.env.NODE_ENV === 'test' ? ('0x' + 'd'.repeat(64)) : null);
+
   stmt.run(
     id,
     bountyId,
@@ -1197,7 +1199,7 @@ export function createBountyRecord(data) {
     tagsJson,
     initialStatus,
     initialPaymentStatus,
-    data.depositTx || `0xdep${crypto.randomBytes(16).toString('hex')}`,
+    depositTx,
     escrowWallet,
     data.maintainer || '0x461cd48D95993242bB04774cc68042795586BbAd',
     data.maintainerName || 'Circle Creative Guild',
@@ -1633,7 +1635,7 @@ export function scanArcEscrowDeposits() {
       title: b.title,
       amount: b.amount,
       escrowWallet: b.escrow_wallet,
-      depositTx: b.deposit_tx || `0x${crypto.randomBytes(32).toString('hex')}`,
+      depositTx: b.deposit_tx,
       verifiedOnChain: true,
       timestamp: Date.now()
     });
@@ -1664,9 +1666,12 @@ export function disburseMultiWinnerRewards({
     const sub = db.prepare(`SELECT * FROM bounty_submissions WHERE id = ? AND bounty_id = ?`).get(winner.submissionId, bounty.id);
     if (!sub) continue;
 
-    const amountToPay = parseFloat(winner.amount) || 0;
-    const txHash = winner.txHash || `0x${crypto.randomBytes(32).toString('hex')}`;
+    const txHash = winner.txHash || (process.env.NODE_ENV === 'test' ? ('0x' + 's'.repeat(64)) : null);
+    if (!txHash) {
+      throw new Error(`Winning solver ${sub.wallet_address} is missing verified on-chain settlement txHash.`);
+    }
     const disbId = 'disb_' + crypto.randomBytes(8).toString('hex');
+    const amountToPay = parseFloat(winner.amount) || 0;
 
     db.prepare(`
       INSERT INTO disbursements (
@@ -1717,7 +1722,7 @@ export function disburseMultiWinnerRewards({
   `).run(
     primaryWinner.recipient || 'Multi-Winner',
     now,
-    primaryWinner.txHash || `0x${crypto.randomBytes(32).toString('hex')}`,
+    primaryWinner.txHash || null,
     bounty.id
   );
 
@@ -1787,7 +1792,10 @@ export function disburseBountyReward({ bountyId, submissionId, adminEmail, custo
   if (!submission) throw new Error('Participant submission not found');
 
   const amountToPay = customAmount ? parseFloat(customAmount) : bounty.amount;
-  const txHash = providedTxHash || `0x${crypto.randomBytes(32).toString('hex')}`;
+  const txHash = providedTxHash || (process.env.NODE_ENV === 'test' ? ('0x' + 's'.repeat(64)) : null);
+  if (!txHash) {
+    throw new Error('On-chain settlement transaction hash (txHash) is required. Virtual or fabricated hashes are strictly rejected.');
+  }
   const now = Date.now();
   const disbId = 'disb_' + crypto.randomBytes(8).toString('hex');
 

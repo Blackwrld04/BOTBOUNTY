@@ -1,0 +1,13 @@
+{
+  "contractAddress": "0xe5558c2b80c2f8327030de7fbfa74ff7aa5f8e62",
+  "bountyId": "0x95df2ff8b625d16bd5086d502667c186afd53b46c8d3d3ee4f07ba76cc693936",
+  "reviewPeriodSeconds": 10,
+  "maintainer": "0xBE0aaE21b6252aa1207cAa50A753e8C45bCBCbc5",
+  "solver": "0x5e0644a34346c908dc289175BCF8212d5627474E",
+  "deployTx": "0x373044710b517a1ac386849ca31d6c60997f0a6407a25a942221a11ce87d17e9",
+  "createTx": "0xe2d64a04bd9e80530399e5c7da6f6eac9e0ca07190d4bfbd4af77c782025f127",
+  "submitTx": "0x906c5167f5fbb54d937c50f31d115c64b2b8e43305bc55c42551a4d1957c0f20",
+  "timeoutClaimTx": "0x941cb175bee2faa892447b652c0537c865386e92249fe6338cf96e0a6b714d55",
+  "status": "success",
+  "timestamp": "2026-10-17T18:48:52.398Z"
+}

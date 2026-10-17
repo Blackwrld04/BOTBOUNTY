@@ -26,6 +26,10 @@ import {
   isExternalDbConfigured,
   syncSupabaseUsersToLocalSqlite
 } from '../supabase.js';
+import {
+  verifySettlementTransaction,
+  executeOnChainRelease
+} from '../services/onchainVerifier.js';
 
 export const adminRouter = express.Router();
 
@@ -245,7 +249,7 @@ adminRouter.get('/bounties/:id/submissions', (req, res) => {
  */
 adminRouter.post(['/distribute', '/disburse'], async (req, res) => {
   try {
-    const { bountyId, submissionId, amount } = req.body;
+    const { bountyId, submissionId, amount, txHash: clientTxHash } = req.body;
 
     if (!bountyId || !submissionId) {
       return res.status(400).json({
@@ -254,16 +258,48 @@ adminRouter.post(['/distribute', '/disburse'], async (req, res) => {
       });
     }
 
+    const bounty = getBountyById(bountyId);
+    if (!bounty) {
+      return res.status(404).json({ success: false, error: 'Bounty not found' });
+    }
+
+    const sub = db.prepare('SELECT * FROM bounty_submissions WHERE id = ?').get(submissionId);
+    if (!sub) {
+      return res.status(404).json({ success: false, error: 'Submission not found' });
+    }
+
+    let txHash = clientTxHash;
+    if (!txHash) {
+      try {
+        const onChainBountyId = bounty.onChainBountyId || bounty.bounty_id || ('0x' + '1'.repeat(64));
+        const executed = await executeOnChainRelease({ onChainBountyId });
+        txHash = executed.txHash;
+      } catch (err) {
+        return res.status(400).json({
+          success: false,
+          error: 'On-chain settlement transaction hash (txHash) is required: ' + err.message
+        });
+      }
+    }
+
+    // Verify on Bohr Testnet
+    await verifySettlementTransaction({
+      txHash,
+      expectedSolver: sub.wallet_address,
+      expectedAmount: amount || bounty.amount
+    });
+
     const settlement = disburseBountyReward({
       bountyId,
       submissionId,
       adminEmail: req.user.email,
-      customAmount: amount
+      customAmount: amount,
+      txHash
     });
 
     res.json({
       success: true,
-      message: `Successfully disbursed $${settlement.amount} USDC to creator!`,
+      message: `Successfully disbursed ${settlement.amount} $BOT to creator on Bohr Testnet!`,
       settlement
     });
   } catch (err) {
@@ -386,13 +422,28 @@ adminRouter.post('/submissions/:submissionId/score', (req, res) => {
  * POST /api/admin/bounties/:id/disburse-multi-winner
  * Disburse tiered prizes to multiple ranked winners
  */
-adminRouter.post('/bounties/:id/disburse-multi-winner', (req, res) => {
+adminRouter.post('/bounties/:id/disburse-multi-winner', async (req, res) => {
   try {
     const { id } = req.params;
     const { winners } = req.body;
     if (!winners || !Array.isArray(winners) || winners.length === 0) {
       return res.status(400).json({ success: false, error: 'No winners provided for split disbursement' });
     }
+
+    for (const w of winners) {
+      if (!w.txHash) {
+        return res.status(400).json({
+          success: false,
+          error: `Winner ${w.submissionId || w.walletAddress} is missing verified on-chain settlement txHash.`
+        });
+      }
+      await verifySettlementTransaction({
+        txHash: w.txHash,
+        expectedSolver: w.walletAddress,
+        expectedAmount: w.amount
+      });
+    }
+
     const adminEmail = req.adminUser?.email || 'admin@arcbounty.io';
     const result = disburseMultiWinnerRewards({
       bountyId: id,
@@ -401,7 +452,7 @@ adminRouter.post('/bounties/:id/disburse-multi-winner', (req, res) => {
     });
     res.json({
       success: true,
-      message: 'Multi-winner prize distribution settled successfully on Arc L1.',
+      message: 'Multi-winner prize distribution settled successfully on BOT Chain Bohr Testnet.',
       result
     });
   } catch (err) {

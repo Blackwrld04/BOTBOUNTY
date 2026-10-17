@@ -32,7 +32,7 @@ BotBounty is purpose-built on BOT Chain ([scan.bohr.life](https://scan.bohr.life
 | **Block Explorer** | `https://scan.bohr.life` | `https://scan.botchain.ai` |
 | **Native Gas Currency** | `$BOT` (18 decimals) | `$BOT` (18 decimals) |
 | **Bridged USDT Contract** | `0x75edC9335175Fc0552D51D48439F229c10420fe3` (6 decimals) | Verified bridged USDT |
-| **Escrow Smart Contract** | `0x909661b453bBe13Ee247551754b35370557A9aA2` | Deployed BotBountyEscrow |
+| **Escrow Smart Contract** | `0xB128F2f442554B6517D779788F28F2EB2612164A` | Deployed BotBountyEscrow |
 
 ### Why BOT Chain for Bounties?
 1. **Low-Cost High-Frequency Execution**: Micro-bounties and AI agent tasks are economically viable due to minimal gas fees.

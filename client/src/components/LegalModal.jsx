@@ -34,7 +34,7 @@ export default function LegalModal({ type, onClose }) {
 
           <div>
             <strong style={{ color: '#0f172a', display: 'block', fontSize: '0.92rem', marginBottom: '4px' }}>4. Challenge Creation &amp; Escrow Verification</strong>
-            Sponsors establish bounties by locking the exact prize pool into the platform escrow address (<code>0x909661b453bBe13Ee247551754b35370557A9aA2</code>) or locking funds via <code>BotBountyEscrow.sol</code>. Challenges remain in <strong>Pending Review</strong> until platform administrators verify the deposit on Bohr Scan to prevent unbacked listings.
+            Sponsors establish bounties by locking the exact prize pool into the platform escrow address (<code>0xB128F2f442554B6517D779788F28F2EB2612164A</code>) or locking funds via <code>BotBountyEscrow.sol</code>. Challenges remain in <strong>Pending Review</strong> until platform administrators verify the deposit on Bohr Scan to prevent unbacked listings.
           </div>
 
           <div>
@@ -176,7 +176,7 @@ export default function LegalModal({ type, onClose }) {
                     </tr>
                     <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
                       <td style={{ padding: '4px 0', fontWeight: 700 }}>Escrow Contract</td>
-                      <td style={{ padding: '4px 0', fontFamily: 'monospace' }}>0x909661b453bBe13Ee247551754b35370557A9aA2</td>
+                      <td style={{ padding: '4px 0', fontFamily: 'monospace' }}>0xB128F2f442554B6517D779788F28F2EB2612164A</td>
                     </tr>
                     <tr>
                       <td style={{ padding: '4px 0', fontWeight: 700 }}>Block Explorer</td>
@@ -236,7 +236,7 @@ export default function LegalModal({ type, onClose }) {
                 <ol style={{ margin: '0 0 10px 0', paddingLeft: '20px' }}>
                   <li>Click <strong>Post a Bounty</strong> and use the AI Prompt Assistant to draft clear acceptance criteria.</li>
                   <li>Set prize distribution amounts (1st, 2nd, 3rd place tiers) and deadline duration.</li>
-                  <li>Deposit the escrow reward into the platform escrow address (<code>0x909661b453bBe13Ee247551754b35370557A9aA2</code>).</li>
+                  <li>Deposit the escrow reward into the platform escrow address (<code>0xB128F2f442554B6517D779788F28F2EB2612164A</code>).</li>
                   <li>Platform admins verify the transaction on Bohr Scan and move the bounty from Pending Review to Open.</li>
                 </ol>
               </div>

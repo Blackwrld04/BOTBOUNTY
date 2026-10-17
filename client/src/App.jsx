@@ -395,12 +395,32 @@ export default function App() {
       const sessionToken = typeof window !== 'undefined' ? localStorage.getItem('arcbounty_session_token') : null;
       const token = adminToken || sessionToken;
 
+      let clientTxHash = null;
+
+      // If maintainer has connected Web3 wallet, prompt direct on-chain release
+      if (typeof window !== 'undefined' && window.ethereum && selectedBounty?.onChainBountyId) {
+        try {
+          const provider = new ethers.BrowserProvider(window.ethereum);
+          const signer = await provider.getSigner();
+          const escrowAbi = ['function releaseBounty(bytes32 bountyId) external'];
+          const escrowContract = new ethers.Contract('0xB128F2f442554B6517D779788F28F2EB2612164A', escrowAbi, signer);
+          const tx = await escrowContract.releaseBounty(selectedBounty.onChainBountyId);
+          const receipt = await tx.wait();
+          clientTxHash = receipt?.hash || tx.hash;
+        } catch (walletErr) {
+          console.warn('Direct wallet release bypassed, falling back to facilitator relay:', walletErr.message);
+        }
+      }
+
       const res = await fetch(`${API_BASE}/api/bounties/${bountyId}/release`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {})
-        }
+        },
+        body: JSON.stringify({
+          txHash: clientTxHash
+        })
       });
       const data = await res.json();
       if (data.success && data.settlement) {
@@ -410,7 +430,7 @@ export default function App() {
         }
         await syncAllData();
         triggerSync({ action: 'bounty_settled', bountyId });
-        showToast(`Settlement confirmed on BOT Chain in 382ms! USDT disbursed.`, 'success', `https://scan.bohr.life/tx/${data.settlement.txHash}`);
+        showToast(`Settlement confirmed on Bohr Testnet! Native $BOT reward disbursed.`, 'success', `https://scan.bohr.life/tx/${data.settlement.txHash}`);
         return;
       } else if (data.error) {
         showToast(data.error, 'error');

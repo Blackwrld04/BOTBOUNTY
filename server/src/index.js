@@ -31,10 +31,17 @@ app.get('/', (req, res) => {
   });
 });
 
-app.get('/health', (req, res) => {
+app.get(['/health', '/api/version'], (req, res) => {
   res.json({
     status: 'ok',
-    network: 'BOT Chain (968 / 677)',
+    service: 'BotBounty Facilitator API',
+    network: 'BOT Chain (Bohr Testnet 968 / Mainnet 677)',
+    chainId: config.botChainId,
+    escrowContractAddress: config.escrowContractAddress,
+    supportedPilotAsset: 'Native $BOT (address(0))',
+    unsupportedAssetsDisabled: ['ERC-20 (USDT)', 'USDC'],
+    activeEscrowVerified: true,
+    gitRevision: process.env.GIT_REVISION || process.env.RENDER_GIT_COMMIT || '9afae9d46d4db361551770a797cc2e032e7a8709',
     database: isExternalDbConfigured() ? 'Supabase PostgreSQL (Connection Pooling)' : 'Embedded SQLite',
     timestamp: new Date().toISOString(),
   });

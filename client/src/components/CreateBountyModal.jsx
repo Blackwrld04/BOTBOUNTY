@@ -48,6 +48,7 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [escrowWallet, setEscrowWallet] = useState('0xB128F2f442554B6517D779788F28F2EB2612164A');
   const [depositTx, setDepositTx] = useState('');
+  const [onChainBountyId, setOnChainBountyId] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('wallet'); // 'wallet' or 'manual'
   const [copiedEscrow, setCopiedEscrow] = useState(false);
   const [isPayingWallet, setIsPayingWallet] = useState(false);
@@ -91,36 +92,73 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
   const handlePayWithWallet = async () => {
     setIsPayingWallet(true);
     try {
-      if (typeof window !== 'undefined' && window.ethereum) {
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const signer = await provider.getSigner();
-        const escrowAbi = [
-          'function createBounty(bytes32 bountyId, address settlementToken, uint256 amount, uint256 deadline, uint256 reviewPeriod, string issueUrl) external payable'
-        ];
-        const escrowContract = new ethers.Contract(escrowWallet, escrowAbi, signer);
-        const bountyIdBytes32 = ethers.keccak256(ethers.toUtf8Bytes(title + Date.now().toString()));
-        const deadlineSec = Math.floor(Date.now() / 1000) + (parseInt(deadlineDays, 10) || 14) * 86400;
-        const totalAmountWei = ethers.parseEther('0.01'); // Base testnet funding amount
-
-        const tx = await escrowContract.createBounty(
-          bountyIdBytes32,
-          ethers.ZeroAddress,
-          totalAmountWei,
-          deadlineSec,
-          86400 * 7,
-          'https://github.com/Blackwrld04/BOTBOUNTY',
-          { value: totalAmountWei }
-        );
-        const receipt = await tx.wait();
-        const txHash = receipt?.hash || tx.hash;
-        setDepositTx(txHash);
-      } else {
-        const txHash = '0x' + Array.from(crypto.getRandomValues(new Uint8Array(32))).map(b => b.toString(16).padStart(2, '0')).join('');
-        setDepositTx(txHash);
+      const totalAmount = effectiveTotalAmount();
+      if (!totalAmount || totalAmount <= 0) {
+        alert('Please specify a valid reward amount before funding escrow.');
+        return;
       }
+
+      if (typeof window === 'undefined' || !window.ethereum) {
+        alert('No Web3 wallet detected. Please connect MetaMask or Rabby to BOT Chain Bohr Testnet (Chain ID 968) to execute real escrow funding on-chain.');
+        return;
+      }
+
+      const provider = new ethers.BrowserProvider(window.ethereum);
+
+      // Enforce Bohr Testnet (Chain ID 968)
+      const network = await provider.getNetwork();
+      if (Number(network.chainId) !== 968) {
+        try {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: '0x3c8' }]
+          });
+        } catch (switchError) {
+          if (switchError.code === 4902) {
+            await window.ethereum.request({
+              method: 'wallet_addEthereumChain',
+              params: [{
+                chainId: '0x3c8',
+                chainName: 'BOT Bohr Testnet',
+                nativeCurrency: { name: 'BOT', symbol: 'tBOT', decimals: 18 },
+                rpcUrls: ['https://rpc.bohr.life'],
+                blockExplorerUrls: ['https://scan.bohr.life']
+              }]
+            });
+          } else {
+            throw new Error('Please switch your wallet network to BOT Chain Bohr Testnet (Chain ID 968).');
+          }
+        }
+      }
+
+      const signer = await provider.getSigner();
+      const escrowAbi = [
+        'function createBounty(bytes32 bountyId, address settlementToken, uint256 amount, uint256 deadline, uint256 reviewPeriod, string issueUrl) external payable'
+      ];
+      const escrowContract = new ethers.Contract(escrowWallet, escrowAbi, signer);
+      const bountyIdBytes32 = ethers.keccak256(ethers.toUtf8Bytes((title || 'Bounty') + '-' + Date.now().toString()));
+      const deadlineSec = Math.floor(Date.now() / 1000) + (parseInt(deadlineDays, 10) || 14) * 86400;
+      const totalAmountWei = ethers.parseEther(totalAmount.toString());
+
+      const tx = await escrowContract.createBounty(
+        bountyIdBytes32,
+        ethers.ZeroAddress, // Strictly native $BOT for Phase 1 Pilot
+        totalAmountWei,
+        deadlineSec,
+        86400 * 7,
+        'https://github.com/Blackwrld04/BOTBOUNTY',
+        { value: totalAmountWei }
+      );
+      const receipt = await tx.wait();
+      if (!receipt || receipt.status !== 1) {
+        throw new Error('Escrow funding transaction reverted or unconfirmed on Bohr Testnet.');
+      }
+      const txHash = receipt.hash || tx.hash;
+      setDepositTx(txHash);
+      setOnChainBountyId(bountyIdBytes32);
     } catch (e) {
       console.warn('Wallet payment prompt error:', e);
-      alert('Wallet transaction prompt: ' + (e.message || e));
+      alert('Wallet transaction error: ' + (e.message || e));
     } finally {
       setIsPayingWallet(false);
     }
@@ -170,9 +208,13 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
       return;
     }
 
+    if (!depositTx) {
+      alert('On-chain escrow deposit required: Please click "Lock Funds via Web3 Wallet" to fund the bounty on Bohr Testnet before submitting.');
+      return;
+    }
+
     setIsSubmitting(true);
     const catObj = CREATOR_CATEGORIES.find((c) => c.id === category) || CREATOR_CATEGORIES[1];
-    const generatedTx = depositTx || ('0x' + Array.from(crypto.getRandomValues(new Uint8Array(32))).map(b => b.toString(16).padStart(2, '0')).join(''));
 
     let rewardDistribution = null;
     if (distributionType === 'tiered') {
@@ -212,17 +254,19 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
       categoryName: catObj.label.replace(/^[^\s]+\s/, ''),
       categoryColor: catObj.color,
       submissionType,
-      issueUrl: `https://arcbounty.io/task/${Date.now().toString().slice(-4)}`,
+      issueUrl: `https://github.com/Blackwrld04/BOTBOUNTY/issues/${Date.now().toString().slice(-4)}`,
       amount: totalCalculated,
       rewardDistribution,
       description: description || 'Deliver high quality creative work satisfying requirements.',
-      tags: [category, 'Circle Arc', 'USDC'],
+      tags: [category, 'BOT Chain', 'Native $BOT'],
       deadlineDays: Math.max(1, parseInt(deadlineDays, 10) || 7),
       deadline: Date.now() + Math.max(1, parseInt(deadlineDays, 10) || 7) * 86400000,
       escrowWallet,
-      depositTx: generatedTx,
-      maintainer: wallet.address || user?.address || '0x461cd48D95993242bB04774cc68042795586BbAd',
-      maintainerName: user?.name || 'Circle Creative Guild',
+      depositTx,
+      onChainBountyId,
+      settlementToken: '0x0000000000000000000000000000000000000000',
+      maintainer: wallet.address || user?.address || '0xBE0aaE21b6252aa1207cAa50A753e8C45bCBCbc5',
+      maintainerName: user?.name || 'BOT Ecosystem Sponsor',
       maintainerEmail: user?.email || null
     };
 
@@ -954,8 +998,16 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
                 </span>
               </div>
 
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                <span style={{ fontSize: '0.72rem', fontWeight: 800, background: '#dcfce7', color: '#166534', border: '1px solid #86efac', padding: '2px 8px', borderRadius: '4px' }}>
+                  Pilot Asset: Native $BOT
+                </span>
+                <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748b' }}>
+                  (Unsupported ERC-20 Tokens Disabled)
+                </span>
+              </div>
               <p style={{ fontSize: '0.8rem', color: '#475569', lineHeight: 1.4, margin: '0 0 10px 0' }}>
-                Lock total reward of <strong style={{ color: '#0f172a' }}>${effectiveTotalAmount().toLocaleString()} ($BOT / USDT)</strong> directly into the verified escrow contract:
+                Lock total reward of <strong style={{ color: '#0f172a' }}>{effectiveTotalAmount()} Native $BOT</strong> directly into the verified escrow contract:
               </p>
 
               {/* Address Box with Copy */}

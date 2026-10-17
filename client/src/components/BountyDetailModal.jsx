@@ -931,21 +931,21 @@ export default function BountyDetailModal({
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: '5px',
-                        background: '#ecfdf5',
-                        color: '#065f46',
-                        border: '1.5px solid #059669',
+                        background: '#eff6ff',
+                        color: '#1e40af',
+                        border: '1.5px solid #3b82f6',
                         padding: '4px 10px',
                         borderRadius: '6px',
                         fontSize: '0.72rem',
                         fontWeight: 800
                       }}>
                         <Lock size={12} />
-                        <span>Blind Submission Protocol</span>
+                        <span>Direct Review Flow (v1)</span>
                       </span>
                     </div>
 
                     <p style={{ margin: 0, fontSize: '0.76rem', color: '#475569', lineHeight: 1.45 }}>
-                      🔒 <strong>Portal Privacy &amp; On-Chain Transparency:</strong> To prevent solution sniping during active competition, submissions and notes submitted via the portal remain sealed between the solver and maintainer. Upon payout settlement, winner deliverables and addresses are publicly verified on-chain via the Bohr Escrow Contract. Direct on-chain solvers can also submit cryptographic commitments (keccak256).
+                      🔒 <strong>Direct Deliverable Review &amp; On-Chain Settlement:</strong> In v1 of the portal, deliverables (GitHub PR / link) are submitted directly to the maintainer for evaluation and verified on-chain via Bohr Escrow (<code>submitSolution</code> / <code>releaseBounty</code>). Submissions are access-controlled so solvers see only their own work during review, while final winner deliverables and disbursements settle publicly on-chain. Smart contract cryptographic blind commit-reveal (<code>submitSolutionCommitment</code>) is reserved for Phase 2 privacy agent workflows.
                     </p>
                   </div>
 

@@ -440,6 +440,21 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
     setDistributingId(submission.id);
 
     try {
+      let clientTxHash = null;
+      if (typeof window !== 'undefined' && window.ethereum && bounty.onChainBountyId) {
+        try {
+          const provider = new ethers.BrowserProvider(window.ethereum);
+          const signer = await provider.getSigner();
+          const escrowAbi = ['function releaseBounty(bytes32 bountyId) external'];
+          const escrowContract = new ethers.Contract('0xB128F2f442554B6517D779788F28F2EB2612164A', escrowAbi, signer);
+          const tx = await escrowContract.releaseBounty(bounty.onChainBountyId);
+          const receipt = await tx.wait();
+          clientTxHash = receipt?.hash || tx.hash;
+        } catch (walletErr) {
+          console.warn('Direct wallet release bypassed, falling back to facilitator relay:', walletErr.message);
+        }
+      }
+
       const res = await fetch(`${API_BASE}/api/admin/distribute`, {
         method: 'POST',
         headers: {
@@ -449,7 +464,8 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
         body: JSON.stringify({
           bountyId: bounty.id,
           submissionId: submission.id,
-          amount: bounty.amount
+          amount: bounty.amount,
+          txHash: clientTxHash
         })
       });
 
@@ -1140,7 +1156,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
           </button>
 
           <a
-            href={`https://scan.bohr.life/address/${stats?.escrowWallet || '0x909661b453bBe13Ee247551754b35370557A9aA2'}`}
+            href={`https://scan.bohr.life/address/${stats?.escrowWallet || '0xB128F2f442554B6517D779788F28F2EB2612164A'}`}
             target="_blank"
             rel="noopener noreferrer"
             style={{
@@ -2140,7 +2156,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
               </div>
               <div>
                 <h3 style={{ fontSize: '1.2rem', fontWeight: 900, color: '#0f172a', margin: 0 }}>
-                  Confirm USDC Prize Payout
+                  Confirm Native $BOT Prize Payout
                 </h3>
                 <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
                   Execution on BOT Chain Protocol (Chain ID 677 / 968)
@@ -2149,7 +2165,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
             </div>
 
             <p style={{ fontSize: '0.88rem', color: '#475569', lineHeight: 1.5, marginBottom: '18px' }}>
-              You are about to distribute the platform escrow prize of <strong style={{ color: '#0f172a' }}>${confirmModal.bounty.amount} USDC</strong> to:
+              You are about to distribute the platform escrow prize of <strong style={{ color: '#0f172a' }}>{confirmModal.bounty.amount} Native $BOT</strong> to:
             </p>
 
             <div style={{

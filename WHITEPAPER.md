@@ -148,7 +148,7 @@ High-frequency reads and edge updates are serviced by an embedded in-memory SQLi
 | **Chain ID** | `968` | `677` |
 | **Native Gas Token** | $BOT (Native Gas) | $BOT (Native Gas) |
 | **Bounty Settlement Asset** | Bridged USDT (`0x75ed...0fe3`) / $BOT | Bridged USDT / Native $BOT |
-| **Deployed Escrow** | `0x909661b453bBe13Ee247551754b35370557A9aA2` | Configured for deployment |
+| **Deployed Escrow** | `0xB128F2f442554B6517D779788F28F2EB2612164A` | Configured for deployment |
 | **RPC Endpoint** | `https://rpc.bohr.life` | `https://rpc.botchain.ai` |
 | **Explorer** | `https://scan.bohr.life` | `https://scan.botchain.ai` |
 

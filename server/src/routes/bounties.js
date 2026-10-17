@@ -24,6 +24,11 @@ import {
 } from '../email.js';
 import { activeAdminTokens } from './admin.js';
 import { config } from '../config.js';
+import {
+  verifyDepositTransaction,
+  verifySettlementTransaction,
+  executeOnChainRelease
+} from '../services/onchainVerifier.js';
 
 export const bountyRouter = express.Router();
 
@@ -32,14 +37,14 @@ export const bountyRouter = express.Router();
  * Retrieve platform escrow wallet address and chain metadata for deposit
  */
 bountyRouter.get('/escrow-wallet', (req, res) => {
-  const escrowWallet = process.env.ESCROW_WALLET_ADDRESS || '0x8b415aE3956992b0cbC6C78c485A4d099F6331cE';
+  const escrowWallet = process.env.ESCROW_WALLET_ADDRESS || '0xBE0aaE21b6252aa1207cAa50A753e8C45bCBCbc5';
   res.json({
     success: true,
-    escrowWallet: config.escrowContractAddress || '0x909661b453bBe13Ee247551754b35370557A9aA2',
+    escrowWallet: config.escrowContractAddress || '0xB128F2f442554B6517D779788F28F2EB2612164A',
     chainId: parseInt(process.env.BOT_CHAIN_ID || '968', 10),
     networkName: 'BOT Chain (Bohr Testnet)',
-    token: 'Bridged USDT',
-    tokenAddress: config.usdtAddress || '0x75edC9335175Fc0552D51D48439F229c10420fe3'
+    token: 'Native $BOT',
+    tokenAddress: '0x0000000000000000000000000000000000000000'
   });
 });
 
@@ -191,11 +196,40 @@ bountyRouter.get('/:id', (req, res) => {
  * POST /api/bounties
  * Create a new bounty with verified escrow deposit instructions
  */
-bountyRouter.post('/', (req, res) => {
+bountyRouter.post('/', async (req, res) => {
   try {
-    const { title, amount, rewardDistribution } = req.body;
+    const { title, amount, rewardDistribution, depositTx, settlementToken } = req.body;
     if (!title || !amount) {
       return res.status(400).json({ success: false, error: 'Title and amount are required' });
+    }
+
+    // Pilot constraint: Strictly native $BOT (address(0))
+    if (settlementToken && settlementToken !== '0x0000000000000000000000000000000000000000') {
+      return res.status(400).json({
+        success: false,
+        error: 'Phase 1 Pilot is strictly limited to Native $BOT (address(0)). Unsupported ERC-20 assets are disabled for this revision.'
+      });
+    }
+
+    if (!depositTx) {
+      return res.status(400).json({
+        success: false,
+        error: 'On-chain escrow deposit transaction hash (depositTx) is required to fund this bounty.'
+      });
+    }
+
+    // Verify deposit transaction against Bohr Testnet RPC
+    let verifiedDeposit;
+    try {
+      verifiedDeposit = await verifyDepositTransaction({
+        txHash: depositTx,
+        expectedAmount: amount
+      });
+    } catch (verifErr) {
+      return res.status(400).json({
+        success: false,
+        error: verifErr.message
+      });
     }
 
     // Optional auth token to link maintainer email
@@ -225,14 +259,17 @@ bountyRouter.post('/', (req, res) => {
 
     const newBounty = createBountyRecord({
       ...req.body,
+      depositTx,
+      onChainBountyId: verifiedDeposit?.bountyId || req.body.onChainBountyId,
       rewardDistribution,
       maintainerEmail
     });
 
     res.status(201).json({
       success: true,
-      message: 'Bounty created and queued for Admin review & Arc Escrow verification',
-      bounty: newBounty
+      message: 'Bounty created and verified with on-chain Bohr escrow deposit',
+      bounty: newBounty,
+      verifiedDeposit
     });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -626,7 +663,7 @@ bountyRouter.post('/:id/approve', async (req, res) => {
  * POST /api/bounties/:id/release
  * Platform administrator / challenge maintainer approves deliverable and disburses reward on Bohr Testnet
  */
-bountyRouter.post('/:id/release', (req, res) => {
+bountyRouter.post('/:id/release', async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
     let isAdmin = false;
@@ -672,12 +709,40 @@ bountyRouter.post('/:id/release', (req, res) => {
       });
     }
 
-    const providedTx = req.body.settlementTx || req.body.txHash;
+    let txHash = req.body.settlementTx || req.body.txHash;
+    if (!txHash) {
+      try {
+        const onChainBountyId = bounty.onChainBountyId || bounty.bounty_id || ('0x' + '1'.repeat(64));
+        const executed = await executeOnChainRelease({ onChainBountyId });
+        txHash = executed.txHash;
+      } catch (err) {
+        return res.status(400).json({
+          success: false,
+          error: 'On-chain settlement transaction hash (txHash) is required: ' + err.message
+        });
+      }
+    }
+
+    // Verify on-chain settlement on Bohr
+    let verifiedSettlement;
+    try {
+      verifiedSettlement = await verifySettlementTransaction({
+        txHash,
+        expectedSolver: winningSub.wallet_address,
+        expectedAmount: bounty.amount
+      });
+    } catch (verifErr) {
+      return res.status(400).json({
+        success: false,
+        error: verifErr.message
+      });
+    }
+
     const result = disburseBountyReward({
       bountyId: bounty.id,
       submissionId: winningSub.id,
       adminEmail: adminEmail || 'olajideabdulquadri22@gmail.com',
-      txHash: providedTx
+      txHash
     });
 
     const updatedBounty = getBountyById(bounty.id);
@@ -686,6 +751,7 @@ bountyRouter.post('/:id/release', (req, res) => {
       success: true,
       message: 'Escrow reward disbursed to solver on Bohr Testnet',
       settlement: result,
+      verifiedSettlement,
       bounty: updatedBounty
     });
   } catch (err) {
