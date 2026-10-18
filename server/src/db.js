@@ -602,73 +602,73 @@ export function verifyWalletChallenge(address, nonce) {
 
 export const INITIAL_BOUNTIES = [
   {
-    id: 'bounty-arc-001',
+    id: 'bounty-bot-001',
     bountyId: '0x8a9b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a01',
     category: 'DESIGN',
-    categoryName: 'Design & 3D',
-    categoryColor: '#ff578a',
-    title: 'Design Official 3D Mascot & Telegram Sticker Pack for Circle Arc',
+    categoryName: 'Design',
+    categoryColor: '#664c88',
+    title: 'Design Official 3D Mascot & Telegram Sticker Pack for BOT Chain',
     submissionType: 'Figma / 3D Render / PNG Pack',
-    issueUrl: 'https://github.com/circlefin/arc/issues/45',
+    issueUrl: 'https://github.com/botchain-ai/community/issues/45',
     amount: 1200,
-    tags: ['3D Art', 'Figma', 'Mascot', 'Branding', 'Stickers'],
+    tags: ['3D Art', 'Figma', 'Mascot', 'BOT Chain', 'Stickers'],
     status: 'Open',
     paymentStatus: 'funded',
     depositTx: '0x9281a8b7c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a01b2c3d4e5f6a7b8c9d0e01',
-    escrowWallet: process.env.ESCROW_CONTRACT_ADDRESS || '0xB128F2f442554B6517D779788F28F2EB2612164A',
+    escrowWallet: process.env.ESCROW_CONTRACT_ADDRESS || '0x909661b453bBe13Ee247551754b35370557A9aA2',
     maintainer: '0x461cd48D95993242bB04774cc68042795586BbAd',
-    maintainerName: 'Circle Creative Guild',
-    maintainerEmail: 'guild@circle.com',
+    maintainerName: 'BOT Chain Creative Guild',
+    maintainerEmail: 'guild@botbounty.ai',
     solver: null,
     solverType: null,
     prUrl: null,
     createdAt: Date.now() - 86400000 * 1,
     deadline: Date.now() + 86400000 * 5,
-    description: 'We need an iconic, neo-brutalist 3D mascot representing Arc L1 (speed, dollar-native gas, institutional trust). Deliverable: 3D Blender/GLTF asset + 15 expressive stickers for Telegram and Discord.'
+    description: 'We need an iconic, neo-brutalist 3D mascot representing BOT Chain (speed, dual-token escrow, institutional trust). Deliverable: 3D Blender/GLTF asset + 15 expressive stickers for Telegram and Discord.'
   },
   {
-    id: 'bounty-arc-002',
+    id: 'bounty-bot-002',
     bountyId: '0x7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b02',
-    category: 'VIDEO',
-    categoryName: 'Video & Motion',
-    categoryColor: '#ffe600',
-    title: 'Produce a 60-Second Viral Motion Explainer: "Why Arc Changes Everything"',
+    category: 'CONTENT',
+    categoryName: 'Content',
+    categoryColor: '#e9a13f',
+    title: 'Produce a 60-Second Viral Motion Explainer: "Why BOT Chain Changes Everything"',
     submissionType: 'Loom / YouTube / MP4 Link',
-    issueUrl: 'https://github.com/arc-community/media/issues/12',
+    issueUrl: 'https://github.com/botbounty-ai/media/issues/12',
     amount: 1500,
-    tags: ['Motion Graphics', 'TikTok / Reels', '3D After Effects', 'Video'],
+    tags: ['Motion Graphics', 'TikTok / Reels', '3D After Effects', 'Video', 'BOT Chain'],
     status: 'Open',
     paymentStatus: 'funded',
     depositTx: '0x7192a8b7c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a02b1c2d3e4f5a6b7c8d9e02',
-    escrowWallet: process.env.ESCROW_CONTRACT_ADDRESS || '0xB128F2f442554B6517D779788F28F2EB2612164A',
+    escrowWallet: process.env.ESCROW_CONTRACT_ADDRESS || '0x909661b453bBe13Ee247551754b35370557A9aA2',
     maintainer: '0xBE0aaE21b6252aa1207cAa50A753e8C45bCBCbc5',
-    maintainerName: 'Arc Marketing DAO',
-    maintainerEmail: 'marketing@arc.io',
+    maintainerName: 'BOT Chain Marketing DAO',
+    maintainerEmail: 'marketing@botbounty.ai',
     solver: null,
     solverType: null,
     prUrl: null,
     createdAt: Date.now() - 86400000 * 2,
     deadline: Date.now() + 86400000 * 3,
-    description: 'High-octane, fast-paced video showing the pain of fluctuating gas fees on other chains vs instant sub-second USDC transactions on Circle Arc. High-quality kinetic typography and sound design.'
+    description: 'High-octane, fast-paced video showing the pain of fluctuating gas fees on other chains vs instant sub-second transactions on BOT Chain with $BOT & USDT settlement. High-quality kinetic typography and sound design.'
   },
   {
-    id: 'bounty-arc-003',
+    id: 'bounty-bot-003',
     bountyId: '0x6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c03',
-    category: 'WRITING',
-    categoryName: 'Writing & Research',
-    categoryColor: '#bb86fc',
-    title: "Write a 15-Post Viral Deep-Dive Thread on Arc's Malachite BFT vs Tendermint",
+    category: 'CONTENT',
+    categoryName: 'Content',
+    categoryColor: '#e9a13f',
+    title: "Write a 15-Post Viral Deep-Dive Thread on BOT Chain PoS EVM Architecture & Sub-Second Finality",
     submissionType: 'Twitter/X Thread Link / Notion',
-    issueUrl: 'https://github.com/arc-research/papers/issues/8',
+    issueUrl: 'https://github.com/botchain-ai/research/issues/8',
     amount: 800,
-    tags: ['Research', 'X Thread', 'Infographics', 'Architecture'],
+    tags: ['Research', 'X Thread', 'Infographics', 'Architecture', 'PoS EVM'],
     status: 'Settled',
     paymentStatus: 'settled',
     depositTx: '0x6182a8b7c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a03b1c2d3e4f5a6b7c8d9e03',
-    escrowWallet: process.env.ESCROW_CONTRACT_ADDRESS || '0xB128F2f442554B6517D779788F28F2EB2612164A',
+    escrowWallet: process.env.ESCROW_CONTRACT_ADDRESS || '0x909661b453bBe13Ee247551754b35370557A9aA2',
     maintainer: '0x461cd48D95993242bB04774cc68042795586BbAd',
-    maintainerName: 'Arc Research Foundation',
-    maintainerEmail: 'research@arc.io',
+    maintainerName: 'BOT Chain Research Foundation',
+    maintainerEmail: 'research@botbounty.ai',
     solver: '0x9923Bc8E4786A6B71D0052F5eCE984bC9d123456',
     solverType: 'Alex Researcher',
     prUrl: 'https://x.com/crypto_analyst/status/18389102938102',
@@ -676,26 +676,26 @@ export const INITIAL_BOUNTIES = [
     deadline: Date.now() + 86400000 * 7,
     settledAt: Date.now() - 86400000 * 1,
     settlementTx: '0x1a0c40614615b1e7a309adca37da91823a8b7c4d5e6f7a8b9c0d1e2f3a4b5c03',
-    description: "Break down Circle Arc's consensus algorithm for both retail and developer audiences. Must include visual diagrams explaining 380ms deterministic finality and institutional validator sets (BlackRock, ICE)."
+    description: "Break down BOT Chain's consensus algorithm for both retail and developer audiences. Must include visual diagrams explaining deterministic sub-second finality and multi-asset escrow security."
   },
   {
-    id: 'bounty-arc-004',
+    id: 'bounty-bot-004',
     bountyId: '0x5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d04',
-    category: 'MEMES',
-    categoryName: 'Memes & Social',
-    categoryColor: '#00f0ff',
-    title: 'Arc Meme Contest: Native USDC Gas vs Volatile Gas Token Spikes',
+    category: 'SOCIAL',
+    categoryName: 'All Social',
+    categoryColor: '#ffcc6f',
+    title: 'BOT Chain Meme Contest: Sub-Cent EVM Gas vs Volatile Gas Token Spikes',
     submissionType: 'X Post Link / Imgur Album',
-    issueUrl: 'https://github.com/arc-memes/contests/issues/3',
+    issueUrl: 'https://github.com/botchain-ai/memes/issues/3',
     amount: 450,
     tags: ['Memes', 'Social', 'Humor', 'Viral', 'X/Twitter'],
     status: 'Settled',
     paymentStatus: 'settled',
     depositTx: '0x5182a8b7c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a04b1c2d3e4f5a6b7c8d9e04',
-    escrowWallet: process.env.ESCROW_CONTRACT_ADDRESS || '0xB128F2f442554B6517D779788F28F2EB2612164A',
+    escrowWallet: process.env.ESCROW_CONTRACT_ADDRESS || '0x909661b453bBe13Ee247551754b35370557A9aA2',
     maintainer: '0x1234567890abcdef1234567890abcdef12345678',
-    maintainerName: 'Arc Meme Department',
-    maintainerEmail: 'memes@arc.io',
+    maintainerName: 'BOT Chain Meme DAO',
+    maintainerEmail: 'memes@botbounty.ai',
     solver: '0x71C568ba74d3B107292995bB791e317614399A45',
     solverType: 'Meme God',
     prUrl: 'https://x.com/memegod_sol/status/1838192830192',
@@ -703,84 +703,84 @@ export const INITIAL_BOUNTIES = [
     deadline: Date.now() - 86400000 * 1,
     settledAt: Date.now() - 86400000 * 1,
     settlementTx: '0x91823a8b7c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a04b1c2d3e4f5a6b7c8d9e04',
-    description: 'Create 5 top-tier, viral-ready memes contrasting user pain on high gas fee networks with the effortless $0.0004 USDC gas experience on Arc. Winner receives instant USDC.'
+    description: 'Create 5 top-tier, viral-ready memes contrasting user pain on high gas fee networks with the effortless $BOT & USDT gas experience on BOT Chain. Winner receives instant payout.'
   },
   {
-    id: 'bounty-arc-005',
+    id: 'bounty-bot-005',
     bountyId: '0x4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e05',
     category: 'DEV',
-    categoryName: 'Code & Apps',
-    categoryColor: '#00e676',
-    title: 'Build a 1-Click CCTP Teleport Widget for Web3 Storefronts',
+    categoryName: 'Development',
+    categoryColor: '#2f578c',
+    title: 'Build a 1-Click Multi-Chain Teleport Widget for BOT Chain Storefronts',
     submissionType: 'GitHub PR & Live Demo',
-    issueUrl: 'https://github.com/circlefin/cctp-teleport-widget/issues/19',
+    issueUrl: 'https://github.com/botchain-ai/teleport-widget/issues/19',
     amount: 2000,
-    tags: ['TypeScript', 'React', 'CCTP', 'EIP-3009', 'SDK'],
+    tags: ['TypeScript', 'React', 'EVM', 'EIP-3009', 'SDK'],
     status: 'Open',
     paymentStatus: 'funded',
     depositTx: '0x4182a8b7c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a05b1c2d3e4f5a6b7c8d9e05',
-    escrowWallet: process.env.ESCROW_CONTRACT_ADDRESS || '0xB128F2f442554B6517D779788F28F2EB2612164A',
+    escrowWallet: process.env.ESCROW_CONTRACT_ADDRESS || '0x909661b453bBe13Ee247551754b35370557A9aA2',
     maintainer: '0xBE0aaE21b6252aa1207cAa50A753e8C45bCBCbc5',
-    maintainerName: 'Circle Developer Platform',
-    maintainerEmail: 'cctp@circle.com',
+    maintainerName: 'BOT Chain Developer Platform',
+    maintainerEmail: 'developers@botbounty.ai',
     solver: null,
     solverType: null,
     prUrl: null,
     createdAt: Date.now() - 86400000 * 1,
     deadline: Date.now() + 86400000 * 12,
-    description: 'Create an embeddable React & Vanilla JS widget that lets users teleport USDC from Solana or Base directly into Arc Mainnet in 1 click, auto-funding their checkout.'
+    description: 'Create an embeddable React & Vanilla JS widget that lets users bridge tokens directly into BOT Chain in 1 click, auto-funding their checkout.'
   },
   {
-    id: 'bounty-arc-3356',
+    id: 'bounty-bot-3356',
     bountyId: '0x710caf40e39a4bd82bf4d1b5b7b2a56b584929c787bf609f16c86b79280e12c1',
     category: 'DESIGN',
     categoryName: 'Design',
-    categoryColor: '#ff578a',
-    title: 'Interactive Arc L1 Architecture Infographic',
+    categoryColor: '#664c88',
+    title: 'Interactive BOT Chain Architecture Infographic',
     submissionType: 'Deliverable URL',
-    issueUrl: 'https://arcbounty.io/task/bounty-arc-3356',
+    issueUrl: 'https://botbounty-theta.vercel.app/task/bounty-bot-3356',
     amount: 750,
-    tags: ['Design', 'Arc', 'Infographic'],
+    tags: ['Design', 'BOT Chain', 'Infographic'],
     status: 'Settled',
     paymentStatus: 'settled',
     depositTx: '0xdep09098f5a77b4e7feaa689f826b6aca4a',
-    escrowWallet: process.env.ESCROW_CONTRACT_ADDRESS || '0xB128F2f442554B6517D779788F28F2EB2612164A',
+    escrowWallet: process.env.ESCROW_CONTRACT_ADDRESS || '0x909661b453bBe13Ee247551754b35370557A9aA2',
     maintainer: '0x461cd48D95993242bB04774cc68042795586BbAd',
-    maintainerName: 'Circle Creative Guild',
+    maintainerName: 'BOT Chain Creative Guild',
     maintainerEmail: 'olajideabdulquadri0@gmail.com',
     solver: '0x51a8b1bfeb88bdfa9207e999c0b2023c70c97c8f',
     solverType: 'Alex Rivers',
-    prUrl: 'https://www.figma.com/design/arc-interactive-infographic',
+    prUrl: 'https://www.figma.com/design/botchain-interactive-infographic',
     createdAt: Date.now() - 86400000 * 4,
     deadline: Date.now() + 86400000 * 8,
     settledAt: Date.now() - 86400000 * 2,
     settlementTx: '0x1a0c3af6b2a5f7019c628920ceba91823a8b7c4d5e6f7a8b9c0d1e2f3a4b5c05',
-    description: 'Design a high-fidelity interactive SVG visualization of Circle Arc settlement.'
+    description: 'Design a high-fidelity interactive SVG visualization of BOT Chain settlement.'
   },
   {
-    id: 'bounty-arc-4237',
+    id: 'bounty-bot-4237',
     bountyId: '0xb261128be7c627244f3189a01ccda24d0936a7c3ac496891b195d24453d42cf7',
     category: 'CONTENT',
     categoryName: 'Content',
     categoryColor: '#e9a13f',
-    title: '3D Brand Animation for Circle Arc Speed',
+    title: '3D Brand Animation for BOT Chain Speed',
     submissionType: 'MP4 Deliverable Link',
-    issueUrl: 'https://arcbounty.io/task/bounty-arc-4237',
+    issueUrl: 'https://botbounty-theta.vercel.app/task/bounty-bot-4237',
     amount: 750,
-    tags: ['CONTENT', 'Arc', 'USDC'],
+    tags: ['CONTENT', 'BOT Chain', 'USDT'],
     status: 'Open',
     paymentStatus: 'funded',
     depositTx: '0xdep24065623fc9887fa04d8e0c075893446',
-    escrowWallet: process.env.ESCROW_CONTRACT_ADDRESS || '0xB128F2f442554B6517D779788F28F2EB2612164A',
+    escrowWallet: process.env.ESCROW_CONTRACT_ADDRESS || '0x909661b453bBe13Ee247551754b35370557A9aA2',
     maintainer: '0x461cd48D95993242bB04774cc68042795586BbAd',
-    maintainerName: 'Circle Creative Guild',
+    maintainerName: 'BOT Chain Creative Guild',
     maintainerEmail: null,
     solver: null,
     solverType: null,
     prUrl: null,
     createdAt: Date.now() - 86400000 * 1,
     deadline: Date.now() + 86400000 * 4,
-    description: 'High frame rate 3D kinetic video showcasing 380ms finality.'
+    description: 'High frame rate 3D kinetic video showcasing BOT Chain sub-second finality.'
   }
 ];
 
@@ -939,14 +939,39 @@ try {
   console.warn('[Database] Seed check warning:', e.message);
 }
 
+// Ensure all legacy Circle Arc references in SQLite database are rebranded to BOT Chain / BotBounty
+try {
+  db.exec(`
+    UPDATE bounties SET 
+      title = REPLACE(REPLACE(REPLACE(title, 'Circle Arc', 'BOT Chain'), 'Arc L1', 'BOT Chain'), 'Arc', 'BOT'),
+      description = REPLACE(REPLACE(REPLACE(REPLACE(description, 'Circle Arc', 'BOT Chain'), 'Arc L1', 'BOT Chain'), 'Arc Mainnet', 'BOT Chain Mainnet'), 'Arc', 'BOT'),
+      maintainer_name = REPLACE(REPLACE(maintainer_name, 'Circle', 'BOT Chain'), 'Arc', 'BOT Chain'),
+      tags = REPLACE(tags, 'Arc', 'BOT Chain'),
+      issue_url = REPLACE(issue_url, 'arcbounty.io', 'botbounty-theta.vercel.app')
+    WHERE title LIKE '%Arc%' OR description LIKE '%Arc%' OR maintainer_name LIKE '%Circle%' OR maintainer_name LIKE '%Arc%' OR tags LIKE '%Arc%' OR issue_url LIKE '%arcbounty.io%';
+
+    UPDATE bounty_submissions SET 
+      notes = REPLACE(REPLACE(REPLACE(notes, 'Circle Arc', 'BOT Chain'), 'Arc L1', 'BOT Chain'), 'Arc', 'BOT Chain')
+    WHERE notes LIKE '%Arc%';
+  `);
+} catch (e) {
+  console.warn('[Database] Rebranding migration warning:', e.message);
+}
+
 export function ensureActiveBounties() {
   if (process.env.DB_PATH === ":memory:") return;
   try {
     const openCount = db.prepare("SELECT count(*) as count FROM bounties WHERE status = 'Open'").get();
     if (!openCount || openCount.count < 3) {
       const now = Date.now();
-      const openIds = ["bounty-arc-001", "bounty-arc-002", "bounty-arc-005", "bounty-arc-0974", "bounty-arc-4237"];
-      const daysMap = { "bounty-arc-001": 6, "bounty-arc-002": 5, "bounty-arc-005": 9, "bounty-arc-0974": 7, "bounty-arc-4237": 4 };
+      const openIds = [
+        "bounty-bot-001", "bounty-bot-002", "bounty-bot-005", "bounty-bot-4237",
+        "bounty-arc-001", "bounty-arc-002", "bounty-arc-005", "bounty-arc-0974", "bounty-arc-4237"
+      ];
+      const daysMap = {
+        "bounty-bot-001": 6, "bounty-bot-002": 5, "bounty-bot-005": 9, "bounty-bot-4237": 4,
+        "bounty-arc-001": 6, "bounty-arc-002": 5, "bounty-arc-005": 9, "bounty-arc-0974": 7, "bounty-arc-4237": 4
+      };
       openIds.forEach((id) => {
         const days = daysMap[id] || 5;
         db.prepare("UPDATE bounties SET status = 'Open', deadline = ?, created_at = ? WHERE id = ?").run(now + days * 86400000, now - 86400000, id);

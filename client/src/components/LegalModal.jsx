@@ -350,11 +350,11 @@ export default function LegalModal({ type, onClose }) {
                 </div>
               </div>
               <a
-                href="mailto:support@arcbounty.io"
+                href="mailto:support@botbounty.ai"
                 className="btn-secondary"
                 style={{ padding: '6px 12px', fontSize: '0.78rem', textDecoration: 'none' }}
               >
-                support@arcbounty.io
+                support@botbounty.ai
               </a>
             </div>
 

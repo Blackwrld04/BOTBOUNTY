@@ -69,7 +69,7 @@ export default class ErrorBoundary extends React.Component {
             </h2>
 
             <p style={{ fontSize: '0.88rem', color: '#64748b', lineHeight: 1.5, margin: '0 0 20px 0' }}>
-              ArcBounty encountered an unexpected error while rendering. We've captured the error diagnostics.
+              BotBounty encountered an unexpected error while rendering. We've captured the error diagnostics.
             </p>
 
             {this.state.error?.message && (
@@ -109,7 +109,7 @@ export default class ErrorBoundary extends React.Component {
                 }}
               >
                 <RotateCw size={15} />
-                <span>Reload ArcBounty</span>
+                <span>Reload BotBounty</span>
               </button>
 
               <button

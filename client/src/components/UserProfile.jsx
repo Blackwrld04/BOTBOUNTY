@@ -122,6 +122,7 @@ export default function UserProfile({
       }
 
       if (setUser) setUser(data.user);
+      localStorage.setItem('botbounty_session_user', JSON.stringify(data.user));
       localStorage.setItem('arcbounty_session_user', JSON.stringify(data.user));
       setAvatarSuccess('Avatar updated successfully!');
       setTimeout(() => {

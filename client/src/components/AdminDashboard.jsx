@@ -43,7 +43,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
   const isMobile = useIsMobile();
   // Master Administrator Password Authentication State
   const [adminToken, setAdminToken] = useState(() => {
-    return sessionStorage.getItem('arcbounty_admin_token') || '';
+    return sessionStorage.getItem('botbounty_admin_token') || sessionStorage.getItem('arcbounty_admin_token') || '';
   });
   const [passwordInput, setPasswordInput] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -301,6 +301,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
 
       const data = await res.json();
       if (data.success && data.token) {
+        sessionStorage.setItem('botbounty_admin_token', data.token);
         sessionStorage.setItem('arcbounty_admin_token', data.token);
         setAdminToken(data.token);
         setPasswordInput('');
@@ -323,6 +324,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
         });
       }
     } catch (e) {}
+    sessionStorage.removeItem('botbounty_admin_token');
     sessionStorage.removeItem('arcbounty_admin_token');
     setAdminToken('');
     if (onBackToExplore) {
@@ -349,6 +351,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
         setStats(statsData.stats);
       } else if (statsRes.status === 401 || statsRes.status === 403) {
         // Invalidate stale token
+        sessionStorage.removeItem('botbounty_admin_token');
         sessionStorage.removeItem('arcbounty_admin_token');
         setAdminToken('');
         setAuthError('Admin session expired. Please re-enter your password.');
@@ -641,10 +644,10 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
             </div>
 
             <h2 style={{ fontSize: '1.45rem', fontWeight: 900, color: '#0f172a', margin: '0 0 6px 0' }}>
-              ArcBounty Admin Portal
+              BotBounty Admin Portal
             </h2>
             <p style={{ fontSize: '0.86rem', color: '#475569', lineHeight: 1.5, margin: 0 }}>
-              Separate administrative environment. Enter master administrator password to access the platform escrow treasury and distribute prize USDC.
+              Separate administrative environment. Enter master administrator password to access the platform escrow treasury and distribute prize USDT &amp; native $BOT.
             </p>
           </div>
 
@@ -903,7 +906,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
             href={`${API_BASE}/api/admin/export-csv?token=${adminToken}`}
             target="_blank"
             rel="noopener noreferrer"
-            download="arcbounty_audit_ledger.csv"
+            download="botbounty_audit_ledger.csv"
             style={{
               background: '#ffffff',
               color: '#0f172a',

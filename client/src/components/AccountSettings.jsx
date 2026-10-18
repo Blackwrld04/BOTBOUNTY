@@ -92,7 +92,7 @@ export default function AccountSettings({
     return () => clearTimeout(timer);
   }, [username, user?.username, user?.id]);
 
-  const referralLink = `https://arcbounty.io?ref=${username}`;
+  const referralLink = `https://botbounty-theta.vercel.app?ref=${username}`;
 
   const copyRefLink = () => {
     navigator.clipboard.writeText(referralLink);
@@ -141,6 +141,7 @@ export default function AccountSettings({
       }
 
       if (setUser) setUser(data.user);
+      localStorage.setItem('botbounty_session_user', JSON.stringify(data.user));
       localStorage.setItem('arcbounty_session_user', JSON.stringify(data.user));
       setSaveProfileSuccess(true);
       setTimeout(() => setSaveProfileSuccess(false), 3000);
@@ -154,6 +155,7 @@ export default function AccountSettings({
 
   const handleSocialSuccess = (updatedUser) => {
     if (setUser) setUser(updatedUser);
+    localStorage.setItem('botbounty_session_user', JSON.stringify(updatedUser));
     localStorage.setItem('arcbounty_session_user', JSON.stringify(updatedUser));
   };
 
@@ -161,6 +163,7 @@ export default function AccountSettings({
     setWallet(newWallet);
     if (updatedUser && setUser) {
       setUser(updatedUser);
+      localStorage.setItem('botbounty_session_user', JSON.stringify(updatedUser));
       localStorage.setItem('arcbounty_session_user', JSON.stringify(updatedUser));
     }
   };

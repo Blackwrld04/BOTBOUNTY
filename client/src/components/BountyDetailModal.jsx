@@ -54,7 +54,7 @@ export default function BountyDetailModal({
   const [submissions, setSubmissions] = useState(() => {
     let initial = Array.isArray(bounty.submissions) ? bounty.submissions : [];
     try {
-      const mySubs = JSON.parse(localStorage.getItem('arcbounty_my_submissions') || '{}');
+      const mySubs = JSON.parse(localStorage.getItem('botbounty_my_submissions') || localStorage.getItem('arcbounty_my_submissions') || '{}');
       if (bounty?.id && mySubs[bounty.id] && !initial.some((s) => s.id === mySubs[bounty.id].id)) {
         initial = [mySubs[bounty.id], ...initial];
       }
@@ -95,7 +95,7 @@ export default function BountyDetailModal({
     if (!bounty?.id) return;
     try {
       setLoadingSubmissions(true);
-      const token = localStorage.getItem('arcbounty_session_token');
+      const token = localStorage.getItem('botbounty_session_token') || localStorage.getItem('arcbounty_session_token');
       const headers = {};
       if (token) headers['Authorization'] = `Bearer ${token}`;
       const activeEmail = user?.email;
@@ -118,7 +118,7 @@ export default function BountyDetailModal({
 
         // Also check localStorage submissions cache for personal deliverable
         try {
-          const mySubs = JSON.parse(localStorage.getItem('arcbounty_my_submissions') || '{}');
+          const mySubs = JSON.parse(localStorage.getItem('botbounty_my_submissions') || localStorage.getItem('arcbounty_my_submissions') || '{}');
           const cachedSub = mySubs[bounty.id];
           if (cachedSub && !serverSubs.some((s) => s.id === cachedSub.id)) {
             serverSubs = [cachedSub, ...serverSubs];
@@ -273,7 +273,7 @@ export default function BountyDetailModal({
     try {
       if (isRevisionMode && (editingSubId || userSubmission?.id)) {
         const targetSubId = editingSubId || userSubmission?.id;
-        const token = localStorage.getItem('arcbounty_session_token');
+        const token = localStorage.getItem('botbounty_session_token') || localStorage.getItem('arcbounty_session_token');
         const activeSub = submissions.find((s) => s.id === targetSubId) || userSubmission;
         const res = await fetch(`${API_BASE}/api/bounties/${bounty.id}/submissions/${targetSubId}`, {
           method: 'PUT',
@@ -308,8 +308,9 @@ export default function BountyDetailModal({
           );
 
           try {
-            const mySubs = JSON.parse(localStorage.getItem('arcbounty_my_submissions') || '{}');
+            const mySubs = JSON.parse(localStorage.getItem('botbounty_my_submissions') || localStorage.getItem('arcbounty_my_submissions') || '{}');
             mySubs[bounty.id] = updatedSub;
+            localStorage.setItem('botbounty_my_submissions', JSON.stringify(mySubs));
             localStorage.setItem('arcbounty_my_submissions', JSON.stringify(mySubs));
           } catch (e) {}
 
@@ -348,8 +349,9 @@ export default function BountyDetailModal({
           setTotalSubmissionsCount((prev) => Math.max(prev + 1, 1));
 
           try {
-            const mySubs = JSON.parse(localStorage.getItem('arcbounty_my_submissions') || '{}');
+            const mySubs = JSON.parse(localStorage.getItem('botbounty_my_submissions') || localStorage.getItem('arcbounty_my_submissions') || '{}');
             mySubs[bounty.id] = newSub;
+            localStorage.setItem('botbounty_my_submissions', JSON.stringify(mySubs));
             localStorage.setItem('arcbounty_my_submissions', JSON.stringify(mySubs));
           } catch (e) {}
         }
@@ -371,7 +373,7 @@ export default function BountyDetailModal({
 
     setIsPostingComment(true);
     try {
-      const token = localStorage.getItem('arcbounty_session_token');
+      const token = localStorage.getItem('botbounty_session_token') || localStorage.getItem('arcbounty_session_token');
       const authorRole = isCreatorOfBounty ? 'sponsor' : (user ? 'creator' : 'community');
       const res = await fetch(`${API_BASE}/api/bounties/${bounty.id}/comments`, {
         method: 'POST',
@@ -381,7 +383,7 @@ export default function BountyDetailModal({
         },
         body: JSON.stringify({
           content: newComment.trim(),
-          authorName: user?.name || (wallet?.address ? truncateAddress(wallet.address) : 'Arc Builder'),
+          authorName: user?.name || (wallet?.address ? truncateAddress(wallet.address) : 'Bot Builder'),
           authorRole
         })
       });

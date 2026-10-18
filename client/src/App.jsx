@@ -46,7 +46,7 @@ export default function App() {
 
   const [wallet, setWallet] = useState(() => {
     try {
-      const savedUser = localStorage.getItem('arcbounty_session_user');
+      const savedUser = localStorage.getItem('botbounty_session_user') || localStorage.getItem('arcbounty_session_user');
       if (savedUser) {
         const u = JSON.parse(savedUser);
         return {
@@ -121,12 +121,13 @@ export default function App() {
 
   const getInitialAuth = () => {
     if (typeof window !== 'undefined') {
-      const path = window.location.pathname.toLowerCase();
+      const path = window.location.pathname.toLowerCase().replace(/\/+$/, '') || '/';
       const hash = window.location.hash.toLowerCase();
-      if (path === '/login' || path === '/signin' || hash === '#/login' || hash === '#/signin') {
+      const search = window.location.search.toLowerCase();
+      if (path === '/login' || path === '/signin' || hash === '#/login' || hash === '#/signin' || search.includes('login=true')) {
         return { open: true, mode: 'login' };
       }
-      if (path === '/signup' || path === '/register' || hash === '#/signup' || hash === '#/register') {
+      if (path === '/signup' || path === '/register' || hash === '#/signup' || hash === '#/register' || search.includes('signup=true')) {
         return { open: true, mode: 'signup' };
       }
     }
@@ -143,15 +144,16 @@ export default function App() {
   // Synchronize browser history and hash navigation
   useEffect(() => {
     const handleUrlChange = () => {
-      const path = window.location.pathname.toLowerCase();
+      const path = window.location.pathname.toLowerCase().replace(/\/+$/, '') || '/';
       const hash = window.location.hash.toLowerCase();
-      if (path === '/admin' || path.startsWith('/admin/') || hash === '#/admin' || window.location.search.includes('admin=true')) {
+      const search = window.location.search.toLowerCase();
+      if (path === '/admin' || path.startsWith('/admin') || hash === '#/admin' || search.includes('admin=true')) {
         setActiveView('admin');
-      } else if (path === '/login' || path === '/signin' || hash === '#/login' || hash === '#/signin') {
+      } else if (path === '/login' || path === '/signin' || hash === '#/login' || hash === '#/signin' || search.includes('login=true')) {
         setAuthModalMode('login');
         setAuthModalOpen(true);
         if (activeView === 'admin') setActiveView('explore');
-      } else if (path === '/signup' || path === '/register' || hash === '#/signup' || hash === '#/register') {
+      } else if (path === '/signup' || path === '/register' || hash === '#/signup' || hash === '#/register' || search.includes('signup=true')) {
         setAuthModalMode('signup');
         setAuthModalOpen(true);
         if (activeView === 'admin') setActiveView('explore');
@@ -219,9 +221,11 @@ export default function App() {
     setWallet(newWallet);
     if (updatedUser) {
       setUser(updatedUser);
+      localStorage.setItem('botbounty_session_user', JSON.stringify(updatedUser));
       localStorage.setItem('arcbounty_session_user', JSON.stringify(updatedUser));
     }
     if (token) {
+      localStorage.setItem('botbounty_session_token', token);
       localStorage.setItem('arcbounty_session_token', token);
     }
     showToast(`Wallet connected! Address: ${newWallet.address.slice(0, 6)}...${newWallet.address.slice(-4)}`);
@@ -311,7 +315,7 @@ export default function App() {
   // Handle posting a new bounty with Escrow deposit
   const handleCreateBounty = async (newBountyData) => {
     try {
-      const token = localStorage.getItem('arcbounty_session_token');
+      const token = localStorage.getItem('botbounty_session_token') || localStorage.getItem('arcbounty_session_token');
       const res = await fetch(`${API_BASE}/api/bounties`, {
         method: 'POST',
         headers: {
@@ -339,7 +343,7 @@ export default function App() {
   // Handle solver deliverable submission
   const handleSubmitSolution = async (bountyId, submissionUrl, solverAddress, solverType, notes, collaborators = []) => {
     try {
-      const token = localStorage.getItem('arcbounty_session_token');
+      const token = localStorage.getItem('botbounty_session_token') || localStorage.getItem('arcbounty_session_token');
       const res = await fetch(`${API_BASE}/api/bounties/${bountyId}/participate`, {
         method: 'POST',
         headers: {
@@ -377,8 +381,8 @@ export default function App() {
   // Handle administrator approving release & executing settlement
   const handleReleaseBounty = async (bountyId) => {
     try {
-      const adminToken = typeof window !== 'undefined' ? sessionStorage.getItem('arcbounty_admin_token') : null;
-      const sessionToken = typeof window !== 'undefined' ? localStorage.getItem('arcbounty_session_token') : null;
+      const adminToken = typeof window !== 'undefined' ? (sessionStorage.getItem('botbounty_admin_token') || sessionStorage.getItem('arcbounty_admin_token')) : null;
+      const sessionToken = typeof window !== 'undefined' ? (localStorage.getItem('botbounty_session_token') || localStorage.getItem('arcbounty_session_token')) : null;
       const token = adminToken || sessionToken;
 
       let clientTxHash = null;
@@ -432,7 +436,7 @@ export default function App() {
 
   // Validate existing session token against SQLite backend on startup
   useEffect(() => {
-    const token = localStorage.getItem('arcbounty_session_token');
+    const token = localStorage.getItem('botbounty_session_token') || localStorage.getItem('arcbounty_session_token');
     if (token) {
       fetch(`${API_BASE}/api/auth/me`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -447,10 +451,13 @@ export default function App() {
               balance: typeof data.user.balance === 'number' ? data.user.balance : 0,
               type: data.user.provider || 'email'
             });
+            localStorage.setItem('botbounty_session_user', JSON.stringify(data.user));
             localStorage.setItem('arcbounty_session_user', JSON.stringify(data.user));
           } else {
             // Session expired or invalid in database
+            localStorage.removeItem('botbounty_session_token');
             localStorage.removeItem('arcbounty_session_token');
+            localStorage.removeItem('botbounty_session_user');
             localStorage.removeItem('arcbounty_session_user');
             setUser(null);
             setWallet({
@@ -488,9 +495,17 @@ export default function App() {
       type: userData.provider || userData.type || 'email'
     });
     try {
+      localStorage.setItem('botbounty_session_user', JSON.stringify(userData));
       localStorage.setItem('arcbounty_session_user', JSON.stringify(userData));
       if (token) {
+        localStorage.setItem('botbounty_session_token', token);
         localStorage.setItem('arcbounty_session_token', token);
+        // Set standard session cookies for automated testing tools (TestSprite, Playwright, Cypress)
+        const maxAge = 60 * 60 * 24 * 30; // 30 days
+        document.cookie = `botbounty_session_token=${token}; path=/; max-age=${maxAge}; SameSite=Lax`;
+        document.cookie = `token=${token}; path=/; max-age=${maxAge}; SameSite=Lax`;
+        document.cookie = `session=${token}; path=/; max-age=${maxAge}; SameSite=Lax`;
+        document.cookie = `botbounty_user=${encodeURIComponent(userData.email || userData.username || '')}; path=/; max-age=${maxAge}; SameSite=Lax`;
       }
     } catch (e) {}
     showToast(`Welcome, ${userData.name}!`);
@@ -509,8 +524,14 @@ export default function App() {
       type: null
     });
     try {
+      localStorage.removeItem('botbounty_session_user');
       localStorage.removeItem('arcbounty_session_user');
+      localStorage.removeItem('botbounty_session_token');
       localStorage.removeItem('arcbounty_session_token');
+      document.cookie = 'botbounty_session_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
+      document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
+      document.cookie = 'session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
+      document.cookie = 'botbounty_user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
     } catch (e) {}
     setActiveView('explore');
     if (typeof window !== 'undefined' && window.location.pathname !== '/') {

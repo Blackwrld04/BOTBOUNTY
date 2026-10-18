@@ -244,7 +244,7 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
       onClose();
     } catch (err) {
       console.error('Password login error:', err);
-      setErrorMessage('Network error connecting to Arc authentication service.');
+      setErrorMessage('Network error connecting to BotBounty authentication service.');
     } finally {
       setIsLoading(false);
     }
@@ -356,7 +356,7 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
       }, 100);
     } catch (err) {
       console.error('Signup error:', err);
-      setErrorMessage('Network error connecting to Arc authentication service.');
+      setErrorMessage('Network error connecting to BotBounty authentication service.');
     } finally {
       setIsLoading(false);
     }
@@ -401,7 +401,7 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
       }, 100);
     } catch (err) {
       console.error('Send OTP error:', err);
-      setErrorMessage('Network error connecting to Arc authentication service.');
+      setErrorMessage('Network error connecting to BotBounty authentication service.');
     } finally {
       setIsLoading(false);
     }
@@ -687,7 +687,7 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
                   alignItems: 'center'
                 }}
               >
-                Arc<span style={{ color: '#ffcc6f' }}>Bounty</span>
+                Bot<span style={{ color: '#ffcc6f' }}>Bounty</span>
               </span>
             </div>
 
@@ -955,10 +955,18 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
               </div>
 
               {!loginWithOtp ? (
-                /* Standard Password Login */
-                <form onSubmit={handlePasswordLogin} style={{ marginBottom: '16px' }}>
+                <form
+                  id="auth-login-form"
+                  name="login"
+                  data-testid="login-form"
+                  onSubmit={handlePasswordLogin}
+                  style={{ marginBottom: '16px' }}
+                >
                   <div style={{ marginBottom: '14px' }}>
-                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 800, marginBottom: '6px', color: '#1e293b' }}>
+                    <label
+                      htmlFor="email"
+                      style={{ display: 'block', fontSize: '0.8rem', fontWeight: 800, marginBottom: '6px', color: '#1e293b' }}
+                    >
                       Email Address or Username
                     </label>
                     <div style={{ position: 'relative' }}>
@@ -969,6 +977,10 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
                       />
                       <input
                         type="text"
+                        name="email"
+                        id="email"
+                        autoComplete="username email"
+                        data-testid="auth-email-input"
                         placeholder="your.email@gmail.com or @handle"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
@@ -990,7 +1002,10 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
 
                   <div style={{ marginBottom: '16px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                      <label style={{ fontSize: '0.8rem', fontWeight: 800, color: '#1e293b' }}>
+                      <label
+                        htmlFor="password"
+                        style={{ fontSize: '0.8rem', fontWeight: 800, color: '#1e293b' }}
+                      >
                         Password
                       </label>
                       <button
@@ -1021,6 +1036,10 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
                       />
                       <input
                         type={showPassword ? 'text' : 'password'}
+                        name="password"
+                        id="password"
+                        autoComplete="current-password"
+                        data-testid="auth-password-input"
                         placeholder="Enter your password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
@@ -1059,6 +1078,8 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
                   <button
                     type="submit"
                     id="auth-submit-login-btn"
+                    name="submit"
+                    data-testid="auth-submit-login-btn"
                     disabled={isLoading}
                     className="btn-primary"
                     style={{
