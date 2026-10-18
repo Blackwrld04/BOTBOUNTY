@@ -238,7 +238,7 @@ export default function ConnectWalletModal({
             onWalletConnected({
               connected: true,
               address: verifyData.user.address,
-              balance: verifyData.user.balance || 1000,
+              balance: typeof verifyData.user.balance === 'number' ? verifyData.user.balance : 0,
               type: walletId
             }, verifyData.user, verifyData.token);
             onClose();
@@ -261,7 +261,7 @@ export default function ConnectWalletModal({
         onWalletConnected({
           connected: true,
           address: fallbackData.user.address,
-          balance: fallbackData.user.balance || 1000,
+          balance: typeof fallbackData.user.balance === 'number' ? fallbackData.user.balance : 0,
           type: walletId
         }, fallbackData.user, fallbackData.token);
         onClose();
@@ -270,7 +270,7 @@ export default function ConnectWalletModal({
         onWalletConnected({
           connected: true,
           address,
-          balance: 1000,
+          balance: typeof user?.balance === 'number' ? user.balance : 0,
           type: walletId
         }, user, null);
         onClose();
@@ -315,14 +315,14 @@ export default function ConnectWalletModal({
         onWalletConnected({
           connected: true,
           address: data.user.address,
-          balance: data.user.balance || 1000,
+          balance: typeof data.user.balance === 'number' ? data.user.balance : 0,
           type: 'bot_creator'
         }, data.user, data.token);
       } else {
         onWalletConnected({
           connected: true,
           address: activeAddress,
-          balance: 1000,
+          balance: typeof user?.balance === 'number' ? user.balance : 0,
           type: 'bot_creator'
         }, user, null);
       }
