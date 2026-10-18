@@ -1,0 +1,30 @@
+name: TestSprite PR Verification Loop
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  testsprite-quality-gate:
+    name: TestSprite Automated Verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Verify Client Build Integrity
+        run: |
+          cd client
+          npm ci || npm install
+          npm run build
+
+      - name: Verify Backend Security Suite
+        run: |
+          cd server
+          npm ci || npm install
+          npm test
