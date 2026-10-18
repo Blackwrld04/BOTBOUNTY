@@ -11,3 +11,8 @@ server/data/*.db-shm
 contracts/out/
 contracts/cache/
 
+# Project Requirements (kept local only)
+BotBounty_Project_Requirements.pdf
+client/public/BotBounty_Project_Requirements.pdf
+docs/PROJECT_REQUIREMENTS.md
+build_prd_pdf.py
