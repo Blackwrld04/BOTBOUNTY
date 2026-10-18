@@ -396,7 +396,7 @@ export function createUser({
 
   const insertStmt = db.prepare(`
     INSERT INTO users (id, email, name, username, avatar, wallet_address, usdc_balance, provider, role, discipline, bio, password_hash, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'creator', ?, 'Web3 Creator on Circle Arc L1', ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'creator', ?, 'Web3 Creator on BOT Chain', ?, ?)
   `);
 
   insertStmt.run(
@@ -984,6 +984,69 @@ export function ensureActiveBounties() {
 
 try {
   ensureActiveBounties();
+} catch (e) {}
+
+export function ensureSeedUsers() {
+  if (process.env.DB_PATH === ":memory:") return;
+  try {
+    const seedAccounts = [
+      {
+        email: 'abdulquadriolajide22@gmail.com',
+        username: 'olajide',
+        name: 'olajide',
+        password: 'Abdul34@',
+        wallet: '0xe2ffb8d71f757d4c1a25b1e1e6169e573d031757',
+        role: 'creator',
+        discipline: 'Development'
+      },
+      {
+        email: 'olajideabdulquadri22@gmail.com',
+        username: 'olajide-admin',
+        name: 'Olajide Admin',
+        password: 'Abdul34@',
+        wallet: '0x461cd48D95993242bB04774cc68042795586BbAd',
+        role: 'admin',
+        discipline: 'Development'
+      }
+    ];
+
+    for (const acc of seedAccounts) {
+      const existing = getUserByEmail(acc.email) || getUserByUsername(acc.username);
+      const hash = hashPassword(acc.password);
+      if (existing) {
+        db.prepare(`UPDATE users SET password_hash = ?, email = ?, username = ? WHERE id = ?`).run(
+          hash,
+          acc.email,
+          acc.username,
+          existing.id
+        );
+      } else {
+        const id = 'usr_' + crypto.randomBytes(12).toString('hex');
+        const now = Date.now();
+        db.prepare(`
+          INSERT INTO users (id, email, name, username, avatar, wallet_address, usdc_balance, provider, role, discipline, bio, password_hash, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, 0.0, 'email', ?, ?, 'Web3 Creator on BOT Chain', ?, ?)
+        `).run(
+          id,
+          acc.email,
+          acc.name,
+          acc.username,
+          'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+          acc.wallet,
+          acc.role,
+          acc.discipline,
+          hash,
+          now
+        );
+      }
+    }
+  } catch (err) {
+    console.warn('[Database] ensureSeedUsers warning:', err.message);
+  }
+}
+
+try {
+  ensureSeedUsers();
 } catch (e) {}
 
 export function syncExpiredBounties() {

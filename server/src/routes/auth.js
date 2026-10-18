@@ -68,7 +68,7 @@ authRouter.post('/login', async (req, res) => {
       });
     }
 
-    const identifier = email.trim().toLowerCase();
+    const identifier = email.trim().toLowerCase().replace(/^@/, '');
     let user = getUserByEmail(identifier) || getUserByUsername(identifier);
 
     // If not found in local SQLite cache, attempt lookup in Supabase PostgreSQL
@@ -105,6 +105,33 @@ authRouter.post('/login', async (req, res) => {
         }
       } catch (err) {
         console.warn('[Auth] Fallback Supabase lookup error:', err.message);
+      }
+    }
+
+    // If still not found, check if user has a pending registration with matching password
+    if (!user) {
+      try {
+        const pendingRow = db.prepare(`
+          SELECT * FROM verification_codes 
+          WHERE LOWER(email) = ? AND type = 'signup' AND pending_data IS NOT NULL 
+          ORDER BY created_at DESC LIMIT 1
+        `).get(identifier);
+
+        if (pendingRow && pendingRow.pending_data) {
+          const pending = JSON.parse(pendingRow.pending_data);
+          if (pending && pending.passwordHash && verifyPassword(password, pending.passwordHash)) {
+            user = createUser({
+              email: pendingRow.email,
+              name: pending.name || pendingRow.email.split('@')[0],
+              username: pending.username || pendingRow.email.split('@')[0],
+              provider: 'email',
+              discipline: pending.discipline || 'Content',
+              passwordHash: pending.passwordHash
+            });
+          }
+        }
+      } catch (pendingErr) {
+        console.warn('[Auth] Pending registration activation note:', pendingErr.message);
       }
     }
 
@@ -196,6 +223,20 @@ authRouter.post('/signup', async (req, res) => {
     };
 
     const { code, expiresAt } = createVerificationCode(normalizedEmail, 'signup', pendingData);
+
+    // Persist user immediately so credentials work for instant login
+    try {
+      createUser({
+        email: normalizedEmail,
+        name: (name || cleanUsername).trim(),
+        username: cleanUsername,
+        provider: 'email',
+        discipline: discipline || 'Content',
+        passwordHash
+      });
+    } catch (createErr) {
+      console.warn('[Signup] Immediate user creation note:', createErr.message);
+    }
 
     // Dispatch email via Gmail SMTP or fallback
     let emailResult = { dispatched: false, previewUrl: null };
