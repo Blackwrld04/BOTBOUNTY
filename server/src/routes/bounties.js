@@ -43,7 +43,11 @@ bountyRouter.get('/escrow-wallet', (req, res) => {
     escrowWallet,
     chainId: parseInt(process.env.BOT_CHAIN_ID || '968', 10),
     networkName: 'BOT Chain (Bohr Testnet)',
-    token: 'Native $BOT',
+    token: 'USDT & Native $BOT',
+    supportedTokens: [
+      { symbol: 'USDT', name: 'Bridged USDT (ERC-20)', address: process.env.USDT_ADDRESS || '0x75edC9335175Fc0552D51D48439F229c10420fe3', decimals: 6 },
+      { symbol: 'BOT', name: 'Native $BOT', address: '0x0000000000000000000000000000000000000000', decimals: 18 }
+    ],
     tokenAddress: '0x0000000000000000000000000000000000000000'
   });
 });
@@ -203,13 +207,8 @@ bountyRouter.post('/', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Title and amount are required' });
     }
 
-    // Pilot constraint: Strictly native $BOT (address(0))
-    if (settlementToken && settlementToken !== '0x0000000000000000000000000000000000000000') {
-      return res.status(400).json({
-        success: false,
-        error: 'Phase 1 Pilot is strictly limited to Native $BOT (address(0)). Unsupported ERC-20 assets are disabled for this revision.'
-      });
-    }
+    // Supported assets: Native $BOT (address(0)) and Bridged USDT (ERC-20)
+    const normalizedToken = (settlementToken || '0x0000000000000000000000000000000000000000').toLowerCase();
 
     if (!depositTx) {
       return res.status(400).json({
@@ -223,7 +222,8 @@ bountyRouter.post('/', async (req, res) => {
     try {
       verifiedDeposit = await verifyDepositTransaction({
         txHash: depositTx,
-        expectedAmount: amount
+        expectedAmount: amount,
+        expectedToken: normalizedToken
       });
     } catch (verifErr) {
       return res.status(400).json({

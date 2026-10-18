@@ -123,17 +123,19 @@ export async function verifyDepositTransaction({ txHash, expectedAmount, expecte
 
   const { bountyId, maintainer, settlementToken, amount } = createdEvent.args;
 
-  // Verify settlement token is Native $BOT (address(0))
-  if (settlementToken.toLowerCase() !== expectedToken.toLowerCase()) {
-    throw new Error(`Settlement token ${settlementToken} does not match expected Native $BOT (${expectedToken}). Phase 1 Pilot strictly requires Native $BOT.`);
+  // Verify settlement token matches expected token (Native $BOT address(0) or Bridged USDT)
+  if (expectedToken && settlementToken.toLowerCase() !== expectedToken.toLowerCase()) {
+    throw new Error(`Settlement token ${settlementToken} does not match expected token (${expectedToken}).`);
   }
 
   // Check amount matches if expectedAmount is provided
   if (expectedAmount !== undefined && expectedAmount !== null) {
-    const expectedAmountWei = typeof expectedAmount === 'bigint' ? expectedAmount : BigInt(Math.round(parseFloat(expectedAmount) * 1e18));
+    const isUsdt = settlementToken.toLowerCase() === (process.env.USDT_ADDRESS || '0x75edc9335175fc0552d51d48439f229c10420fe3').toLowerCase() || settlementToken.toLowerCase() === '0xababc7ddc03e501d190c676bf3d92ef0e6e87a3c';
+    const decimals = isUsdt ? 6 : 18;
+    const expectedAmountWei = typeof expectedAmount === 'bigint' ? expectedAmount : BigInt(Math.round(parseFloat(expectedAmount) * Math.pow(10, decimals)));
     // Allow slight tolerance or exact match
     if (amount < expectedAmountWei) {
-      throw new Error(`On-chain funded amount (${formatEther(amount)} BOT) is less than required bounty amount (${formatEther(expectedAmountWei)} BOT).`);
+      throw new Error(`On-chain funded amount (${amount.toString()}) is less than required bounty amount (${expectedAmountWei.toString()}).`);
     }
   }
 

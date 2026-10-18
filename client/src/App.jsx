@@ -136,6 +136,7 @@ export default function App() {
 
   const [activeView, setActiveView] = useState(getInitialView);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedProfileCreator, setSelectedProfileCreator] = useState(null);
 
   const initialAuth = getInitialAuth();
   const [authModalOpen, setAuthModalOpen] = useState(initialAuth.open);
@@ -159,8 +160,49 @@ export default function App() {
         if (activeView === 'admin') setActiveView('explore');
       } else if (path === '/leaderboard' || hash === '#/leaderboard') {
         setActiveView('leaderboard');
-      } else if (path === '/profile' || hash === '#/profile') {
+      } else if (path === '/profile' || hash === '#/profile' || path.startsWith('/profile')) {
         setActiveView('profile');
+        if (typeof window !== 'undefined') {
+          const params = new URLSearchParams(window.location.search);
+          const creatorQuery = params.get('creator');
+          if (creatorQuery) {
+            const cleanQuery = decodeURIComponent(creatorQuery).toLowerCase().replace(/^@/, '');
+            if (cleanQuery.includes('alex researcher')) {
+              setSelectedProfileCreator({
+                name: 'Alex Researcher',
+                handle: '@Alex Researcher',
+                role: 'Web3 Researcher (Threador)',
+                category: 'WRITING',
+                earned: 800,
+                completed: 1,
+                address: '0x9923Bc8E4786A6B71D0052F5eCE984bC9d123456',
+                avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80'
+              });
+            } else if (cleanQuery.includes('meme god')) {
+              setSelectedProfileCreator({
+                name: 'Meme God',
+                handle: '@Meme God',
+                role: 'Web3 Meme Lord',
+                category: 'MEMES',
+                earned: 450,
+                completed: 1,
+                address: '0x71C568ba74d3B107292995bB791e317614399A45',
+                avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=200&auto=format&fit=crop&q=80'
+              });
+            } else if (cleanQuery.includes('alex rivers')) {
+              setSelectedProfileCreator({
+                name: 'Alex Rivers',
+                handle: '@Alex Rivers',
+                role: 'Human Creator',
+                category: 'DESIGN',
+                earned: 750,
+                completed: 1,
+                address: '0x51a8b1bfeb88bdfa9207e999c0b2023c70c97c8f',
+                avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80'
+              });
+            }
+          }
+        }
       } else if (path === '/account' || hash === '#/account') {
         setActiveView('account');
       } else if (path === '/referrals' || path === '/account-referrals' || hash === '#/referrals') {
@@ -200,6 +242,15 @@ export default function App() {
     syncAllData();
     triggerSync({ action: 'nav_to_explore' });
     navigateToView('explore');
+  };
+
+  const handleSelectCreator = (creator) => {
+    setSelectedProfileCreator(creator);
+    setActiveView('profile');
+    if (typeof window !== 'undefined') {
+      const handle = creator?.handle || creator?.name || 'top-creator';
+      window.history.pushState({}, '', `/profile?creator=${encodeURIComponent(handle)}`);
+    }
   };
 
   // Modals & Drawers state
@@ -602,13 +653,44 @@ export default function App() {
           </>
         )}
 
-        {activeView === 'profile' && user && (
+        {activeView === 'profile' && (
           <UserProfile
-            user={user}
+            user={selectedProfileCreator ? {
+              id: selectedProfileCreator.address || 'creator-public-id',
+              name: selectedProfileCreator.name,
+              username: (selectedProfileCreator.handle || '').replace(/^@/, ''),
+              email: selectedProfileCreator.email || `${(selectedProfileCreator.handle || 'creator').replace(/^@/, '').toLowerCase().replace(/\s+/g, '')}@x.com`,
+              address: selectedProfileCreator.address,
+              wallet_address: selectedProfileCreator.address,
+              bio: `Verified Web3 Creator on BOT Chain (${selectedProfileCreator.role || 'Top Contributor'})`,
+              discipline: selectedProfileCreator.role || selectedProfileCreator.category || 'Creator',
+              avatar: selectedProfileCreator.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+              reputationScore: 98,
+              totalEarnings: selectedProfileCreator.earned,
+              completedCount: selectedProfileCreator.completed,
+              isPublicView: true
+            } : (user || {
+              id: '0x9923Bc8E4786A6B71D0052F5eCE984bC9d123456',
+              name: 'Alex Researcher',
+              username: 'Alex Researcher',
+              email: 'crypto_analyst@x.com',
+              address: '0x9923Bc8E4786A6B71D0052F5eCE984bC9d123456',
+              wallet_address: '0x9923Bc8E4786A6B71D0052F5eCE984bC9d123456',
+              bio: 'Top Rank #1 Researcher & Solver on BOT Chain',
+              discipline: 'Web3 Researcher (Threador)',
+              avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+              reputationScore: 99,
+              totalEarnings: 800,
+              completedCount: 1,
+              isPublicView: true
+            })}
             setUser={setUser}
             wallet={wallet}
             bounties={bounties}
-            onBackToFeed={() => navigateToView('explore')}
+            onBackToFeed={() => {
+              setSelectedProfileCreator(null);
+              navigateToView('leaderboard');
+            }}
             onSelectBounty={(bounty) => setSelectedBounty(bounty)}
             onOpenSettings={() => navigateToView('account')}
             onLogout={handleLogout}
@@ -632,7 +714,7 @@ export default function App() {
 
         {activeView === 'leaderboard' && (
           <div style={{ paddingTop: '20px' }}>
-            <Leaderboard />
+            <Leaderboard onSelectCreator={handleSelectCreator} />
           </div>
         )}
 

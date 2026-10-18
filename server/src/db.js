@@ -844,7 +844,7 @@ export function seedInitialBountiesIfEmpty() {
       `);
       subStmt.run(
         'sub_seed_001',
-        'bounty-arc-003',
+        'bounty-bot-003',
         'usr_seed_creator_1',
         'Alex Researcher',
         'crypto_analyst@x.com',
@@ -859,13 +859,13 @@ export function seedInitialBountiesIfEmpty() {
       );
       subStmt.run(
         'sub_71877b765784d7da',
-        'bounty-arc-3356',
+        'bounty-bot-3356',
         'usr_seed_creator_2',
         'Alex Rivers',
         'alex.rivers@designguild.org',
         '0x51a8b1bfeb88bdfa9207e999c0b2023c70c97c8f',
-        'https://www.figma.com/design/arc-interactive-infographic',
-        'High-fidelity interactive SVG visualization of Circle Arc settlement.',
+        'https://www.figma.com/design/botchain-interactive-infographic',
+        'High-fidelity interactive SVG visualization of BOT Chain settlement.',
         'Alex Rivers',
         'awarded',
         750,
@@ -874,13 +874,13 @@ export function seedInitialBountiesIfEmpty() {
       );
       subStmt.run(
         'sub_seed_002',
-        'bounty-arc-004',
+        'bounty-bot-004',
         'usr_seed_creator_3',
         'Meme God',
         'memegod@x.com',
         '0x71C568ba74d3B107292995bB791e317614399A45',
         'https://x.com/memegod_sol/status/1838192830192',
-        'Created 5 top-tier viral memes for Circle Arc.',
+        'Created 5 top-tier viral memes for BOT Chain.',
         'Meme God',
         'awarded',
         450,
@@ -896,7 +896,7 @@ export function seedInitialBountiesIfEmpty() {
       `);
       disbStmt.run(
         'disb_a8a568d0c6849893',
-        'bounty-arc-003',
+        'bounty-bot-003',
         'sub_seed_001',
         '0x9923Bc8E4786A6B71D0052F5eCE984bC9d123456',
         'crypto_analyst@x.com',
@@ -907,7 +907,7 @@ export function seedInitialBountiesIfEmpty() {
       );
       disbStmt.run(
         'disb_c51cf757824df287',
-        'bounty-arc-3356',
+        'bounty-bot-3356',
         'sub_71877b765784d7da',
         '0x51a8b1bfeb88bdfa9207e999c0b2023c70c97c8f',
         'alex.rivers@designguild.org',
@@ -918,7 +918,7 @@ export function seedInitialBountiesIfEmpty() {
       );
       disbStmt.run(
         'disb_seed_002',
-        'bounty-arc-004',
+        'bounty-bot-004',
         'sub_seed_002',
         '0x71C568ba74d3B107292995bB791e317614399A45',
         'memegod@x.com',
@@ -931,6 +931,148 @@ export function seedInitialBountiesIfEmpty() {
   } catch (err) {
     console.warn('[Database] Failed to seed initial bounties:', err.message);
   }
+}
+
+export function ensureSeedSubmissionsIfEmpty() {
+  try {
+    const subCount = db.prepare(`SELECT count(*) as count FROM bounty_submissions`).get();
+    if (subCount.count === 0) {
+      const b3 = db.prepare(`SELECT id FROM bounties WHERE id = 'bounty-bot-003'`).get();
+      if (b3) {
+        db.prepare(`
+          INSERT OR IGNORE INTO bounty_submissions (
+            id, bounty_id, creator_id, creator_name, creator_email,
+            wallet_address, submission_url, notes, solver_type, status,
+            reward_paid, disbursement_tx, submitted_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).run(
+          'sub_seed_001',
+          'bounty-bot-003',
+          'usr_seed_creator_1',
+          'Alex Researcher',
+          'crypto_analyst@x.com',
+          '0x9923Bc8E4786A6B71D0052F5eCE984bC9d123456',
+          'https://x.com/crypto_analyst/status/18389102938102',
+          'Completed full 15-tweet breakdown with visual architecture flowcharts.',
+          'Alex Researcher',
+          'awarded',
+          800,
+          '0x1a0c40614615b1e7a309adca37da91823a8b7c4d5e6f7a8b9c0d1e2f3a4b5c03',
+          Date.now() - 86400000 * 2
+        );
+
+        db.prepare(`
+          INSERT OR IGNORE INTO disbursements (
+            id, bounty_id, submission_id, recipient_address, recipient_email,
+            amount, tx_hash, admin_email, distributed_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).run(
+          'disb_a8a568d0c6849893',
+          'bounty-bot-003',
+          'sub_seed_001',
+          '0x9923Bc8E4786A6B71D0052F5eCE984bC9d123456',
+          'crypto_analyst@x.com',
+          800,
+          '0x1a0c40614615b1e7a309adca37da91823a8b7c4d5e6f7a8b9c0d1e2f3a4b5c03',
+          'admin@botbounty.ai',
+          Date.now() - 86400000 * 1
+        );
+      }
+
+      const b3356 = db.prepare(`SELECT id FROM bounties WHERE id = 'bounty-bot-3356'`).get();
+      if (b3356) {
+        db.prepare(`
+          INSERT OR IGNORE INTO bounty_submissions (
+            id, bounty_id, creator_id, creator_name, creator_email,
+            wallet_address, submission_url, notes, solver_type, status,
+            reward_paid, disbursement_tx, submitted_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).run(
+          'sub_71877b765784d7da',
+          'bounty-bot-3356',
+          'usr_seed_creator_2',
+          'Alex Rivers',
+          'alex.rivers@designguild.org',
+          '0x51a8b1bfeb88bdfa9207e999c0b2023c70c97c8f',
+          'https://www.figma.com/design/botchain-interactive-infographic',
+          'High-fidelity interactive SVG visualization of BOT Chain settlement.',
+          'Alex Rivers',
+          'awarded',
+          750,
+          '0x1a0c3af6b2a5f7019c628920ceba91823a8b7c4d5e6f7a8b9c0d1e2f3a4b5c05',
+          Date.now() - 86400000 * 3
+        );
+
+        db.prepare(`
+          INSERT OR IGNORE INTO disbursements (
+            id, bounty_id, submission_id, recipient_address, recipient_email,
+            amount, tx_hash, admin_email, distributed_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).run(
+          'disb_c51cf757824df287',
+          'bounty-bot-3356',
+          'sub_71877b765784d7da',
+          '0x51a8b1bfeb88bdfa9207e999c0b2023c70c97c8f',
+          'alex.rivers@designguild.org',
+          750,
+          '0x1a0c3af6b2a5f7019c628920ceba91823a8b7c4d5e6f7a8b9c0d1e2f3a4b5c05',
+          'admin@botbounty.ai',
+          Date.now() - 86400000 * 2
+        );
+      }
+
+      const b4 = db.prepare(`SELECT id FROM bounties WHERE id = 'bounty-bot-004'`).get();
+      if (b4) {
+        db.prepare(`
+          INSERT OR IGNORE INTO bounty_submissions (
+            id, bounty_id, creator_id, creator_name, creator_email,
+            wallet_address, submission_url, notes, solver_type, status,
+            reward_paid, disbursement_tx, submitted_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).run(
+          'sub_seed_002',
+          'bounty-bot-004',
+          'usr_seed_creator_3',
+          'Meme God',
+          'memegod@x.com',
+          '0x71C568ba74d3B107292995bB791e317614399A45',
+          'https://x.com/memegod_sol/status/1838192830192',
+          'Created 5 top-tier viral memes for BOT Chain.',
+          'Meme God',
+          'awarded',
+          450,
+          '0x91823a8b7c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a04b1c2d3e4f5a6b7c8d9e04',
+          Date.now() - 86400000 * 4
+        );
+
+        db.prepare(`
+          INSERT OR IGNORE INTO disbursements (
+            id, bounty_id, submission_id, recipient_address, recipient_email,
+            amount, tx_hash, admin_email, distributed_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).run(
+          'disb_seed_002',
+          'bounty-bot-004',
+          'sub_seed_002',
+          '0x71C568ba74d3B107292995bB791e317614399A45',
+          'memegod@x.com',
+          450,
+          '0x91823a8b7c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a04b1c2d3e4f5a6b7c8d9e04',
+          'admin@botbounty.ai',
+          Date.now() - 86400000 * 1
+        );
+      }
+    }
+  } catch (err) {
+    console.warn('[Database] Failed to ensure seed submissions:', err.message);
+  }
+}
+
+try {
+  seedInitialBountiesIfEmpty();
+  ensureSeedSubmissionsIfEmpty();
+} catch (e) {
+  console.warn('[Database] Seed check warning:', e.message);
 }
 
 try {
