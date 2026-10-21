@@ -44,18 +44,17 @@ export default async function handler(req, res) {
 
     // 1. Verify shared relay secret
     const secret = req.headers['x-relay-secret'] || body.secret;
-    const expectedSecret = process.env.EMAIL_RELAY_SECRET || 'botbounty-relay-auth-2026';
-    const legacySecret = 'arcbounty-relay-auth-2026';
+    const expectedSecret = process.env.EMAIL_RELAY_SECRET;
 
-    if (secret !== expectedSecret && secret !== legacySecret) {
+    if (!expectedSecret || secret !== expectedSecret) {
       return res.status(401).json({ error: 'Unauthorized relay request' });
     }
 
     const { to, subject, html, text, auth, from, host: bodyHost, port: bodyPort, secure: bodySecure } = body;
 
     // 2. Resolve credentials from request auth payload or environment
-    const user = auth?.user || process.env.SMTP_USER || process.env.GMAIL_USER || 'olajideabdulquadri22@gmail.com';
-    const rawPass = auth?.pass || process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD || 'pdkvitevvkogztxi';
+    const user = auth?.user || process.env.SMTP_USER || process.env.GMAIL_USER;
+    const rawPass = auth?.pass || process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD;
     const pass = rawPass ? rawPass.replace(/\s+/g, '') : null;
     const host = bodyHost || process.env.SMTP_HOST || 'smtp.gmail.com';
     const port = parseInt(bodyPort || process.env.SMTP_PORT || '465', 10);
@@ -63,7 +62,7 @@ export default async function handler(req, res) {
 
     if (!user || !pass) {
       return res.status(500).json({
-        error: 'Missing SMTP credentials. Please configure SMTP_USER and SMTP_PASS.'
+        error: 'Missing SMTP credentials. Please configure SMTP_USER and SMTP_PASS in environment variables.'
       });
     }
 

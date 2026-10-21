@@ -13,6 +13,7 @@ import {
   pgSaveSession
 } from './supabase.js';
 import { config } from './config.js';
+import { FABRICATED_SEED_TX, DEMO_BOUNTY_IDS } from './seedEvidence.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -172,6 +173,8 @@ try { db.exec(`ALTER TABLE bounty_submissions ADD COLUMN score_creativity INTEGE
 try { db.exec(`ALTER TABLE bounty_submissions ADD COLUMN score_completeness INTEGER;`); } catch (e) {}
 try { db.exec(`ALTER TABLE bounty_submissions ADD COLUMN reviewer_notes TEXT;`); } catch (e) {}
 try { db.exec(`ALTER TABLE bounty_submissions ADD COLUMN github_pr_status TEXT;`); } catch (e) {}
+try { db.exec(`ALTER TABLE bounties ADD COLUMN on_chain_bounty_id TEXT;`); } catch (e) {}
+try { db.exec(`ALTER TABLE bounty_submissions ADD COLUMN submit_tx TEXT;`); } catch (e) {}
 
 console.log(`[Database] SQLite initialized at: ${dbPath}`);
 
@@ -600,7 +603,9 @@ export function verifyWalletChallenge(address, nonce) {
 // BOUNTIES & ESCROW PAYMENTS ENGINE
 // =============================================================================
 
-export const INITIAL_BOUNTIES = [
+// Built-in demo bounties. They are NOT backed by on-chain escrow: their historical
+// tx hashes were fabricated, so they are stripped below and the bounties are flagged isDemo.
+const RAW_INITIAL_BOUNTIES = [
   {
     id: 'bounty-bot-001',
     bountyId: '0x8a9b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a01',
@@ -783,6 +788,30 @@ export const INITIAL_BOUNTIES = [
     description: 'High frame rate 3D kinetic video showcasing BOT Chain sub-second finality.'
   }
 ];
+
+export const INITIAL_BOUNTIES = RAW_INITIAL_BOUNTIES.map((b) => ({
+  ...b,
+  depositTx: null,
+  settlementTx: null
+}));
+
+const DEMO_BOUNTY_ID_SET = new Set(DEMO_BOUNTY_IDS);
+
+/**
+ * Remove fabricated deposit/settlement evidence left behind by earlier seed versions.
+ * Idempotent: only rows whose hash is on the known-fabricated list are touched.
+ */
+export function purgeFabricatedSeedEvidence() {
+  try {
+    const placeholders = FABRICATED_SEED_TX.map(() => '?').join(',');
+    db.prepare(`UPDATE bounties SET deposit_tx = NULL WHERE LOWER(deposit_tx) IN (${placeholders})`).run(...FABRICATED_SEED_TX);
+    db.prepare(`UPDATE bounties SET settlement_tx = NULL WHERE LOWER(settlement_tx) IN (${placeholders})`).run(...FABRICATED_SEED_TX);
+    db.prepare(`UPDATE bounty_submissions SET disbursement_tx = NULL WHERE LOWER(disbursement_tx) IN (${placeholders})`).run(...FABRICATED_SEED_TX);
+    db.prepare(`DELETE FROM disbursements WHERE LOWER(tx_hash) IN (${placeholders})`).run(...FABRICATED_SEED_TX);
+  } catch (err) {
+    console.warn('[Database] Failed to purge fabricated seed evidence:', err.message);
+  }
+}
 
 export function seedInitialBountiesIfEmpty() {
   try {
@@ -1081,6 +1110,8 @@ try {
   console.warn('[Database] Seed check warning:', e.message);
 }
 
+purgeFabricatedSeedEvidence();
+
 // Ensure all legacy Circle Arc references in SQLite database are rebranded to BOT Chain / BotBounty
 try {
   db.exec(`
@@ -1285,6 +1316,8 @@ export function parseBountyRecord(row) {
     deadline: row.deadline,
     settledAt: row.settled_at,
     settlementTx: row.settlement_tx,
+    onChainBountyId: row.on_chain_bounty_id || null,
+    isDemo: DEMO_BOUNTY_ID_SET.has(row.id),
     rewardDistribution: (() => {
       if (!row.reward_distribution) return null;
       try { return typeof row.reward_distribution === 'string' ? JSON.parse(row.reward_distribution) : row.reward_distribution; } catch (e) { return null; }
@@ -1440,6 +1473,10 @@ export function createBountyRecord(data) {
     rewardDistributionJson
   );
 
+  if (data.onChainBountyId) {
+    db.prepare(`UPDATE bounties SET on_chain_bounty_id = ? WHERE id = ?`).run(String(data.onChainBountyId), id);
+  }
+
   const created = getBountyById(id);
   if (isExternalDbConfigured() && created) {
     pgSaveBounty(created);
@@ -1512,7 +1549,8 @@ export function createBountySubmission({
   submissionUrl,
   notes,
   solverType = 'Human Creator',
-  collaborators = []
+  collaborators = [],
+  submitTx = null
 }) {
   const bounty = getBountyById(bountyId);
   if (!bounty) throw new Error('Bounty not found');
@@ -1590,6 +1628,10 @@ export function createBountySubmission({
     collabsJson
   );
 
+  if (submitTx) {
+    db.prepare(`UPDATE bounty_submissions SET submit_tx = ? WHERE id = ?`).run(String(submitTx), subId);
+  }
+
   // Keep bounty status as 'Open' while deadline is active so creators can participate
   // Only transition to InReview if there is no deadline or the deadline has expired
   if (!bounty.deadline || Date.now() >= bounty.deadline) {
@@ -1620,7 +1662,9 @@ export function createBountySubmission({
     revisionCount: 1,
     revision_count: 1,
     submittedAt: now,
-    submitted_at: now
+    submitted_at: now,
+    submitTx: submitTx || null,
+    submit_tx: submitTx || null
   };
 }
 

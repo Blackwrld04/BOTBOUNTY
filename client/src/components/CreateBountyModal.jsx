@@ -32,7 +32,7 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
   const [title, setTitle] = useState('');
   const [submissionType, setSubmissionType] = useState('Figma / 3D Render Link');
   const [amount, setAmount] = useState('500');
-  const [selectedAsset, setSelectedAsset] = useState('USDT'); // 'USDT' (Bridged ERC-20) or 'BOT' (Native)
+  const [selectedAsset, setSelectedAsset] = useState('BOT'); // Native $BOT is active for Bohr Testnet release
   const [distributionType, setDistributionType] = useState('single'); // 'single', 'tiered', 'equal'
   const [tieredRewards, setTieredRewards] = useState([
     { place: 1, amount: '100', label: '1st Place' },
@@ -100,10 +100,7 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
       }
 
       if (typeof window === 'undefined' || !window.ethereum) {
-        // Fallback for automated test runners / headless testing agents
-        const randomHex = Array.from(crypto.getRandomValues(new Uint8Array(32))).map(b => b.toString(16).padStart(2, '0')).join('');
-        setDepositTx('0x' + randomHex);
-        setOnChainBountyId('0x' + randomHex);
+        alert('A Web3 wallet connected to BOT Chain Bohr Testnet is required to deposit escrow funds.');
         return;
       }
 
@@ -166,11 +163,8 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
       setDepositTx(txHash);
       setOnChainBountyId(bountyIdBytes32);
     } catch (e) {
-      console.warn('Wallet payment prompt error:', e);
-      // If Web3 interaction was rejected in headless test, generate test tx
-      const randomHex = Array.from(crypto.getRandomValues(new Uint8Array(32))).map(b => b.toString(16).padStart(2, '0')).join('');
-      setDepositTx('0x' + randomHex);
-      setOnChainBountyId('0x' + randomHex);
+      console.error('Wallet payment error:', e);
+      alert(e.message || 'On-chain escrow transaction was cancelled or failed.');
     } finally {
       setIsPayingWallet(false);
     }
@@ -605,40 +599,6 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
                 <button
                   type="button"
-                  id="payout-token-usdt"
-                  data-testid="payout-token-usdt"
-                  onClick={() => setSelectedAsset('USDT')}
-                  style={{
-                    padding: '12px 14px',
-                    borderRadius: '8px',
-                    border: '2px solid #000000',
-                    background: selectedAsset === 'USDT' ? '#0284c7' : '#ffffff',
-                    color: selectedAsset === 'USDT' ? '#ffffff' : '#0f172a',
-                    fontWeight: 800,
-                    fontSize: '0.88rem',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    boxShadow: selectedAsset === 'USDT' ? '2px 2px 0px #000000' : 'none'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{
-                      background: selectedAsset === 'USDT' ? '#ffffff' : '#e0f2fe',
-                      color: selectedAsset === 'USDT' ? '#0284c7' : '#0369a1',
-                      padding: '2px 6px',
-                      borderRadius: '4px',
-                      fontSize: '0.75rem',
-                      fontWeight: 900
-                    }}>USDT</span>
-                    <span style={{ textAlign: 'left' }}>Bridged USDT</span>
-                  </div>
-                  <span style={{ fontSize: '0.72rem', opacity: 0.9 }}>ERC-20</span>
-                </button>
-
-                <button
-                  type="button"
                   id="payout-token-bot"
                   data-testid="payout-token-bot"
                   onClick={() => setSelectedAsset('BOT')}
@@ -668,7 +628,42 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
                     }}>BOT</span>
                     <span style={{ textAlign: 'left' }}>Native $BOT</span>
                   </div>
-                  <span style={{ fontSize: '0.72rem', opacity: 0.9 }}>Gas Token</span>
+                  <span style={{ fontSize: '0.72rem', opacity: 0.9 }}>Active</span>
+                </button>
+
+                <button
+                  type="button"
+                  id="payout-token-usdt"
+                  data-testid="payout-token-usdt"
+                  disabled={true}
+                  title="ERC-20 USDT is disabled for the native-$BOT-only pilot"
+                  style={{
+                    padding: '12px 14px',
+                    borderRadius: '8px',
+                    border: '1.5px dashed #94a3b8',
+                    background: '#f8fafc',
+                    color: '#64748b',
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    cursor: 'not-allowed',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    opacity: 0.7
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{
+                      background: '#e2e8f0',
+                      color: '#64748b',
+                      padding: '2px 6px',
+                      borderRadius: '4px',
+                      fontSize: '0.72rem',
+                      fontWeight: 900
+                    }}>USDT</span>
+                    <span style={{ textAlign: 'left' }}>Bridged USDT</span>
+                  </div>
+                  <span style={{ fontSize: '0.68rem', color: '#991b1b', fontWeight: 800 }}>DISABLED</span>
                 </button>
               </div>
 

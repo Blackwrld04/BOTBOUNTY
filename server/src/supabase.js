@@ -4,6 +4,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createClient } from '@supabase/supabase-js';
+import { FABRICATED_SEED_TX } from './seedEvidence.js';
 
 const { Pool } = pg;
 const __filename = fileURLToPath(import.meta.url);
@@ -111,7 +112,7 @@ export async function seedSupabaseInitialData(initialBounties = []) {
       ]);
     }
 
-    // Seed canonical submissions
+    // Seed canonical submissions (without fake on-chain disbursement hashes)
     await pool.query(`
       INSERT INTO bounty_submissions (
         id, bounty_id, creator_id, user_id, creator_name, creator_email,
@@ -126,44 +127,20 @@ export async function seedSupabaseInitialData(initialBounties = []) {
       'sub_seed_001', 'bounty-arc-003', 'usr_seed_creator_1', 'usr_seed_creator_1', 'Alex Researcher', 'crypto_analyst@x.com',
       '0x9923Bc8E4786A6B71D0052F5eCE984bC9d123456', 'https://x.com/crypto_analyst/status/18389102938102',
       'Completed full 15-tweet breakdown with visual architecture flowcharts.', 'Alex Researcher', 'awarded', 800,
-      '0x1a0c40614615b1e7a309adca37da91823a8b7c4d5e6f7a8b9c0d1e2f3a4b5c03', Date.now() - 86400000 * 2,
+      null, Date.now() - 86400000 * 2,
 
       'sub_71877b765784d7da', 'bounty-arc-3356', 'usr_seed_creator_2', 'usr_seed_creator_2', 'Alex Rivers', 'alex.rivers@designguild.org',
       '0x51a8b1bfeb88bdfa9207e999c0b2023c70c97c8f', 'https://www.figma.com/design/arc-interactive-infographic',
       'High-fidelity interactive SVG visualization of Circle Arc settlement.', 'Alex Rivers', 'awarded', 750,
-      '0x1a0c3af6b2a5f7019c628920ceba91823a8b7c4d5e6f7a8b9c0d1e2f3a4b5c05', Date.now() - 86400000 * 3,
+      null, Date.now() - 86400000 * 3,
 
       'sub_seed_002', 'bounty-arc-004', 'usr_seed_creator_3', 'usr_seed_creator_3', 'Meme God', 'memegod@x.com',
       '0x71C568ba74d3B107292995bB791e317614399A45', 'https://x.com/memegod_sol/status/1838192830192',
       'Created 5 top-tier viral memes for Circle Arc.', 'Meme God', 'awarded', 450,
-      '0x91823a8b7c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a04b1c2d3e4f5a6b7c8d9e04', Date.now() - 86400000 * 4
+      null, Date.now() - 86400000 * 4
     ]);
 
-    // Seed canonical disbursements
-    await pool.query(`
-      INSERT INTO disbursements (
-        id, disbursement_id, bounty_id, submission_id, recipient_address, recipient_email,
-        amount, amount_usdc, tx_hash, admin_email, distributed_at
-      ) VALUES
-        ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11),
-        ($12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22),
-        ($23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33)
-      ON CONFLICT (disbursement_id) DO NOTHING
-    `, [
-      'disb_a8a568d0c6849893', 'disb_a8a568d0c6849893', 'bounty-arc-003', 'sub_seed_001',
-      '0x9923Bc8E4786A6B71D0052F5eCE984bC9d123456', 'crypto_analyst@x.com',
-      800, 800, '0x1a0c40614615b1e7a309adca37da91823a8b7c4d5e6f7a8b9c0d1e2f3a4b5c03', 'admin@botbounty.ai', Date.now() - 86400000 * 1,
-
-      'disb_c51cf757824df287', 'disb_c51cf757824df287', 'bounty-arc-3356', 'sub_71877b765784d7da',
-      '0x51a8b1bfeb88bdfa9207e999c0b2023c70c97c8f', 'alex.rivers@designguild.org',
-      750, 750, '0x1a0c3af6b2a5f7019c628920ceba91823a8b7c4d5e6f7a8b9c0d1e2f3a4b5c05', 'admin@botbounty.ai', Date.now() - 86400000 * 2,
-
-      'disb_seed_002', 'disb_seed_002', 'bounty-arc-004', 'sub_seed_002',
-      '0x71C568ba74d3B107292995bB791e317614399A45', 'memegod@x.com',
-      450, 450, '0x91823a8b7c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a04b1c2d3e4f5a6b7c8d9e04', 'admin@botbounty.ai', Date.now() - 86400000 * 1
-    ]);
-
-    console.log('[Supabase] Successfully seeded initial bounties, submissions, and disbursements!');
+    console.log('[Supabase] Successfully seeded initial demo bounties and submissions (fabricated hashes excluded).');
   } catch (err) {
     console.error('[Supabase] Error seeding initial data:', err.message);
   }
@@ -183,13 +160,13 @@ export async function syncSupabaseToLocalSqlite(sqliteDb) {
           submission_type, issue_url, amount, tags, status, payment_status,
           deposit_tx, escrow_wallet, maintainer, maintainer_name, maintainer_email,
           solver, solver_type, pr_url, description, created_at,
-          deadline, settled_at, settlement_tx, reward_distribution
+          deadline, settled_at, settlement_tx, reward_distribution, on_chain_bounty_id
         ) VALUES (
           ?, ?, ?, ?, ?, ?,
           ?, ?, ?, ?, ?, ?,
           ?, ?, ?, ?, ?,
           ?, ?, ?, ?, ?,
-          ?, ?, ?, ?
+          ?, ?, ?, ?, ?
         )
       `);
       for (const r of bountyRows.rows) {
@@ -199,7 +176,7 @@ export async function syncSupabaseToLocalSqlite(sqliteDb) {
           r.status, r.payment_status, r.deposit_tx, r.escrow_wallet, r.maintainer,
           r.maintainer_name, r.maintainer_email, r.solver, r.solver_type, r.pr_url,
           r.description, Number(r.created_at), Number(r.deadline), r.settled_at ? Number(r.settled_at) : null,
-          r.settlement_tx, r.reward_distribution || null
+          r.settlement_tx, r.reward_distribution || null, r.on_chain_bounty_id || null
         );
       }
     }
@@ -212,13 +189,13 @@ export async function syncSupabaseToLocalSqlite(sqliteDb) {
           wallet_address, submission_url, notes, solver_type, status,
           reward_paid, disbursement_tx, submitted_at, revision_count,
           revision_history, collaborators, score_code_quality, score_creativity,
-          score_completeness, reviewer_notes, github_pr_status
+          score_completeness, reviewer_notes, github_pr_status, submit_tx
         ) VALUES (
           ?, ?, ?, ?, ?,
           ?, ?, ?, ?, ?,
           ?, ?, ?, ?,
           ?, ?, ?, ?,
-          ?, ?, ?
+          ?, ?, ?, ?
         )
       `);
       for (const s of subRows.rows) {
@@ -228,7 +205,7 @@ export async function syncSupabaseToLocalSqlite(sqliteDb) {
           Number(s.reward_paid || 0), s.disbursement_tx, Number(s.submitted_at),
           s.revision_count || 1, s.revision_history || '[]', s.collaborators || '[]',
           s.score_code_quality || null, s.score_creativity || null, s.score_completeness || null,
-          s.reviewer_notes || null, s.github_pr_status || null
+          s.reviewer_notes || null, s.github_pr_status || null, s.submit_tx || null
         );
       }
     }
@@ -407,6 +384,18 @@ export async function initSupabaseDatabase(initialBounties = [], sqliteDb = null
       console.log('[Supabase] All production relational tables and indexes verified.');
     }
 
+    // 2b. Add on_chain_bounty_id and submit_tx columns if not already present; purge fabricated hashes
+    try {
+      await pool.query(`ALTER TABLE bounties ADD COLUMN IF NOT EXISTS on_chain_bounty_id TEXT;`);
+      await pool.query(`ALTER TABLE bounty_submissions ADD COLUMN IF NOT EXISTS submit_tx TEXT;`);
+      await pool.query(`UPDATE bounties SET deposit_tx = NULL WHERE LOWER(deposit_tx) = ANY($1::text[])`, [FABRICATED_SEED_TX]);
+      await pool.query(`UPDATE bounties SET settlement_tx = NULL WHERE LOWER(settlement_tx) = ANY($1::text[])`, [FABRICATED_SEED_TX]);
+      await pool.query(`UPDATE bounty_submissions SET disbursement_tx = NULL WHERE LOWER(disbursement_tx) = ANY($1::text[])`, [FABRICATED_SEED_TX]);
+      await pool.query(`DELETE FROM disbursements WHERE LOWER(tx_hash) = ANY($1::text[])`, [FABRICATED_SEED_TX]);
+    } catch (migErr) {
+      console.warn('[Supabase] Migration or seed purge warning:', migErr.message);
+    }
+
     // 3. Seed canonical data if bounties table is empty
     if (initialBounties && initialBounties.length > 0) {
       await seedSupabaseInitialData(initialBounties);
@@ -473,13 +462,13 @@ export async function pgSaveBounty(b) {
         submission_type, issue_url, amount, tags, status, payment_status,
         deposit_tx, escrow_wallet, maintainer, maintainer_name, maintainer_email,
         solver, solver_type, pr_url, description, created_at,
-        deadline, settled_at, settlement_tx, reward_distribution
+        deadline, settled_at, settlement_tx, reward_distribution, on_chain_bounty_id
       ) VALUES (
         $1, $2, $3, $4, $5, $6,
         $7, $8, $9, $10, $11, $12,
         $13, $14, $15, $16, $17,
         $18, $19, $20, $21, $22,
-        $23, $24, $25, $26
+        $23, $24, $25, $26, $27
       ) ON CONFLICT (id) DO UPDATE SET
         title = EXCLUDED.title,
         category = EXCLUDED.category,
@@ -503,7 +492,8 @@ export async function pgSaveBounty(b) {
         deadline = EXCLUDED.deadline,
         settled_at = EXCLUDED.settled_at,
         settlement_tx = EXCLUDED.settlement_tx,
-        reward_distribution = EXCLUDED.reward_distribution
+        reward_distribution = EXCLUDED.reward_distribution,
+        on_chain_bounty_id = COALESCE(EXCLUDED.on_chain_bounty_id, bounties.on_chain_bounty_id)
     `, [
       b.id, b.bounty_id || b.bountyId, b.title, b.category, b.category_name || b.categoryName,
       b.category_color || b.categoryColor, b.submission_type || b.submissionType,
@@ -514,7 +504,8 @@ export async function pgSaveBounty(b) {
       b.maintainer_email || b.maintainerEmail, b.solver, b.solver_type || b.solverType,
       b.pr_url || b.prUrl, b.description, b.created_at || b.createdAt,
       b.deadline, b.settled_at || b.settledAt || null, b.settlement_tx || b.settlementTx || null,
-      b.reward_distribution || b.rewardDistribution || null
+      b.reward_distribution || b.rewardDistribution || null,
+      b.on_chain_bounty_id || b.onChainBountyId || null
     ]);
   } catch (err) {
     console.error('[Supabase] pgSaveBounty error:', err.message);
@@ -530,13 +521,13 @@ export async function pgSaveSubmission(sub) {
         wallet_address, submission_url, notes, solver_type, status,
         reward_paid, disbursement_tx, submitted_at, revision_count,
         revision_history, collaborators, score_code_quality, score_creativity,
-        score_completeness, reviewer_notes, github_pr_status
+        score_completeness, reviewer_notes, github_pr_status, submit_tx
       ) VALUES (
         $1, $2, $3, $4, $5, $6,
         $7, $8, $9, $10, $11,
         $12, $13, $14, $15,
         $16, $17, $18, $19,
-        $20, $21, $22
+        $20, $21, $22, $23
       ) ON CONFLICT (id) DO UPDATE SET
         submission_url = EXCLUDED.submission_url,
         notes = EXCLUDED.notes,
@@ -550,7 +541,8 @@ export async function pgSaveSubmission(sub) {
         score_creativity = EXCLUDED.score_creativity,
         score_completeness = EXCLUDED.score_completeness,
         reviewer_notes = EXCLUDED.reviewer_notes,
-        github_pr_status = EXCLUDED.github_pr_status
+        github_pr_status = EXCLUDED.github_pr_status,
+        submit_tx = COALESCE(EXCLUDED.submit_tx, bounty_submissions.submit_tx)
     `, [
       sub.id, sub.bounty_id, sub.creator_id || sub.user_id, sub.user_id || sub.creator_id,
       sub.creator_name, sub.creator_email, sub.wallet_address, sub.submission_url,
@@ -560,7 +552,8 @@ export async function pgSaveSubmission(sub) {
       typeof sub.revision_history === 'string' ? sub.revision_history : JSON.stringify(sub.revision_history || []),
       typeof sub.collaborators === 'string' ? sub.collaborators : JSON.stringify(sub.collaborators || []),
       sub.score_code_quality || null, sub.score_creativity || null, sub.score_completeness || null,
-      sub.reviewer_notes || null, sub.github_pr_status || null
+      sub.reviewer_notes || null, sub.github_pr_status || null,
+      sub.submit_tx || sub.submitTx || null
     ]);
   } catch (err) {
     console.error('[Supabase] pgSaveSubmission error:', err.message);

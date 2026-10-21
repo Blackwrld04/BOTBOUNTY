@@ -21,8 +21,10 @@ export const config = {
   usdcAddress: '0x3600000000000000000000000000000000000000',
   usdcDecimals: 6,
 
-  // Facilitator & Escrow Contracts
-  facilitatorPrivateKey: process.env.FACILITATOR_PRIVATE_KEY || '0x0000000000000000000000000000000000000000000000000000000000000001',
+  // Escrow Contract
   escrowContractAddress: process.env.ESCROW_CONTRACT_ADDRESS || '0xB128F2f442554B6517D779788F28F2EB2612164A',
+
+  // This release is native-BOT-only. ERC20 (USDT) funding stays disabled until it has live Bohr test evidence.
+  enableErc20: process.env.ENABLE_ERC20 === 'true',
 };
 

@@ -395,6 +395,30 @@ export default function App() {
   const handleSubmitSolution = async (bountyId, submissionUrl, solverAddress, solverType, notes, collaborators = []) => {
     try {
       const token = localStorage.getItem('botbounty_session_token') || localStorage.getItem('arcbounty_session_token');
+      const resolvedWallet = solverAddress || wallet?.address || user?.address || user?.wallet_address;
+      if (!resolvedWallet) {
+        throw new Error('Please connect your Web3 wallet or sign in before submitting a deliverable.');
+      }
+
+      let clientSubmitTx = null;
+      const targetOnChainId = selectedBounty?.onChainBountyId || selectedBounty?.bountyId || selectedBounty?.bounty_id;
+      if (typeof window !== 'undefined' && window.ethereum && targetOnChainId && targetOnChainId.startsWith('0x') && targetOnChainId.length === 66) {
+        try {
+          const provider = new ethers.BrowserProvider(window.ethereum);
+          const network = await provider.getNetwork();
+          if (Number(network.chainId) === 968) {
+            const signer = await provider.getSigner();
+            const escrowAbi = ['function submitSolution(bytes32 bountyId, string calldata prUrl) external'];
+            const escrowContract = new ethers.Contract('0xB128F2f442554B6517D779788F28F2EB2612164A', escrowAbi, signer);
+            const tx = await escrowContract.submitSolution(targetOnChainId, submissionUrl);
+            const receipt = await tx.wait();
+            clientSubmitTx = receipt?.hash || tx.hash;
+          }
+        } catch (onChainErr) {
+          console.warn('On-chain submitSolution was not completed:', onChainErr.message);
+        }
+      }
+
       const res = await fetch(`${API_BASE}/api/bounties/${bountyId}/participate`, {
         method: 'POST',
         headers: {
@@ -403,12 +427,13 @@ export default function App() {
         },
         body: JSON.stringify({
           submissionUrl,
-          walletAddress: solverAddress || user?.address || '0x461cd48D95993242bB04774cc68042795586BbAd',
+          walletAddress: resolvedWallet,
           solverType: solverType || 'Human Creator',
           notes,
           creatorName: user?.name,
           creatorEmail: user?.email,
-          collaborators
+          collaborators,
+          submitTx: clientSubmitTx
         })
       });
       const data = await res.json();
@@ -417,10 +442,15 @@ export default function App() {
         setSelectedBounty(data.bounty);
         syncAllData();
         triggerSync({ action: 'work_submitted', bountyId });
+        if (clientSubmitTx) {
+          showToast('Deliverable submitted and confirmed on Bohr Testnet!', 'success', `https://scan.bohr.life/tx/${clientSubmitTx}`);
+        } else {
+          showToast('Work deliverable successfully submitted for maintainer review!');
+        }
         return { success: true, bounty: data.bounty, submission: data.submission };
       } else {
         const errMsg = data.error || 'Failed to submit work deliverable';
-        showToast(errMsg);
+        showToast(errMsg, 'error');
         throw new Error(errMsg);
       }
     } catch (e) {
@@ -436,23 +466,37 @@ export default function App() {
       const sessionToken = typeof window !== 'undefined' ? (localStorage.getItem('botbounty_session_token') || localStorage.getItem('arcbounty_session_token')) : null;
       const token = adminToken || sessionToken;
 
-      let clientTxHash = null;
+      if (typeof window === 'undefined' || !window.ethereum) {
+        throw new Error('A connected Web3 wallet is required to sign and execute releaseBounty on Bohr Testnet.');
+      }
 
-      // If maintainer has connected Web3 wallet, prompt direct on-chain release
       const targetOnChainId = selectedBounty?.onChainBountyId || selectedBounty?.bountyId || selectedBounty?.bounty_id;
-      if (typeof window !== 'undefined' && window.ethereum && targetOnChainId) {
+      if (!targetOnChainId || !targetOnChainId.startsWith('0x') || targetOnChainId.length !== 66) {
+        throw new Error('This bounty does not have a verified on-chain escrow ID on Bohr Testnet.');
+      }
+
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const network = await provider.getNetwork();
+      if (Number(network.chainId) !== 968) {
         try {
-          const provider = new ethers.BrowserProvider(window.ethereum);
-          const signer = await provider.getSigner();
-          const escrowAbi = ['function releaseBounty(bytes32 bountyId) external'];
-          const escrowContract = new ethers.Contract('0xB128F2f442554B6517D779788F28F2EB2612164A', escrowAbi, signer);
-          const tx = await escrowContract.releaseBounty(targetOnChainId);
-          const receipt = await tx.wait();
-          clientTxHash = receipt?.hash || tx.hash;
-        } catch (walletErr) {
-          console.warn('Direct wallet release bypassed, falling back to facilitator relay:', walletErr.message);
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: '0x3c8' }]
+          });
+        } catch (switchErr) {
+          throw new Error('Please switch your wallet to BOT Chain Bohr Testnet (Chain ID 968) to execute settlement.');
         }
       }
+
+      const signer = await provider.getSigner();
+      const escrowAbi = ['function releaseBounty(bytes32 bountyId) external'];
+      const escrowContract = new ethers.Contract('0xB128F2f442554B6517D779788F28F2EB2612164A', escrowAbi, signer);
+      const tx = await escrowContract.releaseBounty(targetOnChainId);
+      const receipt = await tx.wait();
+      if (!receipt || receipt.status !== 1) {
+        throw new Error('Settlement transaction reverted on Bohr Testnet.');
+      }
+      const clientTxHash = receipt?.hash || tx.hash;
 
       const res = await fetch(`${API_BASE}/api/bounties/${bountyId}/release`, {
         method: 'POST',

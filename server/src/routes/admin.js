@@ -27,8 +27,7 @@ import {
   syncSupabaseUsersToLocalSqlite
 } from '../supabase.js';
 import {
-  verifySettlementTransaction,
-  executeOnChainRelease
+  verifySettlementTransaction
 } from '../services/onchainVerifier.js';
 
 export const adminRouter = express.Router();
@@ -42,9 +41,15 @@ export const activeAdminTokens = new Map();
  */
 adminRouter.post('/login', (req, res) => {
   const { password } = req.body;
-  const adminPassword = (process.env.ADMIN_PASSWORD || 'arcbounty2026_admin!').trim();
+  const configuredPassword = (process.env.ADMIN_PASSWORD || '').trim();
+  if (!configuredPassword) {
+    return res.status(503).json({
+      success: false,
+      error: 'Administrator login is disabled: ADMIN_PASSWORD is not configured on the server.'
+    });
+  }
 
-  if (!password || password.trim() !== adminPassword) {
+  if (!password || password.trim() !== configuredPassword) {
     return res.status(401).json({
       success: false,
       error: 'Invalid administrator password. Access denied.'
@@ -268,25 +273,26 @@ adminRouter.post(['/distribute', '/disburse'], async (req, res) => {
       return res.status(404).json({ success: false, error: 'Submission not found' });
     }
 
-    let txHash = clientTxHash;
+    const txHash = clientTxHash;
     if (!txHash) {
-      try {
-        const onChainBountyId = bounty.onChainBountyId || bounty.bounty_id || ('0x' + '1'.repeat(64));
-        const executed = await executeOnChainRelease({ onChainBountyId });
-        txHash = executed.txHash;
-      } catch (err) {
-        return res.status(400).json({
-          success: false,
-          error: 'On-chain settlement transaction hash (txHash) is required: ' + err.message
-        });
-      }
+      return res.status(400).json({
+        success: false,
+        error: 'A wallet-signed on-chain settlement transaction hash (txHash) is required. The server never signs or relays releases.'
+      });
+    }
+    if (!bounty.onChainBountyId) {
+      return res.status(400).json({
+        success: false,
+        error: 'This bounty has no on-chain escrow record, so it cannot be settled.'
+      });
     }
 
-    // Verify on Bohr Testnet
+    // Verify on Bohr Testnet (bound to this bounty's on-chain id)
     await verifySettlementTransaction({
       txHash,
       expectedSolver: sub.wallet_address,
-      expectedAmount: amount || bounty.amount
+      expectedAmount: amount || bounty.amount,
+      expectedBountyId: bounty.onChainBountyId
     });
 
     const settlement = disburseBountyReward({
@@ -435,15 +441,12 @@ adminRouter.post('/bounties/:id/disburse-multi-winner', async (req, res) => {
       return res.status(404).json({ success: false, error: 'Bounty not found' });
     }
 
-    let topTxHash = req.body.txHash || req.body.settlementTx;
-    if (!topTxHash && winners.some(w => !w.txHash)) {
-      try {
-        const onChainBountyId = bounty.onChainBountyId || bounty.bounty_id || ('0x' + '1'.repeat(64));
-        const executed = await executeOnChainRelease({ onChainBountyId });
-        topTxHash = executed.txHash;
-      } catch (err) {
-        // If server execution fails, on-chain hash must be supplied
-      }
+    const topTxHash = req.body.txHash || req.body.settlementTx;
+    if (!bounty.onChainBountyId) {
+      return res.status(400).json({
+        success: false,
+        error: 'This bounty has no on-chain escrow record, so it cannot be settled.'
+      });
     }
 
     for (const w of winners) {
@@ -459,7 +462,8 @@ adminRouter.post('/bounties/:id/disburse-multi-winner', async (req, res) => {
       await verifySettlementTransaction({
         txHash: w.txHash,
         expectedSolver: w.walletAddress,
-        expectedAmount: w.amount
+        expectedAmount: w.amount,
+        expectedBountyId: bounty.onChainBountyId
       });
     }
 

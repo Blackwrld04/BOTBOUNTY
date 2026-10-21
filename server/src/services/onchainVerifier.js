@@ -1,5 +1,4 @@
-import { createPublicClient, createWalletClient, http, parseAbi, decodeEventLog, formatEther } from 'viem';
-import { privateKeyToAccount } from 'viem/accounts';
+import { createPublicClient, http, parseAbi, decodeEventLog, formatEther } from 'viem';
 import { config } from '../config.js';
 import { db } from '../db.js';
 
@@ -178,7 +177,7 @@ export async function verifySettlementTransaction({
       verified: true,
       simulated: true,
       txHash,
-      solver: expectedSolver || '0x53e3800847e5Bb6fAfA0853d3e5a884B22aF8a20',
+      solver: expectedSolver,
       amountWei: '10000000000000000'
     };
   }
@@ -201,6 +200,9 @@ export async function verifySettlementTransaction({
   }
 
   const expectedContract = (config.escrowContractAddress || '0xB128F2f442554B6517D779788F28F2EB2612164A').toLowerCase();
+  if (receipt.to?.toLowerCase() !== expectedContract) {
+    throw new Error(`Settlement transaction was sent to ${receipt.to}, but active Bohr Escrow contract is ${expectedContract}.`);
+  }
 
   // Find BountySettled event
   let settledEvent = null;
@@ -232,16 +234,17 @@ export async function verifySettlementTransaction({
     throw new Error(`On-chain recipient ${solver} does not match the winning solver's wallet address (${expectedSolver}).`);
   }
 
-  // Verify bounty ID if provided
-  if (expectedBountyId && bountyId.toLowerCase() !== expectedBountyId.toLowerCase()) {
+  // Verify bounty ID (mandatory: a settlement for a different bounty must never be accepted)
+  if (!expectedBountyId || bountyId.toLowerCase() !== expectedBountyId.toLowerCase()) {
     throw new Error(`On-chain settlement bountyId (${bountyId}) does not match this bounty.`);
   }
 
-  // Check amount
+  // Check amount using the settled token's decimals (6 for USDT, 18 for native BOT)
   if (expectedAmount !== undefined && expectedAmount !== null) {
-    const expectedAmountWei = typeof expectedAmount === 'bigint' ? expectedAmount : BigInt(Math.round(parseFloat(expectedAmount) * 1e18));
+    const decimals = tokenDecimals(settlementToken);
+    const expectedAmountWei = typeof expectedAmount === 'bigint' ? expectedAmount : BigInt(Math.round(parseFloat(expectedAmount) * Math.pow(10, decimals)));
     if (amount < expectedAmountWei) {
-      throw new Error(`On-chain settled amount (${formatEther(amount)} BOT) does not match expected reward amount (${formatEther(expectedAmountWei)} BOT).`);
+      throw new Error(`On-chain settled amount (${amount.toString()} base units) is less than expected reward amount (${expectedAmountWei.toString()} base units).`);
     }
   }
 
@@ -259,37 +262,80 @@ export async function verifySettlementTransaction({
 }
 
 /**
- * Execute on-chain releaseBounty directly from server using maintainer account
+ * Verify a solver's on-chain submitSolution transaction on Bohr Testnet.
+ * Matches: mined + success, sent to the escrow contract, and emitted SolutionSubmitted
+ * for the expected bounty id by the expected solver wallet.
+ * NOTE: submitSolution publishes the deliverable URL on-chain (public); the private
+ * commitment path (submitSolutionCommitment) is not used by this release.
  */
-export async function executeOnChainRelease({ onChainBountyId }) {
-  const privateKey = config.facilitatorPrivateKey;
-  if (!privateKey || privateKey === '0x0000000000000000000000000000000000000000000000000000000000000001') {
-    throw new Error('Platform maintainer private key is not configured for autonomous on-chain release.');
+export async function verifySubmissionTransaction({ txHash, expectedSolver, expectedBountyId }) {
+  if (!isValidTxHashFormat(txHash)) {
+    throw new Error(`Invalid transaction hash format: "${txHash}". Expected 66-character hex.`);
   }
 
-  const account = privateKeyToAccount(privateKey);
-  const walletClient = createWalletClient({
-    account,
-    transport: http(config.botRpcUrl || 'https://rpc.bohr.life')
-  });
+  if (process.env.NODE_ENV === 'test' && (!process.env.VERIFY_LIVE_BOHR || process.env.VERIFY_LIVE_BOHR !== 'true')) {
+    return { verified: true, simulated: true, txHash, solver: expectedSolver, bountyId: expectedBountyId };
+  }
 
-  const txHash = await walletClient.writeContract({
-    address: config.escrowContractAddress,
-    abi: ESCROW_ABI,
-    functionName: 'releaseBounty',
-    args: [onChainBountyId]
-  });
-
-  const publicClient = getPublicClient();
-  const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
-
+  const client = getPublicClient();
+  let receipt;
+  try {
+    receipt = await client.getTransactionReceipt({ hash: txHash });
+  } catch (err) {
+    throw new Error(`Submission transaction ${txHash} not found on BOT Chain Bohr Testnet. Fabricated hashes are rejected.`);
+  }
+  if (!receipt) {
+    throw new Error(`Submission transaction ${txHash} not found on BOT Chain Bohr Testnet. Fabricated hashes are rejected.`);
+  }
   if (receipt.status !== 'success') {
-    throw new Error(`On-chain release transaction ${txHash} reverted on Bohr Testnet.`);
+    throw new Error(`Submission transaction ${txHash} failed or reverted on BOT Chain Bohr Testnet.`);
+  }
+
+  const expectedContract = (config.escrowContractAddress || '0xB128F2f442554B6517D779788F28F2EB2612164A').toLowerCase();
+  if (receipt.to?.toLowerCase() !== expectedContract) {
+    throw new Error(`Submission transaction was sent to ${receipt.to}, but active Bohr Escrow contract is ${expectedContract}.`);
+  }
+
+  let submittedEvent = null;
+  for (const log of receipt.logs) {
+    if (log.address.toLowerCase() !== expectedContract) continue;
+    try {
+      const decoded = decodeEventLog({ abi: ESCROW_ABI, data: log.data, topics: log.topics });
+      if (decoded.eventName === 'SolutionSubmitted') {
+        submittedEvent = decoded;
+        break;
+      }
+    } catch (e) {
+      // ignore other events
+    }
+  }
+  if (!submittedEvent) {
+    throw new Error('Transaction did not emit SolutionSubmitted event on Bohr Escrow contract.');
+  }
+
+  const { bountyId, solver, prUrl } = submittedEvent.args;
+  if (!expectedBountyId || bountyId.toLowerCase() !== expectedBountyId.toLowerCase()) {
+    throw new Error(`On-chain submission bountyId (${bountyId}) does not match this bounty.`);
+  }
+  if (!expectedSolver || solver.toLowerCase() !== expectedSolver.toLowerCase()) {
+    throw new Error(`On-chain submitter ${solver} does not match the submitting wallet (${expectedSolver}).`);
   }
 
   return {
+    verified: true,
     txHash,
-    receipt,
-    maintainer: account.address
+    bountyId,
+    solver,
+    prUrl,
+    blockNumber: receipt.blockNumber ? Number(receipt.blockNumber) : undefined
   };
+}
+
+function tokenDecimals(tokenAddress) {
+  const t = (tokenAddress || '').toLowerCase();
+  const usdt = [
+    (config.usdtAddress || '').toLowerCase(),
+    (config.usdtMainnetAddress || '').toLowerCase()
+  ];
+  return usdt.includes(t) ? 6 : 18;
 }

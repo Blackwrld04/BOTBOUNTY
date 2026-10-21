@@ -32,21 +32,21 @@ services:
       - key: SMTP_SECURE
         value: "true"
       - key: SMTP_USER
-        value: "olajideabdulquadri22@gmail.com"
+        sync: false
       - key: SMTP_PASS
-        value: "pdkvitevvkogztxi"
+        sync: false
       - key: EMAIL_FROM
-        value: "BotBounty <olajideabdulquadri22@gmail.com>"
+        value: "BotBounty <no-reply@botbounty.ai>"
       - key: GMAIL_USER
-        value: "olajideabdulquadri22@gmail.com"
+        sync: false
       - key: GMAIL_APP_PASSWORD
-        value: "pdkvitevvkogztxi"
+        sync: false
       - key: CLIENT_URL
-        value: "https://botbounty.vercel.app"
+        value: "https://botbounty-theta.vercel.app"
       - key: EMAIL_RELAY_SECRET
-        value: "botbounty-relay-auth-2026"
+        sync: false
       - key: ADMIN_EMAILS
-        value: "olajideabdulquadri22@gmail.com"
+        sync: false
       - key: ADMIN_PASSWORD
         sync: false
       - key: DATABASE_URL

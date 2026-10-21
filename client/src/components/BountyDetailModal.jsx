@@ -802,12 +802,29 @@ export default function BountyDetailModal({
                 border: '2px solid #000000',
                 boxShadow: '3px 3px 0px #000000'
               }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#166534' }}>BOT CHAIN SETTLEMENT PROOF</span>
-                    <p style={{ fontFamily: 'Geist Mono, monospace', fontSize: '0.85rem', fontWeight: 700, color: '#000000', margin: '4px 0 0 0' }}>
-                      {bounty.settlementTx}
-                    </p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                  <div style={{ flex: 1, minWidth: '220px' }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#166534' }}>
+                      BOT CHAIN ON-CHAIN SETTLEMENT PROOF
+                    </span>
+                    <a
+                      href={`https://scan.bohr.life/tx/${bounty.settlementTx}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="View transaction receipt on Bohr Explorer"
+                      style={{
+                        fontFamily: 'Geist Mono, monospace',
+                        fontSize: '0.82rem',
+                        fontWeight: 700,
+                        color: '#15803d',
+                        textDecoration: 'underline',
+                        wordBreak: 'break-all',
+                        display: 'block',
+                        marginTop: '4px'
+                      }}
+                    >
+                      {bounty.settlementTx} ↗
+                    </a>
                   </div>
                   <button
                     onClick={() => copyHash(bounty.settlementTx)}

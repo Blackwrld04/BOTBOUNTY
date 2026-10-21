@@ -405,14 +405,14 @@ The repository includes a ready-to-use [`render.yaml`](render.yaml) blueprint:
 | `DATABASE_URL` | Supabase PostgreSQL Connection URI | `postgresql://...` |
 | `ESCROW_CONTRACT_ADDRESS` | Deployed BotBountyEscrow contract | `0xB128F2f442554B6517D779788F28F2EB2612164A` |
 | `USDT_ADDRESS` | Bridged USDT contract address | `0x75edC9335175Fc0552D51D48439F229c10420fe3` |
-| `ADMIN_EMAILS` | Authorized platform admin | `olajideabdulquadri22@gmail.com` |
+| `ADMIN_EMAILS` | Authorized platform admin | `admin@example.com` |
 | `ADMIN_PASSWORD` | Master password for admin portal | `[Your_Secure_Password]` |
 | `SMTP_HOST` | Primary SMTP Server Host | `smtp.gmail.com` |
 | `SMTP_PORT` | SMTP Port | `465` |
 | `SMTP_SECURE` | SSL Flag | `true` |
-| `SMTP_USER` | Authenticated SMTP User | `olajideabdulquadri22@gmail.com` |
-| `SMTP_PASS` | 16-character Google App Password | `pdkvitevvkogztxi` |
-| `EMAIL_FROM` | Outgoing Email Header | `BotBounty <olajideabdulquadri22@gmail.com>` |
+| `SMTP_USER` | Authenticated SMTP User | `your-email@example.com` |
+| `SMTP_PASS` | 16-character Google App Password | `[your-16-char-app-password]` |
+| `EMAIL_FROM` | Outgoing Email Header | `BotBounty <your-email@example.com>` |
 
 ### 2. Frontend on Vercel
 
@@ -429,13 +429,13 @@ The repository includes pre-configured [`client/vercel.json`](client/vercel.json
    - **Build Command**: `npm run build`
    - **Output Directory**: `dist`
 4. Under **Environment Variables**, add:
-   - `VITE_API_URL`: Your deployed Render backend URL (e.g. `https://botbounty-api.onrender.com`).
+   - `VITE_API_URL`: Your deployed Render backend URL (e.g. `https://botbounty-kyau.onrender.com`).
    - `SMTP_HOST`: `smtp.gmail.com`
    - `SMTP_PORT`: `465`
    - `SMTP_SECURE`: `true`
-   - `SMTP_USER`: `olajideabdulquadri22@gmail.com`
-   - `SMTP_PASS`: `pdkvitevvkogztxi`
-   - `EMAIL_FROM`: `BotBounty <olajideabdulquadri22@gmail.com>`
+   - `SMTP_USER`: `your-email@example.com`
+   - `SMTP_PASS`: `[your-16-char-app-password]`
+   - `EMAIL_FROM`: `BotBounty <your-email@example.com>`
 5. Click **Deploy** (or push to `main` for automatic continuous deployments).
 
 ---

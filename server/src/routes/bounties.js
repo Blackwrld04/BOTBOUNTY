@@ -27,7 +27,7 @@ import { config } from '../config.js';
 import {
   verifyDepositTransaction,
   verifySettlementTransaction,
-  executeOnChainRelease
+  verifySubmissionTransaction
 } from '../services/onchainVerifier.js';
 
 export const bountyRouter = express.Router();
@@ -38,17 +38,21 @@ export const bountyRouter = express.Router();
  */
 bountyRouter.get('/escrow-wallet', (req, res) => {
   const escrowWallet = config.escrowContractAddress || '0xB128F2f442554B6517D779788F28F2EB2612164A';
+  const supportedTokens = [
+    { symbol: 'BOT', name: 'Native $BOT', address: '0x0000000000000000000000000000000000000000', decimals: 18 }
+  ];
+  if (config.enableErc20) {
+    supportedTokens.unshift({ symbol: 'USDT', name: 'Bridged USDT (ERC-20)', address: config.usdtAddress, decimals: 6 });
+  }
   res.json({
     success: true,
     escrowWallet,
     chainId: parseInt(process.env.BOT_CHAIN_ID || '968', 10),
     networkName: 'BOT Chain (Bohr Testnet)',
-    token: 'USDT & Native $BOT',
-    supportedTokens: [
-      { symbol: 'USDT', name: 'Bridged USDT (ERC-20)', address: process.env.USDT_ADDRESS || '0x75edC9335175Fc0552D51D48439F229c10420fe3', decimals: 6 },
-      { symbol: 'BOT', name: 'Native $BOT', address: '0x0000000000000000000000000000000000000000', decimals: 18 }
-    ],
-    tokenAddress: '0x0000000000000000000000000000000000000000'
+    token: config.enableErc20 ? 'USDT & Native $BOT' : 'Native $BOT',
+    supportedTokens,
+    tokenAddress: '0x0000000000000000000000000000000000000000',
+    nativeOnly: !config.enableErc20
   });
 });
 
@@ -209,6 +213,12 @@ bountyRouter.post('/', async (req, res) => {
 
     // Supported assets: Native $BOT (address(0)) and Bridged USDT (ERC-20)
     const normalizedToken = (settlementToken || '0x0000000000000000000000000000000000000000').toLowerCase();
+    if (normalizedToken !== '0x0000000000000000000000000000000000000000' && !config.enableErc20) {
+      return res.status(400).json({
+        success: false,
+        error: 'This release is native-$BOT-only. ERC-20 / USDT escrow deposits are disabled until live Bohr verification is complete.'
+      });
+    }
 
     if (!depositTx) {
       return res.status(400).json({
@@ -280,9 +290,9 @@ bountyRouter.post('/', async (req, res) => {
  * POST /api/bounties/:id/participate
  * Submit a deliverable to participate in a bounty challenge
  */
-bountyRouter.post('/:id/participate', (req, res) => {
+bountyRouter.post('/:id/participate', async (req, res) => {
   try {
-    const { submissionUrl, walletAddress, notes, creatorName, creatorEmail, solverType } = req.body;
+    const { submissionUrl, walletAddress, notes, creatorName, creatorEmail, solverType, submitTx } = req.body;
 
     if (!submissionUrl || typeof submissionUrl !== 'string' || submissionUrl.trim().length < 10) {
       return res.status(400).json({
@@ -337,6 +347,22 @@ bountyRouter.post('/:id/participate', (req, res) => {
       });
     }
 
+    // If an on-chain submission transaction was broadcast, verify it against Bohr Testnet
+    if (submitTx) {
+      try {
+        await verifySubmissionTransaction({
+          txHash: submitTx,
+          expectedSolver: (authUser?.wallet_address || walletAddress),
+          expectedBountyId: bounty.onChainBountyId || bounty.bountyId || bounty.bounty_id
+        });
+      } catch (subErr) {
+        return res.status(400).json({
+          success: false,
+          error: `On-chain submission transaction verification failed: ${subErr.message}`
+        });
+      }
+    }
+
     const submission = createBountySubmission({
       bountyId: req.params.id,
       creatorId: authUser?.id || null,
@@ -346,7 +372,8 @@ bountyRouter.post('/:id/participate', (req, res) => {
       submissionUrl,
       notes,
       solverType: solverType || 'Human Creator',
-      collaborators: req.body.collaborators || []
+      collaborators: req.body.collaborators || [],
+      submitTx: submitTx || null
     });
 
     const updatedBounty = getBountyById(req.params.id);
@@ -699,28 +726,26 @@ bountyRouter.post('/:id/release', async (req, res) => {
     if (bounty.submissions && bounty.submissions.length > 0) {
       winningSub = bounty.submissions[0];
     } else {
-      const recipientWallet = req.body.walletAddress || req.body.solverAddress || bounty.solver || '0x53e3800847e5Bb6fAfA0853d3e5a884B22aF8a20';
-      winningSub = createBountySubmission({
-        bountyId: bounty.id,
-        walletAddress: recipientWallet,
-        submissionUrl: bounty.prUrl || req.body.submissionUrl || 'https://scan.bohr.life',
-        solverType: bounty.solverType || 'Verified Solver',
-        notes: 'Deliverable approved for direct release'
+      return res.status(400).json({
+        success: false,
+        error: 'Cannot release bounty: no deliverable has been submitted for this bounty.'
       });
     }
 
-    let txHash = req.body.settlementTx || req.body.txHash;
+    const txHash = req.body.settlementTx || req.body.txHash;
     if (!txHash) {
-      try {
-        const onChainBountyId = bounty.onChainBountyId || bounty.bounty_id || ('0x' + '1'.repeat(64));
-        const executed = await executeOnChainRelease({ onChainBountyId });
-        txHash = executed.txHash;
-      } catch (err) {
-        return res.status(400).json({
-          success: false,
-          error: 'On-chain settlement transaction hash (txHash) is required: ' + err.message
-        });
-      }
+      return res.status(400).json({
+        success: false,
+        error: 'A wallet-signed on-chain settlement transaction hash (txHash) is required. The server never signs or relays releases.'
+      });
+    }
+
+    const onChainBountyId = bounty.onChainBountyId || bounty.bountyId || bounty.bounty_id;
+    if (!onChainBountyId) {
+      return res.status(400).json({
+        success: false,
+        error: 'This bounty has no on-chain escrow record, so it cannot be settled.'
+      });
     }
 
     // Verify on-chain settlement on Bohr
@@ -729,7 +754,8 @@ bountyRouter.post('/:id/release', async (req, res) => {
       verifiedSettlement = await verifySettlementTransaction({
         txHash,
         expectedSolver: winningSub.wallet_address,
-        expectedAmount: bounty.amount
+        expectedAmount: bounty.amount,
+        expectedBountyId: onChainBountyId
       });
     } catch (verifErr) {
       return res.status(400).json({

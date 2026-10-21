@@ -258,6 +258,67 @@ test('BotBounty Submission Security & Ownership Verification Suite', async (t) =
     assert.ok(data.error.includes('creators cannot participate'));
   });
 
+  await t.test('Negative: Repeated submission by same solver is rejected (400 Bad Request)', async () => {
+    const res = await fetch(`${baseUrl}/api/bounties/${bounty.id}/participate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${tokenA}`
+      },
+      body: JSON.stringify({
+        submissionUrl: 'https://github.com/Blackwrld04/BOTBOUNTY/pull/101-duplicate',
+        walletAddress: solverA.wallet_address,
+        notes: 'Attempting a duplicate submission for same bounty'
+      })
+    });
+    const data = await res.json();
+
+    assert.equal(res.status, 400);
+    assert.equal(data.success, false);
+    assert.ok(
+      data.error.toLowerCase().includes('already submitted') ||
+      data.error.toLowerCase().includes('edit your existing submission'),
+      'Must reject repeated submission and instruct solver to edit existing deliverable'
+    );
+  });
+
+  await t.test('Negative: Unauthorized settlement - Solver or attacker cannot release bounty (403 Forbidden)', async () => {
+    const res = await fetch(`${baseUrl}/api/bounties/${bounty.id}/release`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${tokenB}`
+      },
+      body: JSON.stringify({
+        settlementTx: '0xc9c86fa10c4006cc5e76464785064e2d008bd6bc3d42953570b83f3c28a42dd7'
+      })
+    });
+    const data = await res.json();
+
+    assert.equal(res.status, 403);
+    assert.equal(data.success, false);
+    assert.ok(data.error.includes('administrator or challenge maintainer'));
+  });
+
+  await t.test('Negative: Release request without settlementTx hash is rejected (400 Bad Request)', async () => {
+    const adminToken = 'admin_tok_' + timestamp;
+    activeAdminTokens.set(adminToken, { email: 'olajideabdulquadri22@gmail.com' });
+
+    const res = await fetch(`${baseUrl}/api/bounties/${bounty.id}/release`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${adminToken}`
+      },
+      body: JSON.stringify({})
+    });
+    const data = await res.json();
+
+    assert.equal(res.status, 400);
+    assert.equal(data.success, false);
+    assert.ok(data.error.includes('settlement transaction hash'));
+  });
+
   await t.test('Positive: Maintainer release dispatches settlement with real on-chain transaction hash', async () => {
     const realBohrTx = '0xc9c86fa10c4006cc5e76464785064e2d008bd6bc3d42953570b83f3c28a42dd7';
     const adminToken = 'admin_tok_' + timestamp;

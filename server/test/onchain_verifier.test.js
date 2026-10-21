@@ -133,10 +133,10 @@ test('On-Chain Verifier & Anti-Fabrication Security Suite', async (t) => {
     assert.equal(caught, true, 'Fabricated transaction hash was successfully rejected as non-existent by Bohr RPC');
   });
 
-  await t.test('Live Bohr RPC accurately fetches confirmed Bohr timeout release tx', async () => {
+  await t.test('Live Bohr RPC accurately fetches confirmed Bohr contract deployment tx', async () => {
     const client = getPublicClient();
-    // Confirmed on-chain timeout release executed during pilot testing
-    const realTxHash = '0x941cb175bee2faa892447b652c0537c865386e92249fe6338cf96e0a6b714d55';
+    // Confirmed on-chain BotBountyEscrow deployment on Bohr Testnet (Chain ID 968)
+    const realTxHash = '0x6b40a134cdb7b0ec20e8aaa9391ff9481f3d5d59f37c76d09e6c8fb36e6cc14f';
     
     const receipt = await client.getTransactionReceipt({ hash: realTxHash });
     assert.ok(receipt, 'Receipt found on Bohr Testnet');
