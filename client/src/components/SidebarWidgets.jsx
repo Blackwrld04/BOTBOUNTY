@@ -25,7 +25,7 @@ export default function SidebarWidgets({ stats, onOpenCreate, onNavigateToLeader
         </div>
 
         <p className="font-space" style={{ fontSize: '1.85rem', fontWeight: 900, color: '#0f172a', margin: '4px 0 2px 0', letterSpacing: '-0.02em' }}>
-          ${(stats?.totalEscrowedUsdc ?? stats?.tvlUsdc ?? 0).toLocaleString()} <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#64748b' }}>USDT / $BOT</span>
+          {(stats?.totalEscrowedUsdc ?? stats?.tvlUsdc ?? 0).toLocaleString()} <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#64748b' }}>$BOT</span>
         </p>
         <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>
           Secured in BotBounty On-Chain Escrow
@@ -89,7 +89,7 @@ export default function SidebarWidgets({ stats, onOpenCreate, onNavigateToLeader
         </h4>
 
         <p style={{ fontSize: '0.82rem', opacity: 0.88, lineHeight: 1.5, marginBottom: '16px' }}>
-          Multi-asset escrow in USDT &amp; $BOT with anti-griefing authorization and programmatic review timeout auto-claims.
+          Audited non-custodial smart escrow in Native $BOT with anti-griefing authorization and maintainer review workflows.
         </p>
 
         <div style={{ display: 'flex', gap: '8px' }}>
@@ -219,7 +219,7 @@ export default function SidebarWidgets({ stats, onOpenCreate, onNavigateToLeader
                 Deterministic Escrow Payout
               </p>
               <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '2px 0 0 0', lineHeight: 1.4 }}>
-                Funds disburse in native $BOT or USDT with timeout auto-claim protection.
+                Funds disburse natively in $BOT directly on BOT Chain upon pull request review.
               </p>
             </div>
           </div>

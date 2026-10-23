@@ -143,4 +143,107 @@ test('On-Chain Verifier & Anti-Fabrication Security Suite', async (t) => {
     assert.equal(receipt.status, 'success', 'Transaction succeeded');
     assert.ok(receipt.blockNumber > 0n, 'Block number is positive');
   });
+
+  await t.test('Live Bohr verification rejects fabricated settlement transaction hash', async () => {
+    const prevEnv = process.env.VERIFY_LIVE_BOHR;
+    process.env.VERIFY_LIVE_BOHR = 'true';
+    try {
+      const fakeHash = '0x1111111111111111111111111111111111111111111111111111111111111111';
+      await assert.rejects(
+        async () => {
+          await verifySettlementTransaction({
+            txHash: fakeHash,
+            expectedSolver: '0xe98AA13d7F2c43Ca8C429176754380aE356eEB93',
+            expectedBountyId: '0xd9058e9c99df5be64d9a17d30ca7004e0f5309676aa63eb6a5814744f6004dad',
+            expectedAmount: 0.05
+          });
+        },
+        /Fabricated hashes are rejected|not found on BOT Chain Bohr Testnet/
+      );
+    } finally {
+      process.env.VERIFY_LIVE_BOHR = prevEnv;
+    }
+  });
+
+  await t.test('Live Bohr verification rejects mismatched solver recipient', async () => {
+    const prevEnv = process.env.VERIFY_LIVE_BOHR;
+    process.env.VERIFY_LIVE_BOHR = 'true';
+    try {
+      const realSettlementTx = '0x298eea41edf0dab2629a8aa45ba03b88ec57bf6681a5c5bd472ab71e3af6dce4';
+      await assert.rejects(
+        async () => {
+          await verifySettlementTransaction({
+            txHash: realSettlementTx,
+            expectedSolver: '0x000000000000000000000000000000000000dead', // wrong solver
+            expectedBountyId: '0xd9058e9c99df5be64d9a17d30ca7004e0f5309676aa63eb6a5814744f6004dad',
+            expectedAmount: 0.05
+          });
+        },
+        /does not match the winning solver's wallet address/
+      );
+    } finally {
+      process.env.VERIFY_LIVE_BOHR = prevEnv;
+    }
+  });
+
+  await t.test('Live Bohr verification rejects mismatched bountyId', async () => {
+    const prevEnv = process.env.VERIFY_LIVE_BOHR;
+    process.env.VERIFY_LIVE_BOHR = 'true';
+    try {
+      const realSettlementTx = '0x298eea41edf0dab2629a8aa45ba03b88ec57bf6681a5c5bd472ab71e3af6dce4';
+      await assert.rejects(
+        async () => {
+          await verifySettlementTransaction({
+            txHash: realSettlementTx,
+            expectedSolver: '0xe98AA13d7F2c43Ca8C429176754380aE356eEB93',
+            expectedBountyId: '0x9999999999999999999999999999999999999999999999999999999999999999', // wrong bountyId
+            expectedAmount: 0.05
+          });
+        },
+        /does not match this bounty/
+      );
+    } finally {
+      process.env.VERIFY_LIVE_BOHR = prevEnv;
+    }
+  });
+
+  await t.test('Live Bohr verification rejects insufficient settled amount', async () => {
+    const prevEnv = process.env.VERIFY_LIVE_BOHR;
+    process.env.VERIFY_LIVE_BOHR = 'true';
+    try {
+      const realSettlementTx = '0x298eea41edf0dab2629a8aa45ba03b88ec57bf6681a5c5bd472ab71e3af6dce4';
+      await assert.rejects(
+        async () => {
+          await verifySettlementTransaction({
+            txHash: realSettlementTx,
+            expectedSolver: '0xe98AA13d7F2c43Ca8C429176754380aE356eEB93',
+            expectedBountyId: '0xd9058e9c99df5be64d9a17d30ca7004e0f5309676aa63eb6a5814744f6004dad',
+            expectedAmount: 1.0 // expected 1.0 BOT, settled was 0.05 BOT
+          });
+        },
+        /is less than expected reward amount/
+      );
+    } finally {
+      process.env.VERIFY_LIVE_BOHR = prevEnv;
+    }
+  });
+
+  await t.test('Live Bohr verification successfully validates matching settlement tx', async () => {
+    const prevEnv = process.env.VERIFY_LIVE_BOHR;
+    process.env.VERIFY_LIVE_BOHR = 'true';
+    try {
+      const realSettlementTx = '0x298eea41edf0dab2629a8aa45ba03b88ec57bf6681a5c5bd472ab71e3af6dce4';
+      const result = await verifySettlementTransaction({
+        txHash: realSettlementTx,
+        expectedSolver: '0xe98AA13d7F2c43Ca8C429176754380aE356eEB93',
+        expectedBountyId: '0xd9058e9c99df5be64d9a17d30ca7004e0f5309676aa63eb6a5814744f6004dad',
+        expectedAmount: 0.05
+      });
+      assert.equal(result.verified, true);
+      assert.equal(result.solver.toLowerCase(), '0xe98AA13d7F2c43Ca8C429176754380aE356eEB93'.toLowerCase());
+      assert.equal(result.bountyId.toLowerCase(), '0xd9058e9c99df5be64d9a17d30ca7004e0f5309676aa63eb6a5814744f6004dad'.toLowerCase());
+    } finally {
+      process.env.VERIFY_LIVE_BOHR = prevEnv;
+    }
+  });
 });

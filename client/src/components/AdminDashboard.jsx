@@ -647,7 +647,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
               BotBounty Admin Portal
             </h2>
             <p style={{ fontSize: '0.86rem', color: '#475569', lineHeight: 1.5, margin: 0 }}>
-              Separate administrative environment. Enter master administrator password to access the platform escrow treasury and distribute prize USDT &amp; native $BOT.
+              Separate administrative environment. Enter master administrator password to access the platform escrow treasury and distribute prize Native $BOT.
             </p>
           </div>
 
@@ -855,7 +855,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
             Escrow Treasury &amp; Prize Disbursement
           </h1>
           <p style={{ fontSize: '0.9rem', color: '#475569', margin: '4px 0 0 0' }}>
-            Oversee deposited challenge bounties, review creator participants, and disburse USDT &amp; $BOT payouts with sub-second finality.
+            Oversee deposited challenge bounties, review creator participants, and disburse Native $BOT payouts with sub-second finality.
           </p>
         </div>
 
@@ -1005,7 +1005,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
             <DollarSign size={18} color="#1b3158" />
           </div>
           <div style={{ fontSize: '1.85rem', fontWeight: 900, color: '#0f172a' }}>
-            ${stats ? stats.totalEscrowedUsdc.toLocaleString() : '---'} <span style={{ fontSize: '1rem', color: '#64748b' }}>USDT / $BOT</span>
+            {stats ? stats.totalEscrowedUsdc.toLocaleString() : '---'} <span style={{ fontSize: '1rem', color: '#64748b' }}>$BOT</span>
           </div>
           <div style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 700, marginTop: '4px' }}>
             Secured on BOT Chain

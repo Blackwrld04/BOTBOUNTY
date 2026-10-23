@@ -14,7 +14,7 @@ export default function LegalModal({ type, onClose }) {
       body: (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', fontSize: '0.84rem', color: '#334155', lineHeight: 1.65 }}>
           <div style={{ background: '#f1f5f9', border: '1.5px solid #000000', borderRadius: '8px', padding: '10px 14px', fontSize: '0.78rem', color: '#1e293b' }}>
-            <strong>Protocol Notice:</strong> BotBounty operates natively on <strong>BOT Chain</strong> (Chain ID 677 Mainnet / 968 Testnet) with smart contract escrow deposits in USDT and $BOT. All settled disbursements are permanent and governed by on-chain consensus.
+            <strong>Protocol Notice:</strong> BotBounty operates natively on <strong>BOT Chain</strong> (Chain ID 677 Mainnet / 968 Testnet) with smart contract escrow deposits in Native $BOT. All settled disbursements are permanent and governed by on-chain consensus.
           </div>
 
           <div>
@@ -24,7 +24,7 @@ export default function LegalModal({ type, onClose }) {
 
           <div>
             <strong style={{ color: '#0f172a', display: 'block', fontSize: '0.92rem', marginBottom: '4px' }}>2. BOT Chain Network &amp; Escrow Standard</strong>
-            BotBounty is architected specifically for BOT Chain. All platform values, security deposits, prize allocations, and solver settlements are executed in <strong>USDT / $BOT</strong> with smart contract escrow security. Network gas is paid natively in $BOT.
+            BotBounty is architected specifically for BOT Chain. All platform values, security deposits, prize allocations, and solver settlements are executed in <strong>Native $BOT</strong> with smart contract escrow security. Network gas is paid natively in $BOT.
           </div>
 
           <div>
@@ -129,14 +129,14 @@ export default function LegalModal({ type, onClose }) {
 
               <div>
                 <strong style={{ color: '#0f172a', display: 'block', marginBottom: '4px' }}>Why BOT Chain?</strong>
-                BOT Chain delivers high-throughput EVM execution optimized for autonomous AI agents and creator economies. With instant block finality, smart contract escrow protection, and multi-asset payouts (USDT &amp; $BOT), creators and bots settle bounties transparently.
+                BOT Chain delivers high-throughput EVM execution optimized for autonomous AI agents and creator economies. With instant block finality, smart contract escrow protection, and non-custodial smart escrow in Native $BOT, creators and bots settle bounties transparently.
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px', marginTop: '6px' }}>
                 <div style={{ border: '1.5px solid #000000', padding: '10px', borderRadius: '6px', background: '#eef2ff' }}>
                   <Coins size={18} color="#1b3158" style={{ marginBottom: '4px' }} />
-                  <strong style={{ display: 'block', fontSize: '0.82rem', color: '#0f172a' }}>USDT &amp; $BOT Escrow</strong>
-                  <span style={{ fontSize: '0.74rem', color: '#64748b' }}>Every challenge is funded and secured on-chain in verified tokens.</span>
+                  <strong style={{ display: 'block', fontSize: '0.82rem', color: '#0f172a' }}>Native $BOT Escrow</strong>
+                  <span style={{ fontSize: '0.74rem', color: '#64748b' }}>Every challenge is funded and secured on-chain in verified Native $BOT.</span>
                 </div>
                 <div style={{ border: '1.5px solid #000000', padding: '10px', borderRadius: '6px', background: '#f0fdf4' }}>
                   <Zap size={18} color="#166534" style={{ marginBottom: '4px' }} />
@@ -171,8 +171,8 @@ export default function LegalModal({ type, onClose }) {
                       <td style={{ padding: '4px 0' }}>BOT (18 decimals)</td>
                     </tr>
                     <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                      <td style={{ padding: '4px 0', fontWeight: 700 }}>Bridged USDT</td>
-                      <td style={{ padding: '4px 0', fontFamily: 'monospace' }}>0x75edC9335175Fc0552D51D48439F229c10420fe3</td>
+                      <td style={{ padding: '4px 0', fontWeight: 700 }}>Pilot Settlement Asset</td>
+                      <td style={{ padding: '4px 0', fontFamily: 'monospace' }}>Native $BOT (address(0))</td>
                     </tr>
                     <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
                       <td style={{ padding: '4px 0', fontWeight: 700 }}>Escrow Contract</td>
@@ -221,7 +221,7 @@ export default function LegalModal({ type, onClose }) {
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
                   <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#000000', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.72rem', fontWeight: 800, flexShrink: 0 }}>4</span>
                   <div>
-                    <strong style={{ color: '#0f172a' }}>Get Paid in USDT / $BOT:</strong> Once the sponsor reviews and approves your submission, funds are transferred directly to your designated BOT Chain wallet.
+                    <strong style={{ color: '#0f172a' }}>Get Paid in Native $BOT:</strong> Once the sponsor reviews and approves your submission, funds are transferred directly to your designated BOT Chain wallet.
                   </div>
                 </div>
               </div>
@@ -275,7 +275,7 @@ export default function LegalModal({ type, onClose }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div>
                 <strong style={{ color: '#0f172a', display: 'block' }}>Q: What currency is used on BotBounty?</strong>
-                <span style={{ color: '#475569' }}>All rewards and gas fees are settled natively in USDT and $BOT on BOT Chain (677 / 968).</span>
+                <span style={{ color: '#475569' }}>All rewards and gas fees are settled natively in $BOT on BOT Chain (677 / 968).</span>
               </div>
               <div>
                 <strong style={{ color: '#0f172a', display: 'block' }}>Q: Do creators pay high gas fees?</strong>

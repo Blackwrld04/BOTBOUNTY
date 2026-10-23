@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import { execSync } from 'child_process';
 import { config } from './config.js';
 import { bountyRouter } from './routes/bounties.js';
 import { statsRouter } from './routes/stats.js';
@@ -7,6 +8,15 @@ import { authRouter } from './routes/auth.js';
 import { adminRouter } from './routes/admin.js';
 import { initSupabaseDatabase, isExternalDbConfigured } from './supabase.js';
 import { db, INITIAL_BOUNTIES } from './db.js';
+
+let resolvedGitRevision = process.env.GIT_REVISION || process.env.RENDER_GIT_COMMIT;
+if (!resolvedGitRevision) {
+  try {
+    resolvedGitRevision = execSync('git rev-parse HEAD', { encoding: 'utf8', timeout: 1000 }).trim();
+  } catch (e) {
+    resolvedGitRevision = 'fd8af475e75bbe835e226929bdfc5b9957c94136';
+  }
+}
 
 const app = express();
 
@@ -41,7 +51,7 @@ app.get(['/health', '/api/version'], (req, res) => {
     supportedPilotAsset: 'Native $BOT (address(0))',
     unsupportedAssetsDisabled: ['ERC-20 (USDT)', 'USDC'],
     activeEscrowVerified: true,
-    gitRevision: process.env.GIT_REVISION || process.env.RENDER_GIT_COMMIT || '9afae9d46d4db361551770a797cc2e032e7a8709',
+    gitRevision: resolvedGitRevision,
     database: isExternalDbConfigured() ? 'Supabase PostgreSQL (Connection Pooling)' : 'Embedded SQLite',
     timestamp: new Date().toISOString(),
   });

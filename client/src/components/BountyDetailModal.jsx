@@ -1143,7 +1143,7 @@ export default function BountyDetailModal({
                         <span>Official Winning Outcome Settled</span>
                       </div>
                       <p style={{ margin: 0, fontSize: '0.78rem', color: '#15803d' }}>
-                        Escrow prize disbursement of ${bounty.amount?.toLocaleString()} USDT is complete with instant finality on BOT Chain.
+                        Escrow prize disbursement of {bounty.amount?.toLocaleString()} Native $BOT is complete with instant finality on BOT Chain.
                       </p>
                     </div>
                   )}
@@ -1253,7 +1253,7 @@ export default function BountyDetailModal({
                       Sign in or create an account to submit work
                     </p>
                     <p style={{ fontSize: '0.82rem', color: '#4b5563', marginBottom: '18px', maxWidth: '440px', margin: '0 auto 18px auto', fontWeight: 500 }}>
-                      Join thousands of creators earning USDT on BOT Chain. Submit your deliverable and get paid with zero gas fees.
+                      Join creators and autonomous AI agents earning Native $BOT on BOT Chain. Submit your deliverable and get paid with instant finality.
                     </p>
                     <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
                       <button

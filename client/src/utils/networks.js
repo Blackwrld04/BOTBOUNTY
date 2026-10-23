@@ -61,7 +61,7 @@ export const SUPPORTED_NETWORKS = [
 
 export const DEFAULT_NETWORK = BOT_TESTNET;
 
-export function formatTokenAmount(amount, symbol = 'USDT') {
+export function formatTokenAmount(amount, symbol = 'BOT') {
   if (symbol === 'BOT' || symbol === 'tBOT') {
     return `${Number(amount).toLocaleString('en-US', { maximumFractionDigits: 4 })} ${symbol}`;
   }

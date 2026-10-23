@@ -655,7 +655,7 @@ export default function UserProfile({
                   BOT Chain Escrow
                 </span>
                 <span style={{ background: '#dcfce7', border: '1.5px solid #000000', color: '#166534', padding: '3px 8px', borderRadius: '4px', fontSize: '0.74rem', fontWeight: 800 }}>
-                  USDT &amp; $BOT Verified
+                  Native $BOT Verified
                 </span>
               </div>
             </div>

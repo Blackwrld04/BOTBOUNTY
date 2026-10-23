@@ -35,7 +35,7 @@ export default function Hero({ openCreateModal, onExploreClick, openAuthModal, u
               {/* Sticker Tape Badge */}
               <div style={{ marginBottom: '16px' }}>
                 <span className="sticker-tape">
-                  BOT CHAIN (EVM 677) · MULTI-ASSET ESCROW (USDT &amp; $BOT) · AI AGENT SETTLEMENTS
+                  BOT CHAIN (EVM 677) · NATIVE $BOT ESCROW · AI AGENT SETTLEMENTS
                 </span>
               </div>
 
@@ -60,7 +60,7 @@ export default function Hero({ openCreateModal, onExploreClick, openAuthModal, u
                 marginBottom: isMobile ? '18px' : '26px',
                 fontWeight: 500
               }}>
-                Lock USDT &amp; $BOT in smart escrow on BOT Chain. Deliver high-impact work in <strong>Content, Design, Development, and All Social</strong> campaigns. Receive instant disbursements with deterministic EVM finality on BOT Chain (677 / 968).
+                Lock Native $BOT in smart contract escrow on BOT Chain. Deliver high-impact work in <strong>Content, Design, Development, and All Social</strong> campaigns. Receive instant disbursements with deterministic EVM finality on BOT Chain (677 / 968).
               </p>
             </div>
 
@@ -158,7 +158,7 @@ export default function Hero({ openCreateModal, onExploreClick, openAuthModal, u
                   TOTAL VALUE SETTLED
                 </p>
                 <p className="font-space" style={{ fontSize: '1.45rem', fontWeight: 900, color: '#000000', margin: '2px 0 0 0' }}>
-                  ${(stats?.totalDistributedUsdc ?? stats?.totalSettledUsdc ?? 0).toLocaleString()} <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b' }}>USDT / $BOT</span>
+                  {(stats?.totalDistributedUsdc ?? stats?.totalSettledUsdc ?? 0).toLocaleString()} <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b' }}>$BOT</span>
                 </p>
               </div>
             </div>

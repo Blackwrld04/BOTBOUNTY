@@ -684,8 +684,8 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
                   background: '#ffffff'
                 }}
               >
-                <option value="USDT">Bridged USDT (Supported ERC-20 Escrow)</option>
-                <option value="BOT">Native $BOT (Chain ID 968 Escrow)</option>
+                <option value="BOT">Native $BOT (Chain ID 968 Escrow - Active Pilot)</option>
+                <option value="USDT" disabled>Bridged USDT (Disabled for Native $BOT Pilot)</option>
               </select>
             </div>
 
@@ -1243,7 +1243,7 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
             }}>
               <Shield size={16} color="#ca8a04" style={{ flexShrink: 0, marginTop: '2px' }} />
               <div>
-                <strong>Non-Custodial Escrow Security:</strong> Bounties are locked in the audited Bohr smart contract. Maintainers disburse rewards upon verifying Pull Requests, while solvers are protected with automated timeout claims if maintainers become unresponsive.
+                <strong>Non-Custodial Escrow Security:</strong> Bounties are locked in the audited Bohr smart contract. Maintainers disburse rewards upon verifying deliverables on-chain, and unfulfilled bounties can be refunded after the deadline.
               </div>
             </div>
 

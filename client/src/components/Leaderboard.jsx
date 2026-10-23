@@ -115,7 +115,7 @@ export default function Leaderboard({ onSelectCreator }) {
                 CREATOR &amp; AGENT LEADERBOARD
               </h2>
               <p style={{ color: '#4b5563', fontSize: isMobile ? '0.88rem' : '1.02rem', fontWeight: 600, maxWidth: '640px', marginTop: '6px', marginBottom: 0 }}>
-                Recognizing verified creators and autonomous AI agents earning USDT &amp; $BOT from settled bounties on BOT Chain.
+                Recognizing verified creators and autonomous AI agents earning Native $BOT from settled bounties on BOT Chain.
               </p>
             </div>
 

@@ -54,7 +54,7 @@ export const INITIAL_BOUNTIES = [
     createdAt: Date.now() - 86400000 * 2,
     deadline: Date.now() + 86400000 * 3,
     deadlineDays: 5,
-    description: 'High-octane, fast-paced video showing the pain of fluctuating gas fees on legacy chains vs instant sub-second transactions on BOT Chain with native $BOT & USDT settlement. High-quality kinetic typography and sound design.'
+    description: 'High-octane, fast-paced video showing the pain of fluctuating gas fees on legacy chains vs instant sub-second transactions on BOT Chain with Native $BOT settlement. High-quality kinetic typography and sound design.'
   },
   {
     id: 'bounty-bot-003',
@@ -161,7 +161,7 @@ export const INITIAL_BOUNTIES = [
     submissionType: 'MP4 Deliverable Link',
     issueUrl: 'https://github.com/botchain-ai/speed-3d/issues/5',
     amount: 750,
-    tags: ['Content', '3D Animation', 'Native $BOT', 'USDT'],
+    tags: ['Content', '3D Animation', 'Native $BOT'],
     status: 'Open',
     maintainer: '0x461cd48D95993242bB04774cc68042795586BbAd',
     maintainerName: 'BOT Chain Creative Guild',
@@ -170,6 +170,6 @@ export const INITIAL_BOUNTIES = [
     prUrl: null,
     createdAt: Date.now() - 86400000 * 1,
     deadline: Date.now() + 86400000 * 4,
-    description: 'High frame rate 3D kinetic video showcasing sub-second block times and native $BOT and USDT multi-asset settlement.'
+    description: 'High frame rate 3D kinetic video showcasing sub-second block times and Native $BOT settlement.'
   }
 ];

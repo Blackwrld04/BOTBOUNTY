@@ -710,7 +710,7 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
               </div>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
                 <ShieldCheck size={16} color="#ffcc6f" strokeWidth={2.5} style={{ flexShrink: 0, marginTop: '2px' }} />
-                <span>USDT &amp; $BOT escrow payments direct to your BOT Chain wallet.</span>
+                <span>Native $BOT escrow payments direct to your BOT Chain wallet.</span>
               </div>
             </div>
           </div>

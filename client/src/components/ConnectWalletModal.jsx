@@ -406,7 +406,7 @@ export default function ConnectWalletModal({
         </div>
 
         <p style={{ fontSize: '0.8rem', color: '#4b5563', lineHeight: 1.45, marginBottom: '14px' }}>
-          Connect your Web3 wallet to receive fast USDT &amp; $BOT payouts directly on BOT Chain (Chain ID 677 / 968).
+          Connect your Web3 wallet to receive fast Native $BOT payouts directly on BOT Chain (Chain ID 677 / 968).
         </p>
 
         {/* Mobile Web3 In-App Browser Indicator */}
@@ -660,7 +660,7 @@ export default function ConnectWalletModal({
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '14px', fontSize: '0.72rem', color: '#64748b', flexWrap: 'wrap', gap: '6px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <ShieldCheck size={14} color="#16a34a" />
-            <span>BOT Chain (677 / 968) &bull; USDT &amp; $BOT</span>
+            <span>BOT Chain (677 / 968) &bull; Native $BOT</span>
           </div>
           <a
             href="https://scan.bohr.life"

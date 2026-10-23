@@ -163,7 +163,7 @@ export default function WalletModal({
 
           <div>
             <p className="font-space" style={{ fontSize: '1.9rem', fontWeight: 900, color: '#000000', lineHeight: 1, margin: 0 }}>
-              ${(wallet.balance || 0).toLocaleString()} <span style={{ fontSize: '1rem', fontWeight: 800 }}>USDT</span>
+              {(wallet.balance || 0).toLocaleString()} <span style={{ fontSize: '1rem', fontWeight: 800 }}>Native $BOT</span>
             </p>
             <p style={{ fontSize: '0.75rem', color: '#1f2937', fontFamily: 'Geist Mono, monospace', fontWeight: 700, marginTop: '6px', margin: '6px 0 0 0' }}>
               {wallet.address}
@@ -196,7 +196,7 @@ export default function WalletModal({
             className="brutal-btn brutal-btn-white"
             style={{ width: '100%', padding: '12px', fontSize: '0.88rem' }}
           >
-            USE SIMULATED DEMO ACCOUNT (10,000 USDT / 500 $BOT)
+            USE SIMULATED DEMO ACCOUNT (500 Native $BOT)
           </button>
         </div>
       </div>

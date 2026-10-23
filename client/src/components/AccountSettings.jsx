@@ -781,9 +781,9 @@ export default function AccountSettings({
 
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '6px' }}>
                 <span className="font-space" style={{ fontSize: '2.4rem', fontWeight: 900, color: '#0f172a' }}>
-                  ${(wallet?.balance || 0).toLocaleString()}
+                  {(wallet?.balance || 0).toLocaleString()}
                 </span>
-                <span style={{ fontSize: '1.1rem', fontWeight: 800, color: '#64748b' }}>USDT</span>
+                <span style={{ fontSize: '1.1rem', fontWeight: 800, color: '#64748b' }}>$BOT</span>
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px' }}>
