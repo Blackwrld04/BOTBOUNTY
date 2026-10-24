@@ -50,6 +50,7 @@ app.get(['/health', '/api/version'], (req, res) => {
     escrowContractAddress: config.escrowContractAddress,
     supportedPilotAsset: 'Native $BOT (address(0))',
     unsupportedAssetsDisabled: ['ERC-20 (USDT)', 'USDC'],
+    timeoutAutoClaimEnabled: false,
     activeEscrowVerified: true,
     gitRevision: resolvedGitRevision,
     database: isExternalDbConfigured() ? 'Supabase PostgreSQL (Connection Pooling)' : 'Embedded SQLite',

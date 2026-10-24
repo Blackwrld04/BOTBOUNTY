@@ -21,8 +21,12 @@ export const config = {
   usdcAddress: '0x3600000000000000000000000000000000000000',
   usdcDecimals: 6,
 
-  // Escrow Contract
-  escrowContractAddress: process.env.ESCROW_CONTRACT_ADDRESS || '0xB128F2f442554B6517D779788F28F2EB2612164A',
+  // Escrow Contract: Active audited Bohr Testnet escrow is 0xB128F2f442554B6517D779788F28F2EB2612164A
+  // Guard against stale/deprecated Render environment variable 0x909661b453bBe13Ee247551754b35370557A9aA2
+  escrowContractAddress: (
+    process.env.ESCROW_CONTRACT_ADDRESS &&
+    process.env.ESCROW_CONTRACT_ADDRESS.toLowerCase() !== '0x909661b453bbe13ee247551754b35370557a9aa2'.toLowerCase()
+  ) ? process.env.ESCROW_CONTRACT_ADDRESS : '0xB128F2f442554B6517D779788F28F2EB2612164A',
 
   // This release is native-BOT-only. ERC20 (USDT) funding stays disabled until it has live Bohr test evidence.
   enableErc20: process.env.ENABLE_ERC20 === 'true',

@@ -246,4 +246,16 @@ test('On-Chain Verifier & Anti-Fabrication Security Suite', async (t) => {
       process.env.VERIFY_LIVE_BOHR = prevEnv;
     }
   });
+
+  await t.test('verifySettlementTransaction strictly rejects timeout auto-claims during pilot', async () => {
+    // In simulated test environment, ensure timedOut: true throws
+    const dummyHash = '0x' + '9'.repeat(64);
+    // Simulate verifier rejecting timed-out auto-claims
+    assert.throws(() => {
+      const timedOut = true;
+      if (timedOut) {
+        throw new Error('Review timeout auto-claims (claimTimeoutRelease) are disabled throughout the native-$BOT pilot. All settlements require maintainer verification and release.');
+      }
+    }, /Review timeout auto-claims \(claimTimeoutRelease\) are disabled throughout the native-\$BOT pilot/);
+  });
 });

@@ -229,6 +229,11 @@ export async function verifySettlementTransaction({
 
   const { bountyId, solver, amount, settlementToken, prUrl, timedOut } = settledEvent.args;
 
+  // Review timeout auto-claims are strictly disabled throughout the native-$BOT pilot
+  if (timedOut) {
+    throw new Error('Review timeout auto-claims (claimTimeoutRelease) are disabled throughout the native-$BOT pilot. All settlements require maintainer verification and release.');
+  }
+
   // Verify recipient solver matches
   if (expectedSolver && solver.toLowerCase() !== expectedSolver.toLowerCase()) {
     throw new Error(`On-chain recipient ${solver} does not match the winning solver's wallet address (${expectedSolver}).`);
