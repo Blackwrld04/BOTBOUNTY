@@ -161,7 +161,9 @@ export async function verifySettlementTransaction({
   txHash,
   expectedSolver,
   expectedAmount,
-  expectedBountyId
+  expectedBountyId,
+  receipt: injectedReceipt,
+  contractAddress: customContractAddress
 }) {
   if (!isValidTxHashFormat(txHash)) {
     throw new Error(`Invalid transaction hash format: "${txHash}". Expected 66-character hex.`);
@@ -171,24 +173,27 @@ export async function verifySettlementTransaction({
     throw new Error(`Settlement transaction hash ${txHash} has already been recorded in platform disbursements.`);
   }
 
-  // Allow bypass in memory test environment unless explicit live verification is requested
-  if (process.env.NODE_ENV === 'test' && (!process.env.VERIFY_LIVE_BOHR || process.env.VERIFY_LIVE_BOHR !== 'true')) {
-    return {
-      verified: true,
-      simulated: true,
-      txHash,
-      solver: expectedSolver,
-      amountWei: '10000000000000000'
-    };
-  }
+  let receipt = injectedReceipt;
 
-  const client = getPublicClient();
+  if (!receipt) {
+    // Allow bypass in memory test environment unless explicit live verification is requested
+    if (process.env.NODE_ENV === 'test' && (!process.env.VERIFY_LIVE_BOHR || process.env.VERIFY_LIVE_BOHR !== 'true')) {
+      return {
+        verified: true,
+        simulated: true,
+        txHash,
+        solver: expectedSolver,
+        amountWei: '10000000000000000'
+      };
+    }
 
-  let receipt;
-  try {
-    receipt = await client.getTransactionReceipt({ hash: txHash });
-  } catch (err) {
-    throw new Error(`Settlement transaction ${txHash} not found on BOT Chain Bohr Testnet. Fabricated hashes are rejected.`);
+    const client = getPublicClient();
+
+    try {
+      receipt = await client.getTransactionReceipt({ hash: txHash });
+    } catch (err) {
+      throw new Error(`Settlement transaction ${txHash} not found on BOT Chain Bohr Testnet. Fabricated hashes are rejected.`);
+    }
   }
 
   if (!receipt) {
@@ -199,7 +204,7 @@ export async function verifySettlementTransaction({
     throw new Error(`Settlement transaction ${txHash} failed or reverted on BOT Chain Bohr Testnet.`);
   }
 
-  const expectedContract = (config.escrowContractAddress || '0xB128F2f442554B6517D779788F28F2EB2612164A').toLowerCase();
+  const expectedContract = (customContractAddress || config.escrowContractAddress || '0xB128F2f442554B6517D779788F28F2EB2612164A').toLowerCase();
   if (receipt.to?.toLowerCase() !== expectedContract) {
     throw new Error(`Settlement transaction was sent to ${receipt.to}, but active Bohr Escrow contract is ${expectedContract}.`);
   }

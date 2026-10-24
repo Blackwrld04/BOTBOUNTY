@@ -247,15 +247,60 @@ test('On-Chain Verifier & Anti-Fabrication Security Suite', async (t) => {
     }
   });
 
-  await t.test('verifySettlementTransaction strictly rejects timeout auto-claims during pilot', async () => {
-    // In simulated test environment, ensure timedOut: true throws
+  await t.test('verifySettlementTransaction strictly rejects timeout auto-claims during pilot via actual verifier', async () => {
     const dummyHash = '0x' + '9'.repeat(64);
-    // Simulate verifier rejecting timed-out auto-claims
-    assert.throws(() => {
-      const timedOut = true;
-      if (timedOut) {
-        throw new Error('Review timeout auto-claims (claimTimeoutRelease) are disabled throughout the native-$BOT pilot. All settlements require maintainer verification and release.');
-      }
-    }, /Review timeout auto-claims \(claimTimeoutRelease\) are disabled throughout the native-\$BOT pilot/);
+    const mockReceipt = {
+      status: 'success',
+      to: '0xB128F2f442554B6517D779788F28F2EB2612164A',
+      blockNumber: 1234567n,
+      logs: [
+        {
+          address: '0xB128F2f442554B6517D779788F28F2EB2612164A',
+          topics: [
+            '0x3cb71ce317fd0527ef6d5aa29290ea1734330175d91f4172c858d8e00e684d5c',
+            '0xd9058e9c99df5be64d9a17d30ca7004e0f5309676aa63eb6a5814744f6004dad',
+            '0x000000000000000000000000e98aa13d7f2c43ca8c429176754380ae356eeb93'
+          ],
+          data: '0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b1a2bc2ec5000000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000003168747470733a2f2f6769746875622e636f6d2f426c61636b77726c6430342f424f54424f554e54592f70756c6c2f313035000000000000000000000000000000'
+        }
+      ]
+    };
+
+    // Calls the ACTUAL verifier function and asserts it throws
+    await assert.rejects(
+      async () => {
+        await verifySettlementTransaction({
+          txHash: dummyHash,
+          expectedSolver: '0xe98AA13d7F2c43Ca8C429176754380aE356eEB93',
+          expectedBountyId: '0xd9058e9c99df5be64d9a17d30ca7004e0f5309676aa63eb6a5814744f6004dad',
+          expectedAmount: 0.05,
+          receipt: mockReceipt
+        });
+      },
+      /Review timeout auto-claims \(claimTimeoutRelease\) are disabled throughout the native-\$BOT pilot/
+    );
+  });
+
+  await t.test('Live Bohr verification rejects live on-chain claimTimeoutRelease transaction', async () => {
+    const prevEnv = process.env.VERIFY_LIVE_BOHR;
+    process.env.VERIFY_LIVE_BOHR = 'true';
+    try {
+      // 0x941cb175... is an authentic on-chain claimTimeoutRelease tx on Bohr Testnet
+      const liveTimeoutTx = '0x941cb175bee2faa892447b652c0537c865386e92249fe6338cf96e0a6b714d55';
+      await assert.rejects(
+        async () => {
+          await verifySettlementTransaction({
+            txHash: liveTimeoutTx,
+            expectedSolver: '0x5e0644a34346c908dc289175BCF8212d5627474E',
+            expectedBountyId: '0x95df2ff8b625d16bd5086d502667c186afd53b46c8d3d3ee4f07ba76cc693936',
+            expectedAmount: 0.001,
+            contractAddress: '0xe5558c2b80c2f8327030de7fbfa74ff7aa5f8e62'
+          });
+        },
+        /Review timeout auto-claims \(claimTimeoutRelease\) are disabled throughout the native-\$BOT pilot/
+      );
+    } finally {
+      process.env.VERIFY_LIVE_BOHR = prevEnv;
+    }
   });
 });
