@@ -10,6 +10,8 @@ server/data/*.db-shm
 !.env.example
 contracts/out/
 contracts/cache/
+*.secret
+.solver_secret
 
 # Project Requirements (kept local only)
 BotBounty_Project_Requirements.pdf

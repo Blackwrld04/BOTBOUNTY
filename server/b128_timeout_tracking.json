@@ -1,0 +1,15 @@
+{
+  "contractAddress": "0xB128F2f442554B6517D779788F28F2EB2612164A",
+  "bountyId": "0x2222222222222222222222222222222222222222222222222222222222222202",
+  "bountyAmount": "0.005 BOT",
+  "maintainer": "0xBE0aaE21b6252aa1207cAa50A753e8C45bCBCbc5",
+  "solverAddress": "0x6aF53CC969e675FaC74957730448108A680b74Ca",
+  "gasFundTx": "0x8e21affa0f8f16847b820912c9b83b4a993940789de5bf2851782f20d11e4eb3",
+  "submitTx": "0x8ce878e2f45c61da30b61dc7968fcd273504496731d4693c0533738399079a8c",
+  "submittedAt": 1792932473,
+  "submittedAtIso": "2026-10-25T12:47:53.000Z",
+  "reviewPeriodSeconds": 86400,
+  "reviewExpiryTimestamp": 1793018873,
+  "reviewExpiryIso": "2026-10-26T12:47:53.000Z",
+  "status": "InReview"
+}
