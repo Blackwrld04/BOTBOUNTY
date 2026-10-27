@@ -11,5 +11,9 @@
   "reviewPeriodSeconds": 86400,
   "reviewExpiryTimestamp": 1793018873,
   "reviewExpiryIso": "2026-10-26T12:47:53.000Z",
-  "status": "InReview"
+  "claimTx": "0xa8b79595e52c20bbd492b2ac2e0acc77de6c38a5396c1c0bef385ac3d563f3d6",
+  "claimBlock": 28379043,
+  "status": "Settled",
+  "payoutReceived": "0.005 BOT",
+  "timedOut": true
 }
