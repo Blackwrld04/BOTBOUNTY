@@ -32,7 +32,7 @@ const useIsMobile = () => {
 
 export default function App() {
   const isMobile = useIsMobile();
-  const [network, setNetwork] = useState(BOT_TESTNET);
+  const [network, setNetwork] = useState(BOT_MAINNET);
 
   // Authenticated user state: default to null (Guest / new visitor mode)
   const [user, setUser] = useState(() => {
@@ -401,15 +401,21 @@ export default function App() {
       }
 
       let clientSubmitTx = null;
+      let activeExplorerUrl = 'https://scan.botchain.ai';
       const targetOnChainId = selectedBounty?.onChainBountyId || selectedBounty?.bountyId || selectedBounty?.bounty_id;
       if (typeof window !== 'undefined' && window.ethereum && targetOnChainId && targetOnChainId.startsWith('0x') && targetOnChainId.length === 66) {
         try {
           const provider = new ethers.BrowserProvider(window.ethereum);
-          const network = await provider.getNetwork();
-          if (Number(network.chainId) === 968) {
+          const net = await provider.getNetwork();
+          const chainIdNum = Number(net.chainId);
+          if (chainIdNum === 677 || chainIdNum === 968) {
             const signer = await provider.getSigner();
             const escrowAbi = ['function submitSolution(bytes32 bountyId, string calldata prUrl) external'];
-            const escrowContract = new ethers.Contract('0xB128F2f442554B6517D779788F28F2EB2612164A', escrowAbi, signer);
+            const targetContract = chainIdNum === 968
+              ? '0xB128F2f442554B6517D779788F28F2EB2612164A'
+              : '0x909661b453bBe13Ee247551754b35370557A9aA2';
+            activeExplorerUrl = chainIdNum === 968 ? 'https://scan.bohr.life' : 'https://scan.botchain.ai';
+            const escrowContract = new ethers.Contract(targetContract, escrowAbi, signer);
             const tx = await escrowContract.submitSolution(targetOnChainId, submissionUrl);
             const receipt = await tx.wait();
             clientSubmitTx = receipt?.hash || tx.hash;
@@ -441,7 +447,7 @@ export default function App() {
         syncAllData();
         triggerSync({ action: 'work_submitted', bountyId });
         if (clientSubmitTx) {
-          showToast('Deliverable submitted and confirmed on Bohr Testnet!', 'success', `https://scan.bohr.life/tx/${clientSubmitTx}`);
+          showToast('Deliverable submitted and confirmed on BOT Chain!', 'success', `${activeExplorerUrl}/tx/${clientSubmitTx}`);
         } else {
           showToast('Work deliverable successfully submitted for maintainer review!');
         }
@@ -468,34 +474,54 @@ export default function App() {
       const token = adminToken || sessionToken;
 
       if (typeof window === 'undefined' || !window.ethereum) {
-        throw new Error('A connected Web3 wallet is required to sign and execute releaseBounty on Bohr Testnet.');
+        throw new Error('A connected Web3 wallet is required to sign and execute releaseBounty on BOT Chain.');
       }
 
       const targetOnChainId = selectedBounty?.onChainBountyId || selectedBounty?.bountyId || selectedBounty?.bounty_id;
       if (!targetOnChainId || !targetOnChainId.startsWith('0x') || targetOnChainId.length !== 66) {
-        throw new Error('This bounty does not have a verified on-chain escrow ID on Bohr Testnet.');
+        throw new Error('This bounty does not have a verified on-chain escrow ID on BOT Chain.');
       }
 
       const provider = new ethers.BrowserProvider(window.ethereum);
-      const network = await provider.getNetwork();
-      if (Number(network.chainId) !== 968) {
+      const net = await provider.getNetwork();
+      let chainIdNum = Number(net.chainId);
+      if (chainIdNum !== 677 && chainIdNum !== 968) {
         try {
           await window.ethereum.request({
             method: 'wallet_switchEthereumChain',
-            params: [{ chainId: '0x3c8' }]
+            params: [{ chainId: '0x2a5' }]
           });
+          chainIdNum = 677;
         } catch (switchErr) {
-          throw new Error('Please switch your wallet to BOT Chain Bohr Testnet (Chain ID 968) to execute settlement.');
+          if (switchErr?.code === 4902) {
+            await window.ethereum.request({
+              method: 'wallet_addEthereumChain',
+              params: [{
+                chainId: '0x2a5',
+                chainName: 'BOT Chain Mainnet',
+                nativeCurrency: { name: 'BOT', symbol: 'BOT', decimals: 18 },
+                rpcUrls: ['https://rpc.botchain.ai'],
+                blockExplorerUrls: ['https://scan.botchain.ai']
+              }]
+            });
+            chainIdNum = 677;
+          } else {
+            throw new Error('Please switch your wallet to BOT Chain Mainnet (Chain ID 677) to execute settlement.');
+          }
         }
       }
 
       const signer = await provider.getSigner();
       const escrowAbi = ['function releaseBounty(bytes32 bountyId) external'];
-      const escrowContract = new ethers.Contract('0xB128F2f442554B6517D779788F28F2EB2612164A', escrowAbi, signer);
+      const targetContract = chainIdNum === 968
+        ? '0xB128F2f442554B6517D779788F28F2EB2612164A'
+        : '0x909661b453bBe13Ee247551754b35370557A9aA2';
+      const activeExplorerUrl = chainIdNum === 968 ? 'https://scan.bohr.life' : 'https://scan.botchain.ai';
+      const escrowContract = new ethers.Contract(targetContract, escrowAbi, signer);
       const tx = await escrowContract.releaseBounty(targetOnChainId);
       const receipt = await tx.wait();
       if (!receipt || receipt.status !== 1) {
-        throw new Error('Settlement transaction reverted on Bohr Testnet.');
+        throw new Error('Settlement transaction reverted on BOT Chain.');
       }
       const clientTxHash = receipt?.hash || tx.hash;
 
@@ -518,7 +544,7 @@ export default function App() {
         }
         await syncAllData();
         triggerSync({ action: 'bounty_settled', bountyId });
-        showToast(`Settlement confirmed on Bohr Testnet! Native $BOT reward disbursed.`, 'success', `https://scan.bohr.life/tx/${data.settlement.txHash}`);
+        showToast(`Settlement confirmed on BOT Chain! Native $BOT reward disbursed.`, 'success', `${activeExplorerUrl}/tx/${data.settlement.txHash}`);
         return;
       } else if (data.error) {
         showToast(data.error, 'error');
@@ -862,7 +888,7 @@ export default function App() {
               rel="noopener noreferrer"
               style={{ color: 'var(--arc-sky-sync)', textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', gap: '3px', flexShrink: 0 }}
             >
-              <span>View Bohr Scan</span>
+              <span>View on BOTScan</span>
               <ExternalLink size={12} />
             </a>
           )}
@@ -1008,7 +1034,7 @@ export default function App() {
             </button>
 
             <a
-              href="https://scan.bohr.life"
+              href="https://botchain.ai"
               target="_blank"
               rel="noopener noreferrer"
               style={{
@@ -1019,7 +1045,22 @@ export default function App() {
               onMouseEnter={(e) => (e.currentTarget.style.color = '#000000')}
               onMouseLeave={(e) => (e.currentTarget.style.color = '#475569')}
             >
-              BOT Chain Docs ↗
+              BOT Chain ↗
+            </a>
+
+            <a
+              href="https://scan.botchain.ai"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                color: '#475569',
+                textDecoration: 'none',
+                transition: 'color 0.15s ease'
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = '#000000')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = '#475569')}
+            >
+              BOTScan Explorer ↗
             </a>
 
             <span style={{ color: '#cbd5e1' }}>•</span>

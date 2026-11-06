@@ -804,10 +804,10 @@ export default function BountyDetailModal({
                       BOT CHAIN ON-CHAIN SETTLEMENT PROOF
                     </span>
                     <a
-                      href={`https://scan.bohr.life/tx/${bounty.settlementTx}`}
+                      href={`https://scan.botchain.ai/tx/${bounty.settlementTx}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      title="View transaction receipt on Bohr Explorer"
+                      title="View transaction receipt on BOTScan Explorer"
                       style={{
                         fontFamily: 'Geist Mono, monospace',
                         fontSize: '0.82rem',

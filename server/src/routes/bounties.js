@@ -175,8 +175,10 @@ bountyRouter.get('/escrow-wallet', (req, res) => {
   res.json({
     success: true,
     escrowWallet,
-    chainId: parseInt(process.env.BOT_CHAIN_ID || '968', 10),
-    networkName: 'BOT Chain (Bohr Testnet)',
+    chainId: parseInt(process.env.BOT_CHAIN_ID || '677', 10),
+    networkName: 'BOT Chain Mainnet',
+    explorerUrl: 'https://scan.botchain.ai',
+    websiteUrl: 'https://botchain.ai',
     token: config.enableErc20 ? 'USDT & Native $BOT' : 'Native $BOT',
     supportedTokens,
     tokenAddress: ZERO_ADDRESS,

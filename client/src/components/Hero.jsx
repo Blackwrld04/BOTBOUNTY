@@ -57,11 +57,94 @@ export default function Hero({ openCreateModal, onExploreClick, openAuthModal, u
                 color: '#acc6e9',
                 lineHeight: 1.55,
                 maxWidth: '640px',
-                marginBottom: isMobile ? '18px' : '26px',
+                marginBottom: isMobile ? '14px' : '18px',
                 fontWeight: 500
               }}>
-                Lock Native $BOT in smart contract escrow on BOT Chain. Deliver high-impact work in <strong>Content, Design, Development, and All Social</strong> campaigns. Receive instant disbursements with deterministic EVM finality on BOT Chain (677 / 968).
+                Lock Native $BOT in smart contract escrow on{' '}
+                <a
+                  href="https://botchain.ai"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: '#ffcc6f', fontWeight: 700, textDecoration: 'underline' }}
+                >
+                  BOT Chain
+                </a>
+                . Deliver high-impact work in <strong>Content, Design, Development, and All Social</strong> campaigns. Receive instant disbursements with deterministic EVM finality verified on{' '}
+                <a
+                  href="https://scan.botchain.ai"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: '#ffcc6f', fontWeight: 700, textDecoration: 'underline' }}
+                >
+                  scan.botchain.ai
+                </a>
+                .
               </p>
+
+              {/* Official BOT Chain Mainnet Links Pill Bar */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: isMobile ? '16px' : '22px' }}>
+                <a
+                  href="https://botchain.ai"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    padding: '4px 10px',
+                    borderRadius: '6px',
+                    background: 'rgba(255, 255, 255, 0.14)',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    color: '#ffffff',
+                    fontSize: '0.74rem',
+                    fontWeight: 700,
+                    textDecoration: 'none'
+                  }}
+                >
+                  <span>🌐 BOT Chain (botchain.ai) ↗</span>
+                </a>
+                <a
+                  href="https://scan.botchain.ai"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    padding: '4px 10px',
+                    borderRadius: '6px',
+                    background: 'rgba(255, 255, 255, 0.14)',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    color: '#ffffff',
+                    fontSize: '0.74rem',
+                    fontWeight: 700,
+                    textDecoration: 'none'
+                  }}
+                >
+                  <span>🔍 Explorer (scan.botchain.ai) ↗</span>
+                </a>
+                <a
+                  href="https://scan.botchain.ai/address/0x909661b453bBe13Ee247551754b35370557A9aA2"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    padding: '4px 10px',
+                    borderRadius: '6px',
+                    background: 'rgba(16, 185, 129, 0.22)',
+                    border: '1px solid rgba(52, 211, 153, 0.5)',
+                    color: '#a7f3d0',
+                    fontSize: '0.74rem',
+                    fontWeight: 700,
+                    textDecoration: 'none',
+                    fontFamily: 'monospace'
+                  }}
+                >
+                  <span>Escrow: 0x9096...A9aA2 (Mainnet 677) ↗</span>
+                </a>
+              </div>
             </div>
 
             {/* CTAs & Social Proof */}

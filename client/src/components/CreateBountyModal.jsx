@@ -47,7 +47,7 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
   const [isCustomDays, setIsCustomDays] = useState(false);
   const [isAiGenerating, setIsAiGenerating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [escrowWallet, setEscrowWallet] = useState('0xB128F2f442554B6517D779788F28F2EB2612164A');
+  const [escrowWallet, setEscrowWallet] = useState('0x909661b453bBe13Ee247551754b35370557A9aA2');
   const [depositTx, setDepositTx] = useState('');
   const [onChainBountyId, setOnChainBountyId] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('wallet'); // 'wallet' or 'manual'
@@ -100,34 +100,37 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
       }
 
       if (typeof window === 'undefined' || !window.ethereum) {
-        alert('A Web3 wallet connected to BOT Chain Bohr Testnet is required to deposit escrow funds.');
+        alert('A Web3 wallet connected to BOT Chain Mainnet (Chain ID 677) is required to deposit escrow funds.');
         return;
       }
 
       const provider = new ethers.BrowserProvider(window.ethereum);
 
-      // Enforce Bohr Testnet (Chain ID 968)
+      // Default to BOT Chain Mainnet (Chain ID 677), while also allowing Bohr Testnet (968)
       const network = await provider.getNetwork();
-      if (Number(network.chainId) !== 968) {
+      let chainIdNum = Number(network.chainId);
+      if (chainIdNum !== 677 && chainIdNum !== 968) {
         try {
           await window.ethereum.request({
             method: 'wallet_switchEthereumChain',
-            params: [{ chainId: '0x3c8' }]
+            params: [{ chainId: '0x2a5' }]
           });
+          chainIdNum = 677;
         } catch (switchError) {
           if (switchError.code === 4902) {
             await window.ethereum.request({
               method: 'wallet_addEthereumChain',
               params: [{
-                chainId: '0x3c8',
-                chainName: 'BOT Bohr Testnet',
-                nativeCurrency: { name: 'BOT', symbol: 'tBOT', decimals: 18 },
-                rpcUrls: ['https://rpc.bohr.life'],
-                blockExplorerUrls: ['https://scan.bohr.life']
+                chainId: '0x2a5',
+                chainName: 'BOT Chain Mainnet',
+                nativeCurrency: { name: 'BOT', symbol: 'BOT', decimals: 18 },
+                rpcUrls: ['https://rpc.botchain.ai'],
+                blockExplorerUrls: ['https://scan.botchain.ai']
               }]
             });
+            chainIdNum = 677;
           } else {
-            throw new Error('Please switch your wallet network to BOT Chain Bohr Testnet (Chain ID 968).');
+            throw new Error('Please switch your wallet network to BOT Chain Mainnet (Chain ID 677).');
           }
         }
       }
@@ -136,12 +139,15 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
       const escrowAbi = [
         'function createBounty(bytes32 bountyId, address settlementToken, uint256 amount, uint256 deadline, uint256 reviewPeriod, string issueUrl) external payable'
       ];
-      const escrowContract = new ethers.Contract(escrowWallet, escrowAbi, signer);
+      const targetContract = chainIdNum === 968
+        ? '0xB128F2f442554B6517D779788F28F2EB2612164A'
+        : escrowWallet;
+      const escrowContract = new ethers.Contract(targetContract, escrowAbi, signer);
       const bountyIdBytes32 = ethers.keccak256(ethers.toUtf8Bytes((title || 'Bounty') + '-' + Date.now().toString()));
       const deadlineSec = Math.floor(Date.now() / 1000) + (parseInt(deadlineDays, 10) || 14) * 86400;
 
       const isUsdt = selectedAsset === 'USDT';
-      const tokenAddress = isUsdt ? '0x75edC9335175Fc0552D51D48439F229c10420fe3' : ethers.ZeroAddress;
+      const tokenAddress = isUsdt ? '0xaBabc7Ddc03e501d190C676BF3d92ef0e6e87a3C' : ethers.ZeroAddress;
       const totalAmountWei = isUsdt
         ? ethers.parseUnits(totalAmount.toString(), 6)
         : ethers.parseEther(totalAmount.toString());
@@ -157,7 +163,7 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
       );
       const receipt = await tx.wait();
       if (!receipt || receipt.status !== 1) {
-        throw new Error('Escrow funding transaction reverted or unconfirmed on Bohr Testnet.');
+        throw new Error('Escrow funding transaction reverted or unconfirmed on BOT Chain.');
       }
       const txHash = receipt.hash || tx.hash;
       setDepositTx(txHash);
@@ -676,8 +682,8 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
                   background: '#ffffff'
                 }}
               >
-                <option value="BOT">Native $BOT (Chain ID 968 Escrow - Active Pilot)</option>
-                <option value="USDT" disabled>Bridged USDT (Disabled for Native $BOT Pilot)</option>
+                <option value="BOT">Native $BOT (BOT Chain Mainnet 677 Escrow)</option>
+                <option value="USDT" disabled>Bridged USDT (Disabled for Native $BOT Escrow)</option>
               </select>
             </div>
 
@@ -1100,7 +1106,7 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
                   </span>
                 </div>
                 <span style={{ fontSize: '0.72rem', fontWeight: 800, background: '#e2e8f0', color: '#1b3158', padding: '3px 8px', borderRadius: '4px' }}>
-                  Bohr Testnet &bull; Chain ID 968
+                  BOT Chain Mainnet &bull; Chain ID 677
                 </span>
               </div>
 
@@ -1179,12 +1185,12 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
                       <span>Escrow Deposit Confirmed On-Chain</span>
                     </div>
                     <a
-                      href={`https://scan.bohr.life/tx/${depositTx}`}
+                      href={`https://scan.botchain.ai/tx/${depositTx}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{ fontSize: '0.78rem', color: '#0284c7', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}
                     >
-                      <span>View on Bohr Explorer</span>
+                      <span>View on BOTScan Explorer</span>
                       <ExternalLink size={12} />
                     </a>
                   </div>

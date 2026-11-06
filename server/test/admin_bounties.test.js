@@ -297,7 +297,7 @@ test('BotBounty Escrow Payments & Admin Distribution Tests', async (t) => {
     const users = getAllUsers();
     assert.ok(Array.isArray(users));
     assert.equal(users.length, stats.totalUsers);
-    assert.equal(stats.escrowWallet, process.env.ESCROW_CONTRACT_ADDRESS || process.env.ESCROW_WALLET_ADDRESS || '0xB128F2f442554B6517D779788F28F2EB2612164A');
+    assert.equal(stats.escrowWallet, process.env.ESCROW_CONTRACT_ADDRESS || process.env.ESCROW_WALLET_ADDRESS || '0x909661b453bBe13Ee247551754b35370557A9aA2');
   });
 
   await t.test('admin middleware rejects missing, invalid, and expired tokens and accepts active sessions', async () => {

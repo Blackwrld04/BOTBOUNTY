@@ -14,10 +14,35 @@ export const ESCROW_ABI = parseAbi([
   'function releaseBountyWithProof(bytes32 bountyId, string calldata prUrl, bytes32 salt) external'
 ]);
 
-export function getPublicClient() {
+export function getPublicClient(rpcUrl) {
   return createPublicClient({
-    transport: http(config.botRpcUrl || 'https://rpc.bohr.life')
+    transport: http(rpcUrl || config.botRpcUrl || 'https://rpc.botchain.ai')
   });
+}
+
+const KNOWN_ESCROW_CONTRACTS = new Set([
+  (config.escrowContractAddress || '0x909661b453bBe13Ee247551754b35370557A9aA2').toLowerCase(),
+  (config.testnetEscrowContractAddress || '0xB128F2f442554B6517D779788F28F2EB2612164A').toLowerCase(),
+  '0x909661b453bbe13ee247551754b35370557a9aa2',
+  '0xb128f2f442554b6517d779788f28f2eb2612164a'
+]);
+
+async function fetchReceiptAcrossBotChains(txHash) {
+  const urls = Array.from(new Set([
+    config.botRpcUrl || 'https://rpc.botchain.ai',
+    config.botMainnetRpcUrl || 'https://rpc.botchain.ai',
+    config.botTestnetRpcUrl || 'https://rpc.bohr.life'
+  ]));
+  for (const url of urls) {
+    try {
+      const client = getPublicClient(url);
+      const receipt = await client.getTransactionReceipt({ hash: txHash });
+      if (receipt) return receipt;
+    } catch (_) {
+      // try next RPC
+    }
+  }
+  return null;
 }
 
 function chainBypassEnabled() {
@@ -114,32 +139,25 @@ export async function verifyDepositTransaction({
     };
   }
 
-  const client = getPublicClient();
-
-  let receipt;
-  try {
-    receipt = await client.getTransactionReceipt({ hash: txHash });
-  } catch (err) {
-    throw new Error(`Transaction ${txHash} not found on BOT Chain Bohr Testnet. Fabricated transactions are rejected.`);
-  }
+  const receipt = await fetchReceiptAcrossBotChains(txHash);
 
   if (!receipt) {
-    throw new Error(`Transaction ${txHash} not found on BOT Chain Bohr Testnet. Fabricated transactions are rejected.`);
+    throw new Error(`Transaction ${txHash} not found on BOT Chain Mainnet or Bohr Testnet. Fabricated transactions are rejected.`);
   }
 
   if (receipt.status !== 'success') {
-    throw new Error(`Transaction ${txHash} failed or reverted on BOT Chain Bohr Testnet.`);
+    throw new Error(`Transaction ${txHash} failed or reverted on BOT Chain.`);
   }
 
-  const expectedContract = (config.escrowContractAddress || '0xB128F2f442554B6517D779788F28F2EB2612164A').toLowerCase();
-  if (receipt.to?.toLowerCase() !== expectedContract) {
-    throw new Error(`Transaction was sent to ${receipt.to}, but active Bohr Escrow contract is ${expectedContract}.`);
+  const targetTo = (receipt.to || '').toLowerCase();
+  if (!KNOWN_ESCROW_CONTRACTS.has(targetTo)) {
+    throw new Error(`Transaction was sent to ${receipt.to}, but active BOT Chain Escrow contract is ${config.escrowContractAddress}.`);
   }
 
   // Parse BountyCreated event
   let createdEvent = null;
   for (const log of receipt.logs) {
-    if (log.address.toLowerCase() !== expectedContract) continue;
+    if (log.address.toLowerCase() !== targetTo) continue;
     try {
       const decoded = decodeEventLog({
         abi: ESCROW_ABI,
@@ -237,11 +255,8 @@ export async function verifySettlementTransaction({
       };
     }
 
-    const client = getPublicClient();
-
-    try {
-      receipt = await client.getTransactionReceipt({ hash: txHash });
-    } catch (err) {
+    receipt = await fetchReceiptAcrossBotChains(txHash);
+    if (!receipt) {
       throw new Error(`Settlement transaction ${txHash} not found on BOT Chain Bohr Testnet. Fabricated hashes are rejected.`);
     }
   }
@@ -254,15 +269,20 @@ export async function verifySettlementTransaction({
     throw new Error(`Settlement transaction ${txHash} failed or reverted on BOT Chain Bohr Testnet.`);
   }
 
-  const expectedContract = (customContractAddress || config.escrowContractAddress || '0xB128F2f442554B6517D779788F28F2EB2612164A').toLowerCase();
-  if (receipt.to?.toLowerCase() !== expectedContract) {
-    throw new Error(`Settlement transaction was sent to ${receipt.to}, but active Bohr Escrow contract is ${expectedContract}.`);
+  const targetTo = (receipt.to || '').toLowerCase();
+  if (customContractAddress) {
+    const expectedContract = customContractAddress.toLowerCase();
+    if (targetTo !== expectedContract) {
+      throw new Error(`Settlement transaction was sent to ${receipt.to}, but active Bohr Escrow contract is ${expectedContract}.`);
+    }
+  } else if (!KNOWN_ESCROW_CONTRACTS.has(targetTo)) {
+    throw new Error(`Settlement transaction was sent to ${receipt.to}, but active BOT Chain Escrow contract is ${config.escrowContractAddress}.`);
   }
 
   // Find BountySettled event
   let settledEvent = null;
   for (const log of receipt.logs) {
-    if (log.address.toLowerCase() !== expectedContract) continue;
+    if (log.address.toLowerCase() !== targetTo) continue;
     try {
       const decoded = decodeEventLog({
         abi: ESCROW_ABI,
@@ -339,28 +359,22 @@ export async function verifySubmissionTransaction({ txHash, expectedSolver, expe
     return { verified: true, simulated: true, txHash, solver: expectedSolver, bountyId: expectedBountyId };
   }
 
-  const client = getPublicClient();
-  let receipt;
-  try {
-    receipt = await client.getTransactionReceipt({ hash: txHash });
-  } catch (err) {
-    throw new Error(`Submission transaction ${txHash} not found on BOT Chain Bohr Testnet. Fabricated hashes are rejected.`);
-  }
+  const receipt = await fetchReceiptAcrossBotChains(txHash);
   if (!receipt) {
-    throw new Error(`Submission transaction ${txHash} not found on BOT Chain Bohr Testnet. Fabricated hashes are rejected.`);
+    throw new Error(`Submission transaction ${txHash} not found on BOT Chain Mainnet or Bohr Testnet. Fabricated hashes are rejected.`);
   }
   if (receipt.status !== 'success') {
-    throw new Error(`Submission transaction ${txHash} failed or reverted on BOT Chain Bohr Testnet.`);
+    throw new Error(`Submission transaction ${txHash} failed or reverted on BOT Chain.`);
   }
 
-  const expectedContract = (config.escrowContractAddress || '0xB128F2f442554B6517D779788F28F2EB2612164A').toLowerCase();
-  if (receipt.to?.toLowerCase() !== expectedContract) {
-    throw new Error(`Submission transaction was sent to ${receipt.to}, but active Bohr Escrow contract is ${expectedContract}.`);
+  const targetTo = (receipt.to || '').toLowerCase();
+  if (!KNOWN_ESCROW_CONTRACTS.has(targetTo)) {
+    throw new Error(`Submission transaction was sent to ${receipt.to}, but active BOT Chain Escrow contract is ${config.escrowContractAddress}.`);
   }
 
   let submittedEvent = null;
   for (const log of receipt.logs) {
-    if (log.address.toLowerCase() !== expectedContract) continue;
+    if (log.address.toLowerCase() !== targetTo) continue;
     try {
       const decoded = decodeEventLog({ abi: ESCROW_ABI, data: log.data, topics: log.topics });
       if (decoded.eventName === 'SolutionSubmitted') {

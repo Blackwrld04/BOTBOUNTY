@@ -225,9 +225,13 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
       if (typeof window !== 'undefined' && window.ethereum && targetOnChainId) {
         try {
           const provider = new ethers.BrowserProvider(window.ethereum);
+          const net = await provider.getNetwork();
           const signer = await provider.getSigner();
           const escrowAbi = ['function releaseBounty(bytes32 bountyId) external'];
-          const escrowContract = new ethers.Contract('0xB128F2f442554B6517D779788F28F2EB2612164A', escrowAbi, signer);
+          const targetContract = Number(net.chainId) === 968
+            ? '0xB128F2f442554B6517D779788F28F2EB2612164A'
+            : '0x909661b453bBe13Ee247551754b35370557A9aA2';
+          const escrowContract = new ethers.Contract(targetContract, escrowAbi, signer);
           const tx = await escrowContract.releaseBounty(targetOnChainId);
           const receipt = await tx.wait();
           clientTxHash = receipt?.hash || tx.hash;
@@ -467,9 +471,13 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
       if (typeof window !== 'undefined' && window.ethereum && targetOnChainId) {
         try {
           const provider = new ethers.BrowserProvider(window.ethereum);
+          const net = await provider.getNetwork();
           const signer = await provider.getSigner();
           const escrowAbi = ['function releaseBounty(bytes32 bountyId) external'];
-          const escrowContract = new ethers.Contract('0xB128F2f442554B6517D779788F28F2EB2612164A', escrowAbi, signer);
+          const targetContract = Number(net.chainId) === 968
+            ? '0xB128F2f442554B6517D779788F28F2EB2612164A'
+            : '0x909661b453bBe13Ee247551754b35370557A9aA2';
+          const escrowContract = new ethers.Contract(targetContract, escrowAbi, signer);
           const tx = await escrowContract.releaseBounty(targetOnChainId);
           const receipt = await tx.wait();
           clientTxHash = receipt?.hash || tx.hash;
@@ -1146,20 +1154,20 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
           </div>
           <div>
             <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#ffcc6f', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-              PLATFORM ESCROW CONTRACT (BOHR TESTNET)
+              PLATFORM ESCROW CONTRACT (BOT CHAIN MAINNET)
             </div>
             <div style={{ fontFamily: 'monospace', fontSize: '1rem', fontWeight: 800, color: '#ffffff', marginTop: '2px', wordBreak: 'break-all' }}>
-              {stats?.escrowWallet || '0xB128F2f442554B6517D779788F28F2EB2612164A'}
+              {stats?.escrowWallet || '0x909661b453bBe13Ee247551754b35370557A9aA2'}
             </div>
             <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '2px' }}>
-              Active BotBountyEscrow contract on BOT Chain Bohr Testnet (Chain ID 968)
+              Active BotBountyEscrow contract on BOT Chain Mainnet (Chain ID 677)
             </div>
           </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <button
-            onClick={() => handleCopyWallet(stats?.escrowWallet || '0xB128F2f442554B6517D779788F28F2EB2612164A')}
+            onClick={() => handleCopyWallet(stats?.escrowWallet || '0x909661b453bBe13Ee247551754b35370557A9aA2')}
             style={{
               background: copiedWallet ? '#10b981' : '#1b3158',
               color: '#ffffff',
@@ -1179,7 +1187,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
           </button>
 
           <a
-            href={`https://scan.bohr.life/address/${stats?.escrowWallet || '0xB128F2f442554B6517D779788F28F2EB2612164A'}`}
+            href={`https://scan.botchain.ai/address/${stats?.escrowWallet || '0x909661b453bBe13Ee247551754b35370557A9aA2'}`}
             target="_blank"
             rel="noopener noreferrer"
             style={{
@@ -1196,7 +1204,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
               gap: '6px'
             }}
           >
-            <span>Arc Explorer</span>
+            <span>BOTScan Explorer</span>
             <ExternalLink size={14} />
           </a>
         </div>
@@ -2070,7 +2078,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
                               </button>
 
                               <a
-                                href={`https://scan.bohr.life/address/${sub.wallet_address}`}
+                                href={`https://scan.botchain.ai/address/${sub.wallet_address}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 style={{
@@ -3094,7 +3102,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
                                 <span>{copiedUserWallet === u.id ? 'Copied' : 'Copy'}</span>
                               </button>
                               <a
-                                href={`https://scan.bohr.life/address/${u.wallet_address}`}
+                                href={`https://scan.botchain.ai/address/${u.wallet_address}`}
                                 target="_blank"
                                 rel="noreferrer"
                                 style={{

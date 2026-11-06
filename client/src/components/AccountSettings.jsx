@@ -781,7 +781,7 @@ export default function AccountSettings({
                   COLLECTED BOUNTY EARNINGS
                 </span>
                 <span style={{ fontSize: '0.72rem', background: '#dcfce7', color: '#166534', border: '1px solid #166534', padding: '1px 6px', borderRadius: '4px', fontWeight: 800 }}>
-                  CHAIN ID 968 (BOHR TESTNET)
+                  CHAIN ID 677 (BOT CHAIN MAINNET)
                 </span>
               </div>
 

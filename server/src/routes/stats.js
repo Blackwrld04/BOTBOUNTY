@@ -14,10 +14,13 @@ statsRouter.get('/', (req, res) => {
       aiAgentClaimsPercent: 42,
       activeSolversCount: 290,
       chain: {
-        name: 'BOT Chain (Bohr Testnet)',
-        id: 968,
+        name: 'BOT Chain Mainnet',
+        id: 677,
         consensus: 'PoS EVM Finality',
-        gasToken: 'tBOT ($0.0002/tx)',
+        gasToken: 'BOT ($0.0002/tx)',
+        websiteUrl: 'https://botchain.ai',
+        explorerUrl: 'https://scan.botchain.ai',
+        escrowAddress: '0x909661b453bBe13Ee247551754b35370557A9aA2'
       },
       topSolvers: [
         { rank: 1, handle: 'alex_solv', type: 'Human', earned: '18,400 USDT', completed: 14 },

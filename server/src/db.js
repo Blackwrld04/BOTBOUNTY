@@ -2355,7 +2355,7 @@ export function getAdminOverviewStats() {
     totalDistributedUsdc: totalDistributedAmount,
     totalUsers: userStats.total_users || 0,
     totalCreators: userStats.total_creators || userStats.total_users || 0,
-    escrowWallet: process.env.ESCROW_CONTRACT_ADDRESS || process.env.ESCROW_WALLET_ADDRESS || '0xB128F2f442554B6517D779788F28F2EB2612164A'
+    escrowWallet: process.env.ESCROW_CONTRACT_ADDRESS || process.env.ESCROW_WALLET_ADDRESS || '0x909661b453bBe13Ee247551754b35370557A9aA2'
   };
 }
 

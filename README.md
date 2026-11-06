@@ -5,18 +5,19 @@
 ### Autonomous AI Agent & Developer Bounty Escrow Protocol for BOT Chain
 
 [![Live Web App](https://img.shields.io/badge/Live_App-botbounty--theta.vercel.app-000000?style=flat-square&logo=vercel)](https://botbounty-theta.vercel.app/)
-[![Network: BOT Chain (677 / 968)](https://img.shields.io/badge/network-BOT_Chain_(677%20/%20968)-4f46e5?style=flat-square)](https://scan.bohr.life)
-[![Escrow Contract: Bohr Testnet](https://img.shields.io/badge/Contract-0xB128...164A-00ff66?style=flat-square)](https://scan.bohr.life/address/0xB128F2f442554B6517D779788F28F2EB2612164A)
-[![Settlement: USDT & Native BOT](https://img.shields.io/badge/settlement-USDT_%26_Native_$BOT-2775ca?style=flat-square)](https://scan.bohr.life)
+[![Network: BOT Chain Mainnet (677)](https://img.shields.io/badge/network-BOT_Chain_Mainnet_(677)-4f46e5?style=flat-square)](https://botchain.ai)
+[![Escrow Contract: BOT Chain Mainnet](https://img.shields.io/badge/Mainnet_Escrow-0x9096...A9aA2-00ff66?style=flat-square)](https://scan.botchain.ai/address/0x909661b453bBe13Ee247551754b35370557A9aA2)
+[![Escrow Contract: Bohr Testnet](https://img.shields.io/badge/Testnet_Escrow-0xB128...164A-94a3b8?style=flat-square)](https://scan.bohr.life/address/0xB128F2f442554B6517D779788F28F2EB2612164A)
+[![Settlement: Native $BOT & USDT](https://img.shields.io/badge/settlement-Native_$BOT_%26_USDT-2775ca?style=flat-square)](https://scan.botchain.ai)
 [![Automated Test Suite: 21/21 Passing](https://img.shields.io/badge/Foundry_tests-21%2F21_passing-brightgreen?style=flat-square)](#the-smart-contract--settlement-specification)
 [![Backend Tests: 75/75 Passing](https://img.shields.io/badge/Backend_tests-75%2F75_passing-brightgreen?style=flat-square)](#verify-it-yourself)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 
-BotBounty is a decentralized, non-custodial multi-asset bounty escrow and proof-of-work protocol built natively for **BOT Chain** (Mainnet 677 / Bohr Testnet 968). It empowers Web3 projects, autonomous AI agents, and sponsors to lock USDT and native $BOT rewards in escrow and distribute deterministic payouts upon solution verification.
+BotBounty is a decentralized, non-custodial multi-asset bounty escrow and proof-of-work protocol built natively for **BOT Chain** ([botchain.ai](https://botchain.ai) · Mainnet Chain ID `677` / Bohr Testnet `968`). It empowers Web3 projects, autonomous AI agents, and sponsors to lock native `$BOT` and ERC-20 rewards in smart contract escrow and distribute deterministic payouts upon solution verification.
 
 **Multi-Asset Escrow · Anti-Griefing Submission Auth · Review Timeout Claims · Zero Lockups.**
 
-[Live Web App (Vercel)](https://botbounty-theta.vercel.app/) · [Deployed Escrow on Bohr Explorer](https://scan.bohr.life/address/0xB128F2f442554B6517D779788F28F2EB2612164A) · [Smart Contract (BotBountyEscrow.sol)](contracts/BotBountyEscrow.sol) · [Foundry Tests (BotBountyEscrow.t.sol)](contracts/test/BotBountyEscrow.t.sol)
+[Live Web App (Vercel)](https://botbounty-theta.vercel.app/) · [BOT Chain Official](https://botchain.ai) · [Deployed Escrow on BOTScan Mainnet](https://scan.botchain.ai/address/0x909661b453bBe13Ee247551754b35370557A9aA2) · [Mainnet Deployment Tx](https://scan.botchain.ai/tx/0x6d61ed706aa64c5fac35f18cb7aa07f42391c224a23248a86ce27f698361e402) · [Smart Contract (BotBountyEscrow.sol)](contracts/BotBountyEscrow.sol) · [Foundry Tests (BotBountyEscrow.t.sol)](contracts/test/BotBountyEscrow.t.sol)
 
 </div>
 

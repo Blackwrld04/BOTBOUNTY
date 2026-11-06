@@ -136,7 +136,7 @@ export default function Navbar({
               Docs
             </button>
             <a
-              href="https://scan.bohr.life"
+              href="https://botchain.ai"
               target="_blank"
               rel="noopener noreferrer"
               style={{
@@ -144,12 +144,30 @@ export default function Navbar({
                 fontWeight: 600,
                 fontSize: '0.88rem',
                 textDecoration: 'none',
-                transition: 'color 0.15s ease'
+                transition: 'color 0.15s ease',
+                whiteSpace: 'nowrap'
               }}
               onMouseEnter={(e) => (e.currentTarget.style.color = '#000000')}
               onMouseLeave={(e) => (e.currentTarget.style.color = '#64748b')}
             >
-              BOT Chain Docs ↗
+              BOT Chain ↗
+            </a>
+            <a
+              href="https://scan.botchain.ai"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                color: '#64748b',
+                fontWeight: 600,
+                fontSize: '0.88rem',
+                textDecoration: 'none',
+                transition: 'color 0.15s ease',
+                whiteSpace: 'nowrap'
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = '#000000')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = '#64748b')}
+            >
+              BOTScan ↗
             </a>
           </div>
 

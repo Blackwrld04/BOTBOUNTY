@@ -114,7 +114,7 @@ export default function SidebarWidgets({ stats, onOpenCreate, onNavigateToLeader
           </button>
 
           <a
-            href="https://scan.bohr.life"
+            href="https://scan.botchain.ai"
             target="_blank"
             rel="noopener noreferrer"
             style={{
@@ -131,7 +131,28 @@ export default function SidebarWidgets({ stats, onOpenCreate, onNavigateToLeader
               gap: '4px'
             }}
           >
-            <span>BOT Chain Docs ↗</span>
+            <span>BOTScan ↗</span>
+          </a>
+
+          <a
+            href="https://botchain.ai"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              padding: '8px 12px',
+              borderRadius: '8px',
+              background: 'rgba(255, 255, 255, 0.15)',
+              color: '#ffffff',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              fontSize: '0.82rem',
+              fontWeight: 600,
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+          >
+            <span>BOT Chain ↗</span>
           </a>
         </div>
       </div>

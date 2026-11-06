@@ -1210,7 +1210,7 @@ export default function UserProfile({
               <div style={{ background: '#f8fafc', border: '1.5px solid #000000', borderRadius: '8px', padding: '10px 12px' }}>
                 <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>Settlement Chain</span>
                 <div className="font-space" style={{ fontSize: '0.95rem', fontWeight: 900, color: '#0f172a', marginTop: '4px' }}>
-                  Bohr Testnet (968)
+                  BOT Chain Mainnet (677)
                 </div>
               </div>
             </div>

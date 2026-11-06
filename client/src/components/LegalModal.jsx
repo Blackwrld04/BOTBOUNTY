@@ -34,7 +34,7 @@ export default function LegalModal({ type, onClose }) {
 
           <div>
             <strong style={{ color: '#0f172a', display: 'block', fontSize: '0.92rem', marginBottom: '4px' }}>4. Challenge Creation &amp; Escrow Verification</strong>
-            Sponsors establish bounties by locking the exact prize pool into the platform escrow address (<code>0xB128F2f442554B6517D779788F28F2EB2612164A</code>) or locking funds via <code>BotBountyEscrow.sol</code>. Challenges remain in <strong>Pending Review</strong> until platform administrators verify the deposit on Bohr Scan to prevent unbacked listings.
+            Sponsors establish bounties by locking the exact prize pool into the platform escrow address (<code>0x909661b453bBe13Ee247551754b35370557A9aA2</code>) or locking funds via <code>BotBountyEscrow.sol</code>. Challenges remain in <strong>Pending Review</strong> until platform administrators verify the deposit on BOTScan to prevent unbacked listings.
           </div>
 
           <div>
@@ -155,32 +155,32 @@ export default function LegalModal({ type, onClose }) {
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.76rem' }}>
                   <tbody>
                     <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                      <td style={{ padding: '4px 0', fontWeight: 700 }}>Chain ID (Testnet - Bohr)</td>
-                      <td style={{ padding: '4px 0', fontFamily: 'monospace' }}>968 (0x3C8)</td>
-                    </tr>
-                    <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
                       <td style={{ padding: '4px 0', fontWeight: 700 }}>Chain ID (Mainnet)</td>
                       <td style={{ padding: '4px 0', fontFamily: 'monospace' }}>677 (0x2A5)</td>
                     </tr>
                     <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                      <td style={{ padding: '4px 0', fontWeight: 700 }}>RPC URL</td>
-                      <td style={{ padding: '4px 0', fontFamily: 'monospace' }}>https://rpc.bohr.life</td>
+                      <td style={{ padding: '4px 0', fontWeight: 700 }}>Chain ID (Testnet - Bohr)</td>
+                      <td style={{ padding: '4px 0', fontFamily: 'monospace' }}>968 (0x3C8)</td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                      <td style={{ padding: '4px 0', fontWeight: 700 }}>RPC URL (Mainnet)</td>
+                      <td style={{ padding: '4px 0', fontFamily: 'monospace' }}>https://rpc.botchain.ai</td>
                     </tr>
                     <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
                       <td style={{ padding: '4px 0', fontWeight: 700 }}>Native Gas Currency</td>
                       <td style={{ padding: '4px 0' }}>BOT (18 decimals)</td>
                     </tr>
                     <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                      <td style={{ padding: '4px 0', fontWeight: 700 }}>Pilot Settlement Asset</td>
+                      <td style={{ padding: '4px 0', fontWeight: 700 }}>Settlement Asset</td>
                       <td style={{ padding: '4px 0', fontFamily: 'monospace' }}>Native $BOT (address(0))</td>
                     </tr>
                     <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                      <td style={{ padding: '4px 0', fontWeight: 700 }}>Escrow Contract</td>
-                      <td style={{ padding: '4px 0', fontFamily: 'monospace' }}>0xB128F2f442554B6517D779788F28F2EB2612164A</td>
+                      <td style={{ padding: '4px 0', fontWeight: 700 }}>Escrow Contract (Mainnet)</td>
+                      <td style={{ padding: '4px 0', fontFamily: 'monospace' }}>0x909661b453bBe13Ee247551754b35370557A9aA2</td>
                     </tr>
                     <tr>
                       <td style={{ padding: '4px 0', fontWeight: 700 }}>Block Explorer</td>
-                      <td style={{ padding: '4px 0' }}><a href="https://scan.bohr.life" target="_blank" rel="noreferrer" style={{ color: '#2563eb' }}>scan.bohr.life ↗</a></td>
+                      <td style={{ padding: '4px 0' }}><a href="https://scan.botchain.ai" target="_blank" rel="noreferrer" style={{ color: '#2563eb' }}>scan.botchain.ai ↗</a></td>
                     </tr>
                   </tbody>
                 </table>
@@ -236,8 +236,8 @@ export default function LegalModal({ type, onClose }) {
                 <ol style={{ margin: '0 0 10px 0', paddingLeft: '20px' }}>
                   <li>Click <strong>Post a Bounty</strong> and use the AI Prompt Assistant to draft clear acceptance criteria.</li>
                   <li>Set prize distribution amounts (1st, 2nd, 3rd place tiers) and deadline duration.</li>
-                  <li>Deposit the escrow reward into the platform escrow address (<code>0xB128F2f442554B6517D779788F28F2EB2612164A</code>).</li>
-                  <li>Platform admins verify the transaction on Bohr Scan and move the bounty from Pending Review to Open.</li>
+                  <li>Deposit the escrow reward into the platform escrow address (<code>0x909661b453bBe13Ee247551754b35370557A9aA2</code>).</li>
+                  <li>Platform admins verify the transaction on BOTScan and move the bounty from Pending Review to Open.</li>
                 </ol>
               </div>
 
@@ -287,7 +287,7 @@ export default function LegalModal({ type, onClose }) {
               </div>
               <div>
                 <strong style={{ color: '#0f172a', display: 'block' }}>Q: Where can I learn more about BOT Chain?</strong>
-                <span style={{ color: '#475569' }}>Explore official documentation and network specs at <a href="https://scan.bohr.life" target="_blank" rel="noreferrer" style={{ color: '#2563eb' }}>scan.bohr.life ↗</a> and <a href="https://botchain.ai" target="_blank" rel="noreferrer" style={{ color: '#2563eb' }}>botchain.ai ↗</a>.</span>
+                <span style={{ color: '#475569' }}>Explore official documentation and network specs at <a href="https://scan.botchain.ai" target="_blank" rel="noreferrer" style={{ color: '#2563eb' }}>scan.botchain.ai ↗</a> and <a href="https://botchain.ai" target="_blank" rel="noreferrer" style={{ color: '#2563eb' }}>botchain.ai ↗</a>.</span>
               </div>
             </div>
           )}
@@ -310,7 +310,7 @@ export default function LegalModal({ type, onClose }) {
           </div>
           <div>
             <strong style={{ color: '#0f172a', display: 'block', marginBottom: '4px' }}>3. Public Ledger Transparency</strong>
-            Transactions, disbursements, and smart contract calls conducted on BOT Chain are public by design. Your public wallet address and on-chain transaction history can be inspected on the Bohr block explorer (scan.bohr.life).
+            Transactions, disbursements, and smart contract calls conducted on BOT Chain are public by design. Your public wallet address and on-chain transaction history can be inspected on the BOT Chain block explorer (scan.botchain.ai).
           </div>
           <div>
             <strong style={{ color: '#0f172a', display: 'block', marginBottom: '4px' }}>4. Persistent Storage Architecture</strong>

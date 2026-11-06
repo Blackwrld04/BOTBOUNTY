@@ -328,10 +328,10 @@ export default function WalletDrawer({ isOpen, onClose, wallet, setWallet, netwo
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ fontWeight: 700, color: '#0f172a' }}>Escrow:</span>
-            <span style={{ fontFamily: 'monospace' }}>0xB128...164A</span>
+            <span style={{ fontFamily: 'monospace' }}>0x9096...A9aA2</span>
           </div>
           <a
-            href="https://scan.bohr.life/address/0xB128F2f442554B6517D779788F28F2EB2612164A"
+            href="https://scan.botchain.ai/address/0x909661b453bBe13Ee247551754b35370557A9aA2"
             target="_blank"
             rel="noopener noreferrer"
             style={{
@@ -343,7 +343,7 @@ export default function WalletDrawer({ isOpen, onClose, wallet, setWallet, netwo
               gap: '4px'
             }}
           >
-            <span>View on Bohr Explorer</span>
+            <span>View on BOTScan</span>
             <ExternalLink size={13} />
           </a>
         </div>

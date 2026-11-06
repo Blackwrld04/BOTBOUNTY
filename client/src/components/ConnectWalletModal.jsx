@@ -172,11 +172,11 @@ export default function ConnectWalletModal({
       }
       const address = accounts[0];
 
-      // Switch or add BOT Chain (Bohr Testnet 968) to wallet
+      // Switch or add BOT Chain Mainnet (677) to wallet
       try {
         await provider.request({
           method: 'wallet_switchEthereumChain',
-          params: [{ chainId: '0x3c8' }]
+          params: [{ chainId: '0x2a5' }]
         });
       } catch (switchErr) {
         if (switchErr?.code === 4902 || switchErr?.data?.originalError?.code === 4902) {
@@ -185,11 +185,11 @@ export default function ConnectWalletModal({
               method: 'wallet_addEthereumChain',
               params: [
                 {
-                  chainId: '0x3c8',
-                  chainName: 'BOT Bohr Testnet',
-                  nativeCurrency: { name: 'tBOT', symbol: 'tBOT', decimals: 18 },
-                  rpcUrls: ['https://rpc.bohr.life'],
-                  blockExplorerUrls: ['https://scan.bohr.life']
+                  chainId: '0x2a5',
+                  chainName: 'BOT Chain Mainnet',
+                  nativeCurrency: { name: 'BOT', symbol: 'BOT', decimals: 18 },
+                  rpcUrls: ['https://rpc.botchain.ai'],
+                  blockExplorerUrls: ['https://scan.botchain.ai']
                 }
               ]
             });
@@ -554,12 +554,12 @@ export default function ConnectWalletModal({
             <span>BOT Chain (677 / 968) &bull; Native $BOT</span>
           </div>
           <a
-            href="https://scan.bohr.life"
+            href="https://scan.botchain.ai"
             target="_blank"
             rel="noopener noreferrer"
             style={{ color: '#2f578c', fontWeight: 700, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '3px' }}
           >
-            <span>BOT Chain Docs</span>
+            <span>BOTScan Explorer</span>
             <ExternalLink size={11} />
           </a>
         </div>
