@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { ethers } from 'ethers';
 import {
   X,
   Check,
@@ -10,8 +9,7 @@ import {
   Download,
   AlertCircle,
   Smartphone,
-  Sparkles,
-  Zap
+  Sparkles
 } from 'lucide-react';
 import { truncateAddress } from '../utils/arc';
 import {
@@ -150,12 +148,12 @@ export default function ConnectWalletModal({
     const targetWalletObj = WALLETS.find((w) => w.id === walletId) || WALLETS[0];
     const provider = getWalletProvider(walletId);
 
-    // If outside in-app browser on mobile, guide user to deep link or instant creator wallet
+    // If outside in-app browser on mobile, guide the user to the wallet deep link.
     if (!provider) {
       if (mobileDevice) {
         const deepLink = getMobileDeepLink(walletId);
         setError(
-          `To connect your ${targetWalletObj.name} on mobile, tap "Open in ${targetWalletObj.name} App" below to launch the DApp inside your wallet, or use the "Instant BOT Chain Creator Wallet" button.`
+          `To connect your ${targetWalletObj.name} on mobile, tap "Open in ${targetWalletObj.name} App" below to launch this DApp inside your wallet browser.`
         );
       } else {
         setError(
@@ -201,80 +199,46 @@ export default function ConnectWalletModal({
         }
       }
 
-      // Request single-use cryptographic challenge nonce from BotBounty server
-      let challenge = null;
-      try {
-        const nonceRes = await fetch(`${API_BASE}/api/auth/wallet-nonce?address=${address}`);
-        challenge = await nonceRes.json();
-      } catch (e) {
-        console.warn('Nonce request error:', e);
+      // A single-use cryptographic challenge is mandatory. There is no unsigned
+      // or client-chosen wallet fallback.
+      const nonceRes = await fetch(`${API_BASE}/api/auth/wallet-nonce?address=${encodeURIComponent(address)}`);
+      const challenge = await nonceRes.json().catch(() => null);
+
+      if (!nonceRes.ok || !challenge?.success || !challenge?.message || !challenge?.nonce) {
+        throw new Error(challenge?.error || 'Failed to obtain a wallet verification challenge.');
       }
 
-      // If nonce server is reachable, do cryptographic personal_sign
-      if (challenge?.success && challenge?.message) {
-        try {
-          const signature = await provider.request({
-            method: 'personal_sign',
-            params: [challenge.message, address]
-          });
-
-          const sessionToken = localStorage.getItem('botbounty_session_token') || localStorage.getItem('arcbounty_session_token');
-          const verifyRes = await fetch(`${API_BASE}/api/auth/wallet-verify`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(sessionToken ? { Authorization: `Bearer ${sessionToken}` } : {})
-            },
-            body: JSON.stringify({
-              address,
-              signature,
-              nonce: challenge.nonce,
-              userId: user?.id || null
-            })
-          });
-
-          const verifyData = await verifyRes.json();
-          if (verifyRes.ok && verifyData.success) {
-            onWalletConnected({
-              connected: true,
-              address: verifyData.user.address,
-              balance: typeof verifyData.user.balance === 'number' ? verifyData.user.balance : 0,
-              type: walletId
-            }, verifyData.user, verifyData.token);
-            onClose();
-            return;
-          }
-        } catch (signErr) {
-          console.warn('Signature skipped or cancelled, proceeding with authorized address:', signErr);
-        }
-      }
-
-      // Fallback direct wallet login / link
-      const fallbackRes = await fetch(`${API_BASE}/api/auth/wallet`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ address })
+      const signature = await provider.request({
+        method: 'personal_sign',
+        params: [challenge.message, address]
       });
-      const fallbackData = await fallbackRes.json();
 
-      if (fallbackRes.ok && fallbackData.success) {
-        onWalletConnected({
-          connected: true,
-          address: fallbackData.user.address,
-          balance: typeof fallbackData.user.balance === 'number' ? fallbackData.user.balance : 0,
-          type: walletId
-        }, fallbackData.user, fallbackData.token);
-        onClose();
-      } else {
-        // Direct local connect
-        onWalletConnected({
-          connected: true,
+      const sessionToken = localStorage.getItem('botbounty_session_token') || localStorage.getItem('arcbounty_session_token');
+      const verifyRes = await fetch(`${API_BASE}/api/auth/wallet-verify`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(sessionToken ? { Authorization: `Bearer ${sessionToken}` } : {})
+        },
+        body: JSON.stringify({
           address,
-          balance: typeof user?.balance === 'number' ? user.balance : 0,
-          type: walletId
-        }, user, null);
-        onClose();
+          signature,
+          nonce: challenge.nonce
+        })
+      });
+
+      const verifyData = await verifyRes.json().catch(() => null);
+      if (!verifyRes.ok || !verifyData?.success) {
+        throw new Error(verifyData?.error || 'Wallet signature verification failed.');
       }
+
+      onWalletConnected({
+        connected: true,
+        address: verifyData.user.address,
+        balance: typeof verifyData.user.balance === 'number' ? verifyData.user.balance : 0,
+        type: walletId
+      }, verifyData.user, verifyData.token);
+      onClose();
     } catch (err) {
       console.error('Wallet connection error:', err);
       if (err.code === 4001 || err.message?.toLowerCase().includes('reject') || err.message?.toLowerCase().includes('denied')) {
@@ -292,46 +256,6 @@ export default function ConnectWalletModal({
     const deepLink = getMobileDeepLink(walletId);
     if (deepLink) {
       window.location.href = deepLink;
-    }
-  };
-
-  // 3. Instant Mobile Creator Wallet (One-Tap Zero Gas Setup for mobile users)
-  const handleInstantCreatorWallet = async () => {
-    setIsConnecting(true);
-    setError('');
-
-    try {
-      // If user already logged in with address, activate immediately
-      const activeAddress = user?.address || ethers.Wallet.createRandom().address;
-
-      const res = await fetch(`${API_BASE}/api/auth/wallet`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ address: activeAddress })
-      });
-      const data = await res.json();
-
-      if (res.ok && data.success) {
-        onWalletConnected({
-          connected: true,
-          address: data.user.address,
-          balance: typeof data.user.balance === 'number' ? data.user.balance : 0,
-          type: 'bot_creator'
-        }, data.user, data.token);
-      } else {
-        onWalletConnected({
-          connected: true,
-          address: activeAddress,
-          balance: typeof user?.balance === 'number' ? user.balance : 0,
-          type: 'bot_creator'
-        }, user, null);
-      }
-      onClose();
-    } catch (err) {
-      console.error('Instant wallet error:', err);
-      setError('Failed to initialize instant creator wallet. Please try again.');
-    } finally {
-      setIsConnecting(false);
     }
   };
 
@@ -597,23 +521,6 @@ export default function ConnectWalletModal({
                 <span>Open in {selectedWalletObj.name} App</span>
                 <ExternalLink size={14} />
               </button>
-
-              <button
-                type="button"
-                disabled={isConnecting}
-                onClick={handleInstantCreatorWallet}
-                className="btn-accent"
-                style={{
-                  width: '100%',
-                  padding: '11px',
-                  fontSize: '0.86rem',
-                  justifyContent: 'center',
-                  gap: '6px'
-                }}
-              >
-                <Zap size={16} strokeWidth={2.5} />
-                <span>Activate Instant BOT Chain Creator Wallet (1-Tap)</span>
-              </button>
             </>
           ) : (
             /* Desktop Fallback to Install */
@@ -636,22 +543,6 @@ export default function ConnectWalletModal({
                 <span>Download & Install {selectedWalletObj.name} Extension</span>
                 <ExternalLink size={14} />
               </a>
-
-              <button
-                type="button"
-                disabled={isConnecting}
-                onClick={handleInstantCreatorWallet}
-                className="btn-secondary"
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  fontSize: '0.84rem',
-                  justifyContent: 'center'
-                }}
-              >
-                <Zap size={15} />
-                <span>Use Instant BOT Chain Creator Wallet</span>
-              </button>
             </div>
           )}
         </div>

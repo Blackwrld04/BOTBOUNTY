@@ -1762,30 +1762,6 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
                   </h3>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    {submissions.length > 1 && selectedBounty.status !== 'Settled' && (
-                      <button
-                        type="button"
-                        onClick={openMultiWinnerModal}
-                        style={{
-                          background: '#eff6ff',
-                          color: '#1e40af',
-                          border: '1.5px solid #000000',
-                          boxShadow: '1.5px 1.5px 0px #000000',
-                          borderRadius: '6px',
-                          padding: '6px 12px',
-                          fontSize: '0.78rem',
-                          fontWeight: 800,
-                          cursor: 'pointer',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '5px'
-                        }}
-                      >
-                        <Award size={13} />
-                        <span>Multi-Winner Split Payout (1st, 2nd, 3rd)</span>
-                      </button>
-                    )}
-
                     <span style={{ fontSize: '0.75rem', color: getBountyEffectiveStatus(selectedBounty) === 'Closed' ? '#b91c1c' : '#64748b', fontWeight: 700 }}>
                       {getBountyEffectiveStatus(selectedBounty) === 'Closed' ? 'Review creator deliverables below to disburse rewards' : 'Select a winning participant to disburse reward'}
                     </span>

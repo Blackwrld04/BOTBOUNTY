@@ -179,7 +179,8 @@ export default function BountyDetailModal({
 
   const isPlatformAdmin = Boolean(
     propIsAdmin ||
-    (user?.email && user.email.toLowerCase() === 'olajideabdulquadri22@gmail.com')
+    user?.isAdmin ||
+    user?.role === 'admin'
   );
 
   // Find user's existing submission if already submitted
@@ -284,9 +285,7 @@ export default function BountyDetailModal({
           body: JSON.stringify({
             submissionUrl,
             notes,
-            collaborators: validCollaborators,
-            submitterEmail: user?.email || activeSub?.creator_email || activeSub?.creatorEmail,
-            submitterWallet: payoutWallet || wallet.address || user?.address || activeSub?.wallet_address || activeSub?.walletAddress
+            collaborators: validCollaborators
           })
         });
 
@@ -374,7 +373,6 @@ export default function BountyDetailModal({
     setIsPostingComment(true);
     try {
       const token = localStorage.getItem('botbounty_session_token') || localStorage.getItem('arcbounty_session_token');
-      const authorRole = isCreatorOfBounty ? 'sponsor' : (user ? 'creator' : 'community');
       const res = await fetch(`${API_BASE}/api/bounties/${bounty.id}/comments`, {
         method: 'POST',
         headers: {
@@ -382,9 +380,7 @@ export default function BountyDetailModal({
           ...(token ? { Authorization: `Bearer ${token}` } : {})
         },
         body: JSON.stringify({
-          content: newComment.trim(),
-          authorName: user?.name || (wallet?.address ? truncateAddress(wallet.address) : 'Bot Builder'),
-          authorRole
+          content: newComment.trim()
         })
       });
 

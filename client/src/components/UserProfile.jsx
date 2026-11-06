@@ -116,16 +116,15 @@ export default function UserProfile({
   const [avatarSuccess, setAvatarSuccess] = useState('');
   const fileInputRef = useRef(null);
 
-  // Fetch verified stats dynamically from backend
+  // Fetch verified stats dynamically from backend (session-scoped).
   useEffect(() => {
     let isMounted = true;
-    const query = new URLSearchParams();
-    if (user?.id) query.set('userId', user.id);
-    if (user?.email) query.set('email', user.email);
-    if (wallet?.address || user?.address) query.set('address', wallet?.address || user?.address);
+    const token = localStorage.getItem('botbounty_session_token') || localStorage.getItem('arcbounty_session_token');
 
     setIsLoadingStats(true);
-    fetch(`${API_BASE}/api/auth/profile-stats?${query.toString()}`)
+    fetch(`${API_BASE}/api/auth/profile-stats`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    })
       .then((res) => res.json())
       .then((data) => {
         if (isMounted) {
@@ -194,11 +193,14 @@ export default function UserProfile({
     setAvatarSuccess('');
 
     try {
+      const token = localStorage.getItem('botbounty_session_token') || localStorage.getItem('arcbounty_session_token');
       const res = await fetch(`${API_BASE}/api/auth/update-profile`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({
-          userId: user.id,
           avatar: newAvatarUrl
         })
       });

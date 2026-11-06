@@ -67,7 +67,7 @@ const DISCIPLINES = [
 export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLoginSuccess }) {
   const isMobile = useIsMobile();
   const [mode, setMode] = useState(initialMode); // 'login' or 'signup'
-  const [step, setStep] = useState('input'); // 'input', 'otp', 'google_auth'
+  const [step, setStep] = useState('input'); // 'input', 'otp'
   const [signupSlide, setSignupSlide] = useState(1); // 1: Name & Handle, 2: Specialty, 3: Email & Password
   const [loginWithOtp, setLoginWithOtp] = useState(false); // toggle passwordless login
 
@@ -92,9 +92,8 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
   const [successMessage, setSuccessMessage] = useState('');
   const [resendCooldown, setResendCooldown] = useState(0);
 
-  // Google Sign-In Simulation
-  const [googleEmail, setGoogleEmail] = useState('');
-  const [googleName, setGoogleName] = useState('');
+  // Google Identity Services (only enabled when a client ID is configured).
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
   const otpInputsRef = useRef([]);
 
@@ -117,10 +116,23 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
       setEmailPreviewUrl(null);
       setErrorMessage('');
       setSuccessMessage('');
-      setGoogleEmail('');
-      setGoogleName('');
     }
   }, [isOpen, initialMode]);
+
+  // Load Google Identity Services once when the modal opens.
+  useEffect(() => {
+    if (!isOpen || !googleClientId) return undefined;
+    if (document.getElementById('google-gsi-client')) return undefined;
+
+    const script = document.createElement('script');
+    script.id = 'google-gsi-client';
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
+
+    return undefined;
+  }, [isOpen, googleClientId]);
 
   const handleSwitchMode = (newMode) => {
     setMode(newMode);
@@ -349,7 +361,8 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
         setEmailPreviewUrl(data.previewUrl);
       }
       setOtp(['', '', '', '', '', '']);
-      setResendCooldown(45);
+      // Keep in sync with the server's 60-second per-email resend window.
+      setResendCooldown(60);
       setStep('otp');
       setTimeout(() => {
         otpInputsRef.current[0]?.focus();
@@ -394,7 +407,8 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
         setEmailPreviewUrl(data.previewUrl);
       }
       setOtp(['', '', '', '', '', '']);
-      setResendCooldown(45);
+      // Keep in sync with the server's 60-second per-email resend window.
+      setResendCooldown(60);
       setStep('otp');
       setTimeout(() => {
         otpInputsRef.current[0]?.focus();
@@ -420,6 +434,8 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
     setIsLoading(true);
     setErrorMessage('');
 
+    const verificationType = mode === 'signup' ? 'signup' : 'login';
+
     try {
       const res = await fetch(`${API_BASE}/verify-code`, {
         method: 'POST',
@@ -427,10 +443,7 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
         body: JSON.stringify({
           email: email.trim().toLowerCase(),
           code: codeString,
-          name: name.trim() || email.split('@')[0],
-          username: username.trim() || email.split('@')[0],
-          discipline: discipline,
-          password: password || undefined
+          type: verificationType
         })
       });
 
@@ -552,11 +565,11 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
     }
   };
 
-  // Google Auth handler (calls verified endpoint with robust fallbacks)
-  const handleGoogleSubmit = async (e) => {
-    e.preventDefault();
-    if (!googleEmail || !googleEmail.includes('@')) {
-      setErrorMessage('Please enter a valid Google email.');
+  // Google Identity Services credential callback. The credential is a signed
+  // Google ID token that the server verifies with Google's tokeninfo endpoint.
+  const handleGoogleCredential = async (response) => {
+    if (!response?.credential) {
+      setErrorMessage('Google did not return a valid credential.');
       return;
     }
 
@@ -564,37 +577,15 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
     setErrorMessage('');
 
     try {
-      let res;
-      try {
-        res = await fetch(`${API_BASE}/google`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: googleEmail.trim().toLowerCase(),
-            name: googleName.trim() || googleEmail.split('@')[0],
-            avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'
-          })
-        });
-      } catch (err) {
-        console.warn('[Google Auth] Primary endpoint error, trying callback route...', err);
-      }
-
-      if (!res || !res.ok) {
-        res = await fetch(`${API_BASE}/google-callback`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: googleEmail.trim().toLowerCase(),
-            name: googleName.trim() || googleEmail.split('@')[0],
-            avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'
-          })
-        });
-      }
+      const res = await fetch(`${API_BASE}/google`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ credential: response.credential })
+      });
 
       const data = await res.json();
       if (!res.ok || !data.success) {
-        setErrorMessage(data.error || 'Google authentication failed. Please check your credentials.');
-        setIsLoading(false);
+        setErrorMessage(data.error || 'Google authentication failed.');
         return;
       }
 
@@ -612,6 +603,25 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleGoogleSignIn = () => {
+    if (!googleClientId) {
+      setErrorMessage('Google sign-in is not configured for this deployment.');
+      return;
+    }
+    if (!window.google?.accounts?.id) {
+      setErrorMessage('Google sign-in is still loading. Please try again in a moment.');
+      return;
+    }
+
+    window.google.accounts.id.initialize({
+      client_id: googleClientId,
+      callback: handleGoogleCredential,
+      auto_select: false,
+      cancel_on_tap_outside: true
+    });
+    window.google.accounts.id.prompt();
   };
 
   const currentStepNumber = mode === 'login' ? 1 : step === 'otp' ? 4 : signupSlide;
@@ -1802,15 +1812,10 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
                   <span>Connect Web3 Wallet (EIP-4361 SIWE)</span>
                 </button>
 
+                {googleClientId && (
                 <button
                   type="button"
-                  onClick={() => {
-                    setErrorMessage('');
-                    if (email && email.includes('@')) {
-                      setGoogleEmail(email.trim());
-                    }
-                    setStep('google_auth');
-                  }}
+                  onClick={handleGoogleSignIn}
                   style={{
                     width: '100%',
                     padding: '9px 14px',
@@ -1848,123 +1853,11 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
                   </svg>
                   <span>Continue with Google</span>
                 </button>
+                )}
               </div>
             </div>
           )}
 
-          {/* GOOGLE AUTHENTICATION SCREEN */}
-          {step === 'google_auth' && (
-            <div>
-              <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
-                  <svg width="32" height="32" viewBox="0 0 24 24">
-                    <path
-                      fill="#4285F4"
-                      d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"
-                    />
-                    <path
-                      fill="#34A853"
-                      d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"
-                    />
-                    <path
-                      fill="#FBBC05"
-                      d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.98 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
-                    />
-                    <path
-                      fill="#EA4335"
-                      d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
-                    />
-                  </svg>
-                </div>
-
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1f2937', margin: 0 }}>
-                  Sign in with Google
-                </h3>
-                <p style={{ fontSize: '0.84rem', color: '#4b5563', margin: '4px 0 0 0' }}>
-                  Enter your Google Account to authenticate on BotBounty
-                </p>
-              </div>
-
-              <form onSubmit={handleGoogleSubmit}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 800, color: '#1e293b', marginBottom: '4px' }}>
-                      Google Email
-                    </label>
-                    <input
-                      type="email"
-                      placeholder="your.email@gmail.com"
-                      value={googleEmail}
-                      onChange={(e) => setGoogleEmail(e.target.value)}
-                      required
-                      style={{
-                        width: '100%',
-                        padding: '10px 12px',
-                        borderRadius: '6px',
-                        border: '2px solid #000000',
-                        boxShadow: '2px 2px 0px #000000',
-                        fontSize: '0.9rem',
-                        fontWeight: 600,
-                        outline: 'none'
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 800, color: '#1e293b', marginBottom: '4px' }}>
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Your Full Name"
-                      value={googleName}
-                      onChange={(e) => setGoogleName(e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '10px 12px',
-                        borderRadius: '6px',
-                        border: '2px solid #000000',
-                        boxShadow: '2px 2px 0px #000000',
-                        fontSize: '0.9rem',
-                        fontWeight: 600,
-                        outline: 'none'
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="btn-primary"
-                  style={{ width: '100%', padding: '12px', fontSize: '0.92rem', justifyContent: 'center' }}
-                >
-                  <span>{isLoading ? 'Authenticating...' : 'Continue with Google Account'}</span>
-                  <ArrowRight size={16} />
-                </button>
-              </form>
-
-              <div style={{ textAlign: 'center', marginTop: '14px' }}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setStep('input');
-                    setErrorMessage('');
-                  }}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: '#2f578c',
-                    fontWeight: 800,
-                    fontSize: '0.82rem',
-                    cursor: 'pointer',
-                    textDecoration: 'underline'
-                  }}
-                >
-                  Back to standard sign in options
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

@@ -266,16 +266,8 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
       description: description || 'Deliver high quality creative work satisfying requirements.',
       tags: [category, 'BOT Chain', selectedAsset === 'USDT' ? 'USDT' : 'Native $BOT'],
       deadlineDays: Math.max(1, parseInt(deadlineDays, 10) || 7),
-      deadline: Date.now() + Math.max(1, parseInt(deadlineDays, 10) || 7) * 86400000,
-      escrowWallet,
       depositTx,
-      onChainBountyId,
-      token: selectedAsset,
-      currency: selectedAsset,
-      settlementToken: selectedAsset === 'USDT' ? '0x75edC9335175Fc0552D51D48439F229c10420fe3' : '0x0000000000000000000000000000000000000000',
-      maintainer: wallet.address || user?.address || '0xBE0aaE21b6252aa1207cAa50A753e8C45bCBCbc5',
-      maintainerName: user?.name || 'BOT Ecosystem Sponsor',
-      maintainerEmail: user?.email || null
+      settlementToken: selectedAsset === 'USDT' ? '0x75edC9335175Fc0552D51D48439F229c10420fe3' : '0x0000000000000000000000000000000000000000'
     };
 
     try {

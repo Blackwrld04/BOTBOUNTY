@@ -50,10 +50,10 @@ export default function App() {
       if (savedUser) {
         const u = JSON.parse(savedUser);
         return {
-          connected: true,
-          address: u.address || '0x461cd48D95993242bB04774cc68042795586BbAd',
+          connected: Boolean(u.address),
+          address: u.address || null,
           balance: typeof u.balance === 'number' ? u.balance : 0,
-          type: 'simulated'
+          type: u.provider || 'email'
         };
       }
     } catch (e) {}
@@ -430,8 +430,6 @@ export default function App() {
           walletAddress: resolvedWallet,
           solverType: solverType || 'Human Creator',
           notes,
-          creatorName: user?.name,
-          creatorEmail: user?.email,
           collaborators,
           submitTx: clientSubmitTx
         })
@@ -460,8 +458,11 @@ export default function App() {
   };
 
   // Handle administrator approving release & executing settlement
-  const handleReleaseBounty = async (bountyId) => {
+  const handleReleaseBounty = async (bountyId, submissionId) => {
     try {
+      if (!submissionId) {
+        throw new Error('Select the winning submission before releasing escrow.');
+      }
       const adminToken = typeof window !== 'undefined' ? (sessionStorage.getItem('botbounty_admin_token') || sessionStorage.getItem('arcbounty_admin_token')) : null;
       const sessionToken = typeof window !== 'undefined' ? (localStorage.getItem('botbounty_session_token') || localStorage.getItem('arcbounty_session_token')) : null;
       const token = adminToken || sessionToken;
@@ -505,6 +506,7 @@ export default function App() {
           ...(token ? { Authorization: `Bearer ${token}` } : {})
         },
         body: JSON.stringify({
+          submissionId,
           txHash: clientTxHash
         })
       });
@@ -541,8 +543,8 @@ export default function App() {
           if (data.success && data.user) {
             setUser(data.user);
             setWallet({
-              connected: true,
-              address: data.user.address || '0x461cd48D95993242bB04774cc68042795586BbAd',
+              connected: Boolean(data.user.address),
+              address: data.user.address || null,
               balance: typeof data.user.balance === 'number' ? data.user.balance : 0,
               type: data.user.provider || 'email'
             });
@@ -584,8 +586,8 @@ export default function App() {
   const handleLoginSuccess = (userData, token) => {
     setUser(userData);
     setWallet({
-      connected: true,
-      address: userData.address || '0x461cd48D95993242bB04774cc68042795586BbAd',
+      connected: Boolean(userData.address),
+      address: userData.address || null,
       balance: typeof userData.balance === 'number' ? userData.balance : 0,
       type: userData.provider || userData.type || 'email'
     });
@@ -619,6 +621,14 @@ export default function App() {
       type: null
     });
     try {
+      const token = localStorage.getItem('botbounty_session_token') || localStorage.getItem('arcbounty_session_token');
+      if (token) {
+        // Revoke server-side as well as clearing the browser state.
+        fetch(`${API_BASE}/api/auth/logout`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` }
+        }).catch(() => {});
+      }
       localStorage.removeItem('botbounty_session_user');
       localStorage.removeItem('arcbounty_session_user');
       localStorage.removeItem('botbounty_session_token');
@@ -819,9 +829,7 @@ export default function App() {
           onReleaseBounty={handleReleaseBounty}
           wallet={wallet}
           user={user}
-          isAdmin={Boolean(
-            user?.email && user.email.trim().toLowerCase() === 'olajideabdulquadri22@gmail.com'
-          )}
+          isAdmin={Boolean(user?.isAdmin || user?.role === 'admin')}
           openAuthModal={handleOpenAuth}
         />
       )}

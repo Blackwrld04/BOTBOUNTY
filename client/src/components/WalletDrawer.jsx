@@ -8,7 +8,7 @@ export default function WalletDrawer({ isOpen, onClose, wallet, setWallet, netwo
   const [transactions, setTransactions] = useState([]);
   const [loadingTx, setLoadingTx] = useState(false);
 
-  const creatorAddress = wallet?.address || user?.address || '0x461cd48D95993242bB04774cc68042795586BbAd';
+  const creatorAddress = wallet?.address || user?.address || null;
   const creatorBalance = typeof wallet?.balance === 'number' ? wallet.balance : (user?.balance || 0);
 
   // Fetch creator's authentic disbursements / payouts from the server
@@ -20,9 +20,8 @@ export default function WalletDrawer({ isOpen, onClose, wallet, setWallet, netwo
       try {
         const token = localStorage.getItem('botbounty_session_token') || localStorage.getItem('arcbounty_session_token');
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        const query = user?.email ? `?email=${encodeURIComponent(user.email)}` : creatorAddress ? `?address=${encodeURIComponent(creatorAddress)}` : '';
 
-        const res = await fetch(`${API_BASE}/api/auth/transactions${query}`, { headers });
+        const res = await fetch(`${API_BASE}/api/auth/transactions`, { headers });
         const data = await res.json();
         if (data.success && Array.isArray(data.transactions)) {
           setTransactions(data.transactions);
@@ -35,7 +34,7 @@ export default function WalletDrawer({ isOpen, onClose, wallet, setWallet, netwo
     };
 
     fetchTransactions();
-  }, [isOpen, user?.email, creatorAddress]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 

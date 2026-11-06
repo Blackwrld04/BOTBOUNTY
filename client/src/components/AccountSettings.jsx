@@ -75,7 +75,10 @@ export default function AccountSettings({
 
     setUsernameStatus({ state: 'checking', message: 'Checking availability...' });
     const timer = setTimeout(() => {
-      fetch(`${API_BASE}/api/auth/check-username?username=${clean}&userId=${user?.id || ''}`)
+      const token = localStorage.getItem('botbounty_session_token') || localStorage.getItem('arcbounty_session_token');
+      fetch(`${API_BASE}/api/auth/check-username?username=${encodeURIComponent(clean)}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      })
         .then((res) => res.json())
         .then((data) => {
           if (data && data.available) {
@@ -121,11 +124,14 @@ export default function AccountSettings({
     setProfileError('');
 
     try {
+      const token = localStorage.getItem('botbounty_session_token') || localStorage.getItem('arcbounty_session_token');
       const res = await fetch(`${API_BASE}/api/auth/update-profile`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({
-          userId: user.id,
           name: name.trim(),
           username: username.trim(),
           bio: bio.trim(),
@@ -931,7 +937,6 @@ export default function AccountSettings({
           isOpen={!!socialModalPlatform}
           platform={socialModalPlatform}
           currentHandle={user ? user[socialModalPlatform] : null}
-          userId={user?.id}
           onClose={() => setSocialModalPlatform(null)}
           onSuccess={handleSocialSuccess}
         />

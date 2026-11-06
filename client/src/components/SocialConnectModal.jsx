@@ -64,7 +64,6 @@ export default function SocialConnectModal({
   isOpen,
   platform,
   currentHandle,
-  userId,
   onClose,
   onSuccess
 }) {
@@ -88,11 +87,14 @@ export default function SocialConnectModal({
     setError('');
 
     try {
+      const token = localStorage.getItem('botbounty_session_token') || localStorage.getItem('arcbounty_session_token');
       const res = await fetch(`${API_BASE}/api/auth/social-connect`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({
-          userId,
           platform,
           handle: handle.trim(),
           action: 'connect'
@@ -121,11 +123,14 @@ export default function SocialConnectModal({
     setError('');
 
     try {
+      const token = localStorage.getItem('botbounty_session_token') || localStorage.getItem('arcbounty_session_token');
       const res = await fetch(`${API_BASE}/api/auth/social-connect`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({
-          userId,
           platform,
           action: 'disconnect'
         })
