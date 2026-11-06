@@ -85,6 +85,11 @@ contract BotBountyEscrow is ReentrancyGuard {
     uint256 public constant MIN_REVIEW_PERIOD = 1 days;
     uint256 public constant MAX_REVIEW_PERIOD = 30 days;
 
+    // Input bounds keep on-chain metadata (and gas costs) predictable.
+    uint256 public constant MAX_URL_LENGTH = 2048;
+    uint256 public constant MAX_REASON_LENGTH = 500;
+    uint256 public constant MAX_DEADLINE_DURATION = 365 days;
+
     mapping(bytes32 => Bounty) public bounties;
     bytes32[] public allBountyIds;
 
@@ -156,8 +161,11 @@ contract BotBountyEscrow is ReentrancyGuard {
         uint256 reviewPeriod,
         string calldata issueUrl
     ) external payable nonReentrant {
+        require(bountyId != bytes32(0), "Invalid bounty id");
         require(amount > 0, "Reward must be > 0");
         require(deadline > block.timestamp, "Deadline must be in future");
+        require(deadline <= block.timestamp + MAX_DEADLINE_DURATION, "Deadline too far");
+        require(bytes(issueUrl).length <= MAX_URL_LENGTH, "Issue URL too long");
         require(bounties[bountyId].createdAt == 0, "Bounty already exists");
 
         uint256 effectiveReviewPeriod = reviewPeriod == 0 ? DEFAULT_REVIEW_PERIOD : reviewPeriod;
@@ -224,7 +232,10 @@ contract BotBountyEscrow is ReentrancyGuard {
         require(b.status == BountyStatus.Open, "Bounty not open for submissions");
         require(block.timestamp <= b.deadline, "Bounty expired");
         require(msg.sender != b.maintainer, "Maintainer cannot solve own bounty");
-        require(bytes(prUrl).length >= 10, "Invalid or junk submission URL");
+        require(
+            bytes(prUrl).length >= 10 && bytes(prUrl).length <= MAX_URL_LENGTH,
+            "Invalid or junk submission URL"
+        );
 
         b.solver = msg.sender;
         b.prUrl = prUrl;
@@ -284,6 +295,7 @@ contract BotBountyEscrow is ReentrancyGuard {
         string calldata prUrl,
         bytes32 salt
     ) external nonReentrant {
+        require(bytes(prUrl).length <= MAX_URL_LENGTH, "PR URL too long");
         Bounty storage b = bounties[bountyId];
         if (b.solutionCommitment != bytes32(0)) {
             bytes32 computed = keccak256(abi.encodePacked(b.solver, prUrl, salt));
@@ -293,6 +305,7 @@ contract BotBountyEscrow is ReentrancyGuard {
     }
 
     function _executeRelease(bytes32 bountyId, string memory revealedPrUrl) internal {
+        require(bytes(revealedPrUrl).length <= MAX_URL_LENGTH, "PR URL too long");
         Bounty storage b = bounties[bountyId];
         require(b.createdAt != 0, "Bounty does not exist");
         require(msg.sender == b.maintainer, "Only maintainer can release");
@@ -316,7 +329,8 @@ contract BotBountyEscrow is ReentrancyGuard {
 
     /**
      * @notice Maintainer rejects a submitted solution, returning the bounty to Open status.
-     * @dev Prevents lockups caused by junk or substandard PRs.
+     * @dev Rejection is only valid inside the review window. Once the window expires,
+     *      the solver's timeout claim is final and cannot be front-run by a rejection.
      * @param bountyId Unique identifier hash
      * @param reason Explanation for rejection
      */
@@ -328,6 +342,11 @@ contract BotBountyEscrow is ReentrancyGuard {
         require(b.createdAt != 0, "Bounty does not exist");
         require(msg.sender == b.maintainer, "Only maintainer can reject");
         require(b.status == BountyStatus.InReview, "Bounty not in review");
+        require(
+            block.timestamp <= b.submittedAt + b.reviewPeriod,
+            "Review period expired"
+        );
+        require(bytes(reason).length <= MAX_REASON_LENGTH, "Rejection reason too long");
 
         address previousSolver = b.solver;
 
