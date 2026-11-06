@@ -7,6 +7,8 @@ import {
   createUser,
   createSession,
   getUserByToken,
+  deleteSession,
+  getUserByWalletAddress,
   updateUserSocial,
   updateUserWallet,
   createWalletChallenge,
@@ -28,21 +30,29 @@ test('ArcBounty SQLite Auth & Verification Database Tests', async (t) => {
   });
 
   await t.test('rejects incorrect verification code', () => {
-    const result = verifyCode(testEmail, '000000');
+    const result = verifyCode(testEmail, '000000', 'signup');
     assert.equal(result.valid, false);
+  });
+
+  await t.test('binds verification codes to their original purpose', () => {
+    const { code } = createVerificationCode(testEmail, 'login');
+    const crossPurpose = verifyCode(testEmail, code, 'signup');
+    assert.equal(crossPurpose.valid, false);
+    const correctPurpose = verifyCode(testEmail, code, 'login');
+    assert.equal(correctPurpose.valid, true);
   });
 
   await t.test('validates correct verification code and prevents replay', () => {
     const { code } = createVerificationCode(testEmail, 'signup');
-    const firstCheck = verifyCode(testEmail, code);
+    const firstCheck = verifyCode(testEmail, code, 'signup');
     assert.equal(firstCheck.valid, true);
 
     // Replay attack prevention
-    const secondCheck = verifyCode(testEmail, code);
+    const secondCheck = verifyCode(testEmail, code, 'signup');
     assert.equal(secondCheck.valid, false);
   });
 
-  await t.test('creates persistent user record and assigns Arc L1 wallet address', () => {
+  await t.test('creates persistent user record without fabricating a wallet address', () => {
     const user = createUser({
       email: testEmail,
       name: 'Test Creator',
@@ -52,7 +62,7 @@ test('ArcBounty SQLite Auth & Verification Database Tests', async (t) => {
 
     assert.ok(user.id.startsWith('usr_'));
     assert.equal(user.email, testEmail);
-    assert.ok(user.wallet_address.startsWith('0x'));
+    assert.equal(user.wallet_address, null);
     assert.equal(user.discipline, 'Development');
     assert.equal(user.usdc_balance, 0.0);
 
@@ -68,6 +78,11 @@ test('ArcBounty SQLite Auth & Verification Database Tests', async (t) => {
     const sessionUser = getUserByToken(token);
     assert.equal(sessionUser.id, user.id);
     assert.equal(sessionUser.email, testEmail);
+
+    // Logout revokes the token server-side.
+    assert.equal(deleteSession(token), true);
+    assert.equal(getUserByToken(token), null);
+    assert.equal(deleteSession(token), false);
   });
 
   await t.test('links and unlinks social accounts (Telegram, Discord, X, GitHub)', () => {
@@ -99,6 +114,31 @@ test('ArcBounty SQLite Auth & Verification Database Tests', async (t) => {
     const newAddr = '0x1234567890abcdef1234567890abcdef12345678';
     const updated = updateUserWallet(user.id, newAddr);
     assert.equal(updated.wallet_address, newAddr.toLowerCase());
+  });
+
+  await t.test('normalizes padded or mixed-case wallet addresses before storage and lookup', () => {
+    const user = getUserByEmail(testEmail);
+    const paddedAddress = '  0xABCDEFABCDEFABCDEFABCDEFABCDEFABCDEFABCD  ';
+
+    const updated = updateUserWallet(user.id, paddedAddress);
+    assert.equal(updated.wallet_address, '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd');
+
+    const found = getUserByWalletAddress(' 0xABCDEFABCDEFABCDEFABCDEFABCDEFABCDEFABCD ');
+    assert.equal(found.id, user.id);
+  });
+
+  await t.test('rejects linking a wallet already owned by another account', () => {
+    const owner = getUserByEmail(testEmail);
+    const duplicateEmail = `wallet_dup_${Date.now()}@arc.network`;
+    const other = createUser({
+      email: duplicateEmail,
+      name: 'Other Creator',
+      username: `wallet_dup_${Date.now()}`
+    });
+
+    assert.throws(() => {
+      updateUserWallet(other.id, owner.wallet_address);
+    }, /already linked/i);
   });
 
   await t.test('creates cryptographic challenge nonce and prevents replay', () => {

@@ -1,5 +1,5 @@
 import express from 'express';
-import { randomBytes } from 'crypto';
+import { createHash, randomBytes, timingSafeEqual } from 'crypto';
 import {
   getUserByToken,
   isAdminUser,
@@ -13,9 +13,9 @@ import {
   getAllCreatorEmails,
   getAllUsers,
   scoreBountySubmission,
-  disburseMultiWinnerRewards,
   scanArcEscrowDeposits,
   getAuditLedgerData,
+  deleteSession,
   db
 } from '../db.js';
 import {
@@ -27,21 +27,102 @@ import {
   syncSupabaseUsersToLocalSqlite
 } from '../supabase.js';
 import {
-  verifySettlementTransaction
+  verifySettlementTransaction,
+  isValidTxHashFormat
 } from '../services/onchainVerifier.js';
+import { getBearerToken } from '../middleware/auth.js';
+import { rateLimit } from '../middleware/rateLimit.js';
 
 export const adminRouter = express.Router();
 
-// In-memory store for authenticated admin password sessions
+// In-memory store for authenticated admin password sessions.
 export const activeAdminTokens = new Map();
+
+const ADMIN_TOKEN_TTL_MS = 12 * 60 * 60 * 1000; // 12 hours
+const WEAK_ADMIN_PASSWORDS = new Set([
+  'arcbounty2026_admin!',
+  'change_this_to_a_secure_admin_password!',
+  'admin',
+  'password',
+  'changeme'
+]);
+
+const adminLoginLimiter = rateLimit({ name: 'admin-login', windowMs: 15 * 60_000, max: 10 });
+
+function sha256(value) {
+  return createHash('sha256').update(String(value), 'utf8').digest();
+}
+
+function constantTimePasswordMatch(supplied, configured) {
+  const suppliedDigest = sha256(supplied);
+  const configuredDigest = sha256(configured);
+  return timingSafeEqual(suppliedDigest, configuredDigest);
+}
+
+function firstConfiguredAdminEmail() {
+  const email = String(process.env.ADMIN_EMAILS || '')
+    .split(',')
+    .map(value => value.trim())
+    .filter(Boolean)[0];
+  return email || 'admin@botbounty.local';
+}
+
+function firstConfiguredAdminWallet() {
+  return String(process.env.ADMIN_WALLETS || '')
+    .split(',')
+    .map(value => value.trim())
+    .filter(Boolean)[0] || null;
+}
+
+function pruneExpiredAdminTokens(now = Date.now()) {
+  for (const [token, session] of activeAdminTokens) {
+    if (!session || session.expiresAt <= now) activeAdminTokens.delete(token);
+  }
+}
+
+/**
+ * Resolve an administrative identity from a Bearer token only.
+ * Query-string tokens and body tokens are deliberately never accepted.
+ */
+export function getAdminIdentity(req) {
+  const token = getBearerToken(req);
+  if (!token) return null;
+
+  const now = Date.now();
+  const adminSession = activeAdminTokens.get(token);
+  if (adminSession) {
+    if (!adminSession.expiresAt || adminSession.expiresAt <= now) {
+      activeAdminTokens.delete(token);
+      return null;
+    }
+    return {
+      token,
+      source: 'password',
+      id: 'admin_master',
+      email: adminSession.email || firstConfiguredAdminEmail(),
+      name: 'Master Administrator',
+      role: 'admin',
+      is_admin: true,
+      wallet_address: adminSession.walletAddress || firstConfiguredAdminWallet()
+    };
+  }
+
+  const user = getUserByToken(token);
+  if (user && isAdminUser(user.email, user.wallet_address)) {
+    return { ...user, token, source: 'session', role: 'admin', is_admin: true };
+  }
+
+  return null;
+}
 
 /**
  * POST /api/admin/login
- * Public authentication route: validates master administrator password
+ * Validates the configured master administrator password.
  */
-adminRouter.post('/login', (req, res) => {
-  const { password } = req.body;
-  const configuredPassword = (process.env.ADMIN_PASSWORD || '').trim();
+adminRouter.post('/login', adminLoginLimiter, (req, res) => {
+  // Trim incidental whitespace from environment configuration (trailing
+  // newlines in dashboards are common) without accepting a blank password.
+  const configuredPassword = String(process.env.ADMIN_PASSWORD || '').trim();
   if (!configuredPassword) {
     return res.status(503).json({
       success: false,
@@ -49,112 +130,96 @@ adminRouter.post('/login', (req, res) => {
     });
   }
 
-  if (!password || password.trim() !== configuredPassword) {
+  if (WEAK_ADMIN_PASSWORDS.has(configuredPassword) || configuredPassword.length < 16) {
+    return res.status(503).json({
+      success: false,
+      error: 'Administrator login is disabled: rotate ADMIN_PASSWORD to a strong, unique value (16+ characters).'
+    });
+  }
+
+  const suppliedPassword = req.body?.password;
+  if (typeof suppliedPassword !== 'string' || !constantTimePasswordMatch(suppliedPassword, configuredPassword)) {
     return res.status(401).json({
       success: false,
       error: 'Invalid administrator password. Access denied.'
     });
   }
 
-  const token = `arc_adm_${randomBytes(24).toString('hex')}`;
+  pruneExpiredAdminTokens();
+  const token = `arc_adm_${randomBytes(32).toString('hex')}`;
+  const adminEmail = firstConfiguredAdminEmail();
   activeAdminTokens.set(token, {
     createdAt: Date.now(),
-    expiresAt: Date.now() + 24 * 60 * 60 * 1000 // 24 hours
+    expiresAt: Date.now() + ADMIN_TOKEN_TTL_MS,
+    email: adminEmail,
+    walletAddress: firstConfiguredAdminWallet()
   });
 
   return res.json({
     success: true,
     message: 'Master administrator access granted',
     token,
+    expiresAt: Date.now() + ADMIN_TOKEN_TTL_MS,
     admin: {
       role: 'admin',
       name: 'Master Administrator',
-      email: process.env.GMAIL_USER || 'admin@arcbounty.io'
+      email: adminEmail
     }
   });
 });
 
 /**
  * Middleware: Verify Admin Access
- * Validates either dedicated admin password token or authorized admin user session
+ * Validates either a dedicated admin password token or an authorized admin user session.
  */
 export function requireAdmin(req, res, next) {
-  const authHeader = req.headers.authorization;
-  let token = null;
-
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    token = authHeader.split(' ')[1];
-  } else if (req.query?.token) {
-    token = req.query.token;
-  }
-
-  if (!token) {
-    return res.status(401).json({
-      success: false,
-      error: 'Authentication required. Please enter administrator credentials.'
-    });
-  }
-
-  // 1. Check dedicated admin password session
-  if (activeAdminTokens.has(token)) {
-    const session = activeAdminTokens.get(token);
-    if (Date.now() < session.expiresAt) {
-      req.user = {
-        id: 'admin_master',
-        email: process.env.GMAIL_USER || 'admin@botbounty.tech',
-        name: 'Master Administrator',
-        role: 'admin',
-        wallet_address: process.env.ESCROW_WALLET_ADDRESS || '0xBE0aaE21b6252aa1207cAa50A753e8C45bCBCbc5'
-      };
-      return next();
-    } else {
-      activeAdminTokens.delete(token);
+  const identity = getAdminIdentity(req);
+  if (!identity) {
+    const token = getBearerToken(req);
+    if (!token) {
       return res.status(401).json({
         success: false,
-        error: 'Admin session has expired. Please re-enter password.'
+        error: 'Authentication required. Please enter administrator credentials.'
       });
     }
-  }
 
-  // 2. Fallback: check SQLite database user session token
-  const user = getUserByToken(token);
-  if (user) {
-    const isAdmin = isAdminUser(user.email, user.wallet_address);
-    if (isAdmin) {
-      req.user = user;
-      return next();
+    const user = getUserByToken(token);
+    if (user) {
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied. Your account does not have administrative privileges.'
+      });
     }
-    return res.status(403).json({
+
+    return res.status(401).json({
       success: false,
-      error: 'Access denied. Your account does not have administrative privileges.'
+      error: 'Admin session has expired or is invalid. Please sign in again.'
     });
   }
 
-  return res.status(401).json({
-    success: false,
-    error: 'Invalid or expired session token.'
-  });
+  req.user = identity;
+  req.adminUser = identity;
+  return next();
 }
 
 /**
  * POST /api/admin/logout
- * Invalidate admin session
+ * Invalidates an admin password session or revokes an admin user session.
  */
 adminRouter.post('/logout', (req, res) => {
-  const authHeader = req.headers.authorization;
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    const token = authHeader.split(' ')[1];
+  const token = getBearerToken(req);
+  if (token) {
     activeAdminTokens.delete(token);
+    if (getUserByToken(token)) deleteSession(token);
   }
   res.json({ success: true, message: 'Admin logged out successfully' });
 });
 
-// Protect subsequent routes in this router with requireAdmin
+// Protect subsequent routes in this router.
 adminRouter.use(requireAdmin);
 
 /**
  * GET /api/admin/verify-token
- * Lightweight check to confirm admin token is still valid
  */
 adminRouter.get('/verify-token', (req, res) => {
   res.json({
@@ -169,7 +234,6 @@ adminRouter.get('/verify-token', (req, res) => {
 
 /**
  * GET /api/admin/stats
- * Overview metrics for Admin Dashboard
  */
 adminRouter.get('/stats', (req, res) => {
   try {
@@ -190,7 +254,6 @@ adminRouter.get('/stats', (req, res) => {
 
 /**
  * GET /api/admin/users
- * Directory of registered creators & users with profile details
  */
 adminRouter.get('/users', async (req, res) => {
   try {
@@ -210,7 +273,6 @@ adminRouter.get('/users', async (req, res) => {
 
 /**
  * GET /api/admin/bounties
- * All bounties across the platform with full status details & submission counts
  */
 adminRouter.get('/bounties', (req, res) => {
   try {
@@ -227,7 +289,6 @@ adminRouter.get('/bounties', (req, res) => {
 
 /**
  * GET /api/admin/bounties/:id/submissions
- * Review all creator submissions and participants for a specific challenge
  */
 adminRouter.get('/bounties/:id/submissions', (req, res) => {
   try {
@@ -250,16 +311,15 @@ adminRouter.get('/bounties/:id/submissions', (req, res) => {
 
 /**
  * POST /api/admin/distribute (or /api/admin/disburse)
- * Admin dispatches USDC prize directly to the winning creator
  */
 adminRouter.post(['/distribute', '/disburse'], async (req, res) => {
   try {
-    const { bountyId, submissionId, amount, txHash: clientTxHash } = req.body;
+    const { bountyId, submissionId, amount, txHash: clientTxHash } = req.body || {};
 
     if (!bountyId || !submissionId) {
       return res.status(400).json({
         success: false,
-        error: 'bountyId and submissionId are required to disburse funds'
+        error: 'bountyId and submissionId are required to disburse funds.'
       });
     }
 
@@ -268,18 +328,35 @@ adminRouter.post(['/distribute', '/disburse'], async (req, res) => {
       return res.status(404).json({ success: false, error: 'Bounty not found' });
     }
 
-    const sub = db.prepare('SELECT * FROM bounty_submissions WHERE id = ?').get(submissionId);
-    if (!sub) {
-      return res.status(404).json({ success: false, error: 'Submission not found' });
+    if (bounty.status === 'Settled' || bounty.paymentStatus === 'settled') {
+      return res.status(409).json({ success: false, error: 'This bounty has already been settled.' });
     }
 
-    const txHash = clientTxHash;
-    if (!txHash) {
+    const sub = db.prepare('SELECT * FROM bounty_submissions WHERE id = ? AND bounty_id = ?')
+      .get(submissionId, bounty.id);
+    if (!sub) {
+      return res.status(404).json({ success: false, error: 'Submission not found for this bounty.' });
+    }
+
+    if (sub.status === 'awarded' || Number(sub.reward_paid) > 0) {
+      return res.status(409).json({ success: false, error: 'This submission has already been awarded.' });
+    }
+
+    const requestedAmount = amount === undefined || amount === null ? Number(bounty.amount) : Number(amount);
+    if (!Number.isFinite(requestedAmount) || requestedAmount <= 0 || requestedAmount > Number(bounty.amount)) {
       return res.status(400).json({
         success: false,
-        error: 'A wallet-signed on-chain settlement transaction hash (txHash) is required. The server never signs or relays releases.'
+        error: 'Disbursement amount must be greater than zero and cannot exceed the bounty amount.'
       });
     }
+
+    if (!clientTxHash || !isValidTxHashFormat(clientTxHash)) {
+      return res.status(400).json({
+        success: false,
+        error: 'A valid wallet-signed on-chain settlement transaction hash (txHash) is required.'
+      });
+    }
+
     if (!bounty.onChainBountyId) {
       return res.status(400).json({
         success: false,
@@ -287,20 +364,19 @@ adminRouter.post(['/distribute', '/disburse'], async (req, res) => {
       });
     }
 
-    // Verify on Bohr Testnet (bound to this bounty's on-chain id)
     await verifySettlementTransaction({
-      txHash,
+      txHash: clientTxHash,
       expectedSolver: sub.wallet_address,
-      expectedAmount: amount || bounty.amount,
+      expectedAmount: requestedAmount,
       expectedBountyId: bounty.onChainBountyId
     });
 
     const settlement = disburseBountyReward({
-      bountyId,
-      submissionId,
+      bountyId: bounty.id,
+      submissionId: submissionId,
       adminEmail: req.user.email,
-      customAmount: amount,
-      txHash
+      customAmount: requestedAmount,
+      txHash: clientTxHash
     });
 
     res.json({
@@ -309,25 +385,36 @@ adminRouter.post(['/distribute', '/disburse'], async (req, res) => {
       settlement
     });
   } catch (err) {
-    res.status(400).json({ success: false, error: err.message });
+    const status = /already|reused|settled|awarded/i.test(err.message) ? 409 : 400;
+    res.status(status).json({ success: false, error: err.message });
   }
 });
 
 /**
  * POST /api/admin/verify-bounty
- * Admin updates deposit status or confirms on-chain escrow funding
+ * Admin updates the escrow funding status using an allowlisted value.
  */
 adminRouter.post('/verify-bounty', (req, res) => {
   try {
-    const { bountyId, paymentStatus } = req.body;
+    const { bountyId, paymentStatus } = req.body || {};
     if (!bountyId) {
-      return res.status(400).json({ success: false, error: 'bountyId is required' });
+      return res.status(400).json({ success: false, error: 'bountyId is required.' });
     }
 
+    const allowedStatuses = new Set(['funded', 'pending_review', 'rejected']);
     const validStatus = paymentStatus || 'funded';
-    db.prepare(`UPDATE bounties SET payment_status = ? WHERE id = ?`).run(validStatus, bountyId);
+    if (!allowedStatuses.has(validStatus)) {
+      return res.status(400).json({ success: false, error: 'Invalid payment status.' });
+    }
 
-    const updated = getBountyById(bountyId);
+    const bounty = getBountyById(bountyId);
+    if (!bounty) {
+      return res.status(404).json({ success: false, error: 'Bounty not found.' });
+    }
+
+    db.prepare(`UPDATE bounties SET payment_status = ? WHERE id = ?`).run(validStatus, bounty.id);
+
+    const updated = getBountyById(bounty.id);
     res.json({
       success: true,
       message: `Bounty deposit status updated to ${validStatus}`,
@@ -340,7 +427,6 @@ adminRouter.post('/verify-bounty', (req, res) => {
 
 /**
  * POST /api/admin/bounties/:id/approve
- * Admin reviews escrow deposit and challenge criteria, approves and launches live
  */
 adminRouter.post('/bounties/:id/approve', async (req, res) => {
   try {
@@ -350,9 +436,8 @@ adminRouter.post('/bounties/:id/approve', async (req, res) => {
       return res.status(404).json({ success: false, error: 'Bounty not found' });
     }
 
-    const updatedBounty = approveBountyRecord(id, req.user?.email || 'admin');
+    const updatedBounty = approveBountyRecord(bounty.id, req.user.email);
 
-    // Asynchronously dispatch email notifications
     try {
       if (updatedBounty.maintainerEmail) {
         sendBountyApprovedNotification(updatedBounty.maintainerEmail, updatedBounty).catch((err) => {
@@ -381,18 +466,21 @@ adminRouter.post('/bounties/:id/approve', async (req, res) => {
 
 /**
  * POST /api/admin/bounties/:id/reject
- * Admin rejects a pending bounty
  */
 adminRouter.post('/bounties/:id/reject', (req, res) => {
   try {
     const { id } = req.params;
-    const { reason } = req.body;
+    const { reason } = req.body || {};
     const bounty = getBountyById(id);
     if (!bounty) {
       return res.status(404).json({ success: false, error: 'Bounty not found' });
     }
 
-    const updatedBounty = rejectBountyRecord(id, reason || 'Escrow deposit or challenge conditions not verified');
+    const safeReason = typeof reason === 'string'
+      ? reason.trim().slice(0, 500)
+      : 'Escrow deposit or challenge conditions not verified';
+
+    const updatedBounty = rejectBountyRecord(bounty.id, safeReason);
     res.json({
       success: true,
       message: `Bounty "${updatedBounty.title}" rejected.`,
@@ -405,12 +493,26 @@ adminRouter.post('/bounties/:id/reject', (req, res) => {
 
 /**
  * POST /api/admin/submissions/:submissionId/score
- * Record structured rubric scores and reviewer notes
  */
 adminRouter.post('/submissions/:submissionId/score', (req, res) => {
   try {
     const { submissionId } = req.params;
-    const { scoreCodeQuality, scoreCreativity, scoreCompleteness, reviewerNotes } = req.body;
+    const { scoreCodeQuality, scoreCreativity, scoreCompleteness, reviewerNotes } = req.body || {};
+
+    const scores = [scoreCodeQuality, scoreCreativity, scoreCompleteness];
+    for (const score of scores) {
+      if (score !== undefined && score !== null) {
+        const numeric = Number(score);
+        if (!Number.isInteger(numeric) || numeric < 0 || numeric > 100) {
+          return res.status(400).json({ success: false, error: 'Scores must be integers between 0 and 100.' });
+        }
+      }
+    }
+
+    if (reviewerNotes !== undefined && (typeof reviewerNotes !== 'string' || reviewerNotes.length > 2000)) {
+      return res.status(400).json({ success: false, error: 'Reviewer notes must be 2000 characters or fewer.' });
+    }
+
     const scored = scoreBountySubmission({
       submissionId,
       scoreCodeQuality,
@@ -426,66 +528,21 @@ adminRouter.post('/submissions/:submissionId/score', (req, res) => {
 
 /**
  * POST /api/admin/bounties/:id/disburse-multi-winner
- * Disburse tiered prizes to multiple ranked winners
+ * Disabled: the active BotBountyEscrow contract settles an entire bounty to a
+ * single solver in one BountySettled event. Recording multiple recipients
+ * against one settlement would fabricate on-chain proof, so split payouts must
+ * wait for a contract that supports them.
  */
-adminRouter.post('/bounties/:id/disburse-multi-winner', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { winners } = req.body;
-    if (!winners || !Array.isArray(winners) || winners.length === 0) {
-      return res.status(400).json({ success: false, error: 'No winners provided for split disbursement' });
-    }
-
-    const bounty = getBountyById(id);
-    if (!bounty) {
-      return res.status(404).json({ success: false, error: 'Bounty not found' });
-    }
-
-    const topTxHash = req.body.txHash || req.body.settlementTx;
-    if (!bounty.onChainBountyId) {
-      return res.status(400).json({
-        success: false,
-        error: 'This bounty has no on-chain escrow record, so it cannot be settled.'
-      });
-    }
-
-    for (const w of winners) {
-      const winnerTx = w.txHash || topTxHash;
-      if (!winnerTx) {
-        return res.status(400).json({
-          success: false,
-          error: `Winner ${w.submissionId || w.walletAddress} is missing verified on-chain settlement txHash.`
-        });
-      }
-      w.txHash = winnerTx;
-
-      await verifySettlementTransaction({
-        txHash: w.txHash,
-        expectedSolver: w.walletAddress,
-        expectedAmount: w.amount,
-        expectedBountyId: bounty.onChainBountyId
-      });
-    }
-
-    const adminEmail = req.adminUser?.email || 'admin@arcbounty.io';
-    const result = disburseMultiWinnerRewards({
-      bountyId: id,
-      winners,
-      adminEmail
-    });
-    res.json({
-      success: true,
-      message: 'Multi-winner prize distribution settled successfully on BOT Chain Bohr Testnet.',
-      result
-    });
-  } catch (err) {
-    res.status(400).json({ success: false, error: err.message });
-  }
+adminRouter.post('/bounties/:id/disburse-multi-winner', (req, res) => {
+  return res.status(501).json({
+    success: false,
+    error: 'Split payouts are not supported by the active single-solver escrow contract. Use /api/admin/distribute to settle the winning submission.'
+  });
 });
+
 
 /**
  * GET /api/admin/scan-deposits
- * Auto-detect incoming Arc Escrow deposits on Arc L1
  */
 adminRouter.get('/scan-deposits', (req, res) => {
   try {
@@ -496,9 +553,17 @@ adminRouter.get('/scan-deposits', (req, res) => {
   }
 });
 
+function csvCell(value) {
+  let text = value === undefined || value === null ? '' : String(value);
+  // Prevent spreadsheet formula injection.
+  if (/^[=+\-@\t\r]/.test(text)) {
+    text = `'${text}`;
+  }
+  return `"${text.replace(/"/g, '""')}"`;
+}
+
 /**
  * GET /api/admin/export-csv
- * 1-Click CSV Audit Ledger Export
  */
 adminRouter.get('/export-csv', (req, res) => {
   try {
@@ -517,29 +582,29 @@ adminRouter.get('/export-csv', (req, res) => {
       'Admin_Email'
     ];
 
-    const csvRows = [headers.join(',')];
+    const csvRows = [headers.map(csvCell).join(',')];
     for (const row of ledger) {
       csvRows.push([
-        `"${row.disbursement_id}"`,
-        `"${new Date(row.distributed_at).toISOString()}"`,
-        `"${row.bounty_id}"`,
-        `"${(row.bounty_title || '').replace(/"/g, '""')}"`,
-        `"${(row.sponsor_name || '').replace(/"/g, '""')}"`,
-        `"${row.sponsor_wallet || ''}"`,
-        `"${row.recipient_address}"`,
-        `"${row.recipient_email || ''}"`,
-        `"${row.amount_usdc}"`,
-        `"${row.tx_hash}"`,
-        `"${row.admin_email}"`
-      ].join(','));
+        row.disbursement_id,
+        new Date(row.distributed_at).toISOString(),
+        row.bounty_id,
+        row.bounty_title || '',
+        row.sponsor_name || '',
+        row.sponsor_wallet || '',
+        row.recipient_address,
+        row.recipient_email || '',
+        row.amount_usdc,
+        row.tx_hash,
+        row.admin_email
+      ].map(csvCell).join(','));
     }
 
     const csvContent = csvRows.join('\n');
-    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Content-Disposition', `attachment; filename=arcbounty_audit_ledger_${new Date().toISOString().split('T')[0]}.csv`);
     return res.send(csvContent);
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
 });
-

@@ -12,8 +12,13 @@ import {
   approveBountyRecord
 } from '../src/db.js';
 
+process.env.ADMIN_EMAILS = 'admin@example.com';
+process.env.ADMIN_PASSWORD = 'test-only-admin-password-32-chars';
+
+const txHash = (char) => `0x${char.repeat(64)}`;
+
 test('BotBounty Submission Security & Ownership Verification Suite', async (t) => {
-  // Set up ephemeral express app for route security testing
+  // Set up an ephemeral express app for route security testing
   const app = express();
   app.use(express.json());
   app.use('/api/bounties', bountyRouter);
@@ -33,20 +38,23 @@ test('BotBounty Submission Security & Ownership Verification Suite', async (t) =
     server.close();
   });
 
-  // Seed test users
+  // Seed test users with explicitly linked wallets. The server never invents
+  // or assigns a wallet on the user's behalf.
   const timestamp = Date.now();
   const maintainerUser = createUser({
     email: `maintainer_${timestamp}@bohr.network`,
     name: 'Maintainer Alice',
     username: `alice_${timestamp}`,
-    discipline: 'Development'
+    discipline: 'Development',
+    walletAddress: '0x1111111111111111111111111111111111111111'
   });
 
   const solverA = createUser({
     email: `solverA_${timestamp}@bohr.network`,
     name: 'Solver Alice',
     username: `solver_a_${timestamp}`,
-    discipline: 'Smart Contracts'
+    discipline: 'Smart Contracts',
+    walletAddress: '0x2222222222222222222222222222222222222222'
   });
   const tokenA = createSession(solverA.id).token;
 
@@ -54,25 +62,28 @@ test('BotBounty Submission Security & Ownership Verification Suite', async (t) =
     email: `solverB_${timestamp}@bohr.network`,
     name: 'Solver Bob',
     username: `solver_b_${timestamp}`,
-    discipline: 'Frontend'
+    discipline: 'Frontend',
+    walletAddress: '0x3333333333333333333333333333333333333333'
   });
   const tokenB = createSession(solverB.id).token;
 
-  // Seed test bounty
+  // Seed test bounty with an explicit on-chain identity so settlement can be
+  // verified against the escrow contract.
+  const onChainBountyId = `0x${'ab'.repeat(32)}`;
   const bounty = createBountyRecord({
     title: `BOT Chain Protocol Security Bounty ${timestamp}`,
     category: 'DEV',
     categoryName: 'Code & Apps',
     amount: 1000,
     description: 'Implement secure commit-reveal solution submissions for autonomous agents.',
-    escrowWallet: '0xB128F2f442554B6517D779788F28F2EB2612164A',
-    depositTx: '0xcd6897b537b4d03db87a0202bd1d41fb3eb545a97076619ef08fd744787fc78c',
+    depositTx: txHash('e'),
+    onChainBountyId,
     maintainer: maintainerUser.wallet_address,
     maintainerName: maintainerUser.name,
     maintainerEmail: maintainerUser.email,
     deadlineDays: 14
   });
-  approveBountyRecord(bounty.id, 'admin@botbounty.ai');
+  approveBountyRecord(bounty.id);
 
   // Seed submission from Solver A
   const submissionA = createBountySubmission({
@@ -94,6 +105,7 @@ test('BotBounty Submission Security & Ownership Verification Suite', async (t) =
     assert.equal(data.success, true);
     assert.ok(data.bounty.submissionsCount >= 1, 'Total submission count must be visible');
     assert.equal(data.bounty.submissions.length, 0, 'Raw submissions must be empty for unauthenticated users');
+    assert.equal(data.bounty.maintainerEmail, undefined, 'Sponsor email must never be public');
   });
 
   await t.test('Negative: Spoofing ?email= in query parameters does NOT leak submissions', async () => {
@@ -238,7 +250,7 @@ test('BotBounty Submission Security & Ownership Verification Suite', async (t) =
   });
 
   await t.test('Negative: Maintainer cannot solve own bounty (403 Forbidden)', async () => {
-    const maintainerToken = createSession(maintainerUser.id, 86400000);
+    const maintainerToken = createSession(maintainerUser.id, 86400000).token;
     const res = await fetch(`${baseUrl}/api/bounties/${bounty.id}/participate`, {
       method: 'POST',
       headers: {
@@ -290,19 +302,24 @@ test('BotBounty Submission Security & Ownership Verification Suite', async (t) =
         Authorization: `Bearer ${tokenB}`
       },
       body: JSON.stringify({
-        settlementTx: '0xc9c86fa10c4006cc5e76464785064e2d008bd6bc3d42953570b83f3c28a42dd7'
+        submissionId: submissionA.id,
+        settlementTx: txHash('f')
       })
     });
     const data = await res.json();
 
     assert.equal(res.status, 403);
     assert.equal(data.success, false);
-    assert.ok(data.error.includes('administrator or challenge maintainer'));
+    assert.ok(data.error.includes('administrator'));
   });
 
-  await t.test('Negative: Release request without settlementTx hash is rejected (400 Bad Request)', async () => {
-    const adminToken = 'admin_tok_' + timestamp;
-    activeAdminTokens.set(adminToken, { email: 'olajideabdulquadri22@gmail.com' });
+  await t.test('Negative: Release request without submissionId is rejected (400 Bad Request)', async () => {
+    const adminToken = `admin_tok_${timestamp}`;
+    activeAdminTokens.set(adminToken, {
+      email: 'admin@example.com',
+      createdAt: Date.now(),
+      expiresAt: Date.now() + 60_000
+    });
 
     const res = await fetch(`${baseUrl}/api/bounties/${bounty.id}/release`, {
       method: 'POST',
@@ -310,7 +327,30 @@ test('BotBounty Submission Security & Ownership Verification Suite', async (t) =
         'Content-Type': 'application/json',
         Authorization: `Bearer ${adminToken}`
       },
-      body: JSON.stringify({})
+      body: JSON.stringify({ settlementTx: txHash('f') })
+    });
+    const data = await res.json();
+
+    assert.equal(res.status, 400);
+    assert.equal(data.success, false);
+    assert.ok(data.error.includes('submissionId'));
+  });
+
+  await t.test('Negative: Release request without a settlement hash is rejected (400 Bad Request)', async () => {
+    const adminToken = `admin_tok_${timestamp}`;
+    activeAdminTokens.set(adminToken, {
+      email: 'admin@example.com',
+      createdAt: Date.now(),
+      expiresAt: Date.now() + 60_000
+    });
+
+    const res = await fetch(`${baseUrl}/api/bounties/${bounty.id}/release`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${adminToken}`
+      },
+      body: JSON.stringify({ submissionId: submissionA.id })
     });
     const data = await res.json();
 
@@ -319,10 +359,14 @@ test('BotBounty Submission Security & Ownership Verification Suite', async (t) =
     assert.ok(data.error.includes('settlement transaction hash'));
   });
 
-  await t.test('Positive: Maintainer release dispatches settlement with real on-chain transaction hash', async () => {
-    const realBohrTx = '0xc9c86fa10c4006cc5e76464785064e2d008bd6bc3d42953570b83f3c28a42dd7';
-    const adminToken = 'admin_tok_' + timestamp;
-    activeAdminTokens.set(adminToken, { email: 'olajideabdulquadri22@gmail.com' });
+  await t.test('Positive: Admin releases the explicit winning submission with an on-chain settlement hash', async () => {
+    const settlementHash = txHash('f');
+    const adminToken = `admin_tok_${timestamp}`;
+    activeAdminTokens.set(adminToken, {
+      email: 'admin@example.com',
+      createdAt: Date.now(),
+      expiresAt: Date.now() + 60_000
+    });
 
     const res = await fetch(`${baseUrl}/api/bounties/${bounty.id}/release`, {
       method: 'POST',
@@ -331,17 +375,20 @@ test('BotBounty Submission Security & Ownership Verification Suite', async (t) =
         Authorization: `Bearer ${adminToken}`
       },
       body: JSON.stringify({
-        settlementTx: realBohrTx
+        submissionId: submissionA.id,
+        settlementTx: settlementHash
       })
     });
     const data = await res.json();
 
     assert.equal(res.status, 200);
     assert.equal(data.success, true);
-    assert.equal(data.settlement.txHash, realBohrTx);
+    assert.equal(data.settlement.txHash, settlementHash);
 
     const updated = getBountyById(bounty.id);
     assert.equal(updated.status, 'Settled');
-    assert.equal(updated.settlementTx, realBohrTx);
+    assert.equal(updated.settlementTx, settlementHash);
+
+    activeAdminTokens.delete(adminToken);
   });
 });

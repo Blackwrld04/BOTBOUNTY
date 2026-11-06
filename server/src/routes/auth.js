@@ -6,10 +6,8 @@ import {
   verifyCode,
   getUserByEmail,
   getUserByUsername,
-  getUserById,
   createUser,
   createSession,
-  getUserByToken,
   updateUserSocial,
   updateUserWallet,
   updateUserProfile,
@@ -21,14 +19,62 @@ import {
   updateUserPassword,
   getUserDisbursements,
   getUserProfileStats,
+  isValidEvmAddress,
+  deleteSession,
   db
 } from '../db.js';
 import {
   isExternalDbConfigured,
   pgGetUserByIdentifier
 } from '../supabase.js';
+import { requireAuth, getSessionUser, getBearerToken } from '../middleware/auth.js';
+import { rateLimit } from '../middleware/rateLimit.js';
 
 export const authRouter = Router();
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const USERNAME_PATTERN = /^[a-z0-9_-]{3,30}$/;
+const DISCIPLINES = new Set(['Design', 'Content', 'Development', 'All Social', 'Other']);
+const SOCIAL_PLATFORMS = new Set(['telegram', 'discord', 'x', 'github']);
+const VERIFICATION_TYPES = new Set(['signup', 'login', 'reset']);
+
+const loginLimiter = rateLimit({ name: 'auth-login', windowMs: 60_000, max: 10 });
+const signupLimiter = rateLimit({ name: 'auth-signup', windowMs: 60 * 60_000, max: 5 });
+const sendCodeLimiter = rateLimit({ name: 'auth-send-code', windowMs: 60_000, max: 5 });
+const verifyCodeLimiter = rateLimit({ name: 'auth-verify-code', windowMs: 10 * 60_000, max: 15 });
+const walletLimiter = rateLimit({ name: 'auth-wallet', windowMs: 60_000, max: 15 });
+const profileLimiter = rateLimit({ name: 'auth-profile', windowMs: 60_000, max: 30 });
+
+function normalizeEmail(email) {
+  return String(email || '').trim().toLowerCase();
+}
+
+function isValidEmail(email) {
+  return EMAIL_PATTERN.test(email) && email.length <= 254;
+}
+
+function cleanUsername(username) {
+  return String(username || '')
+    .trim()
+    .toLowerCase()
+    .replace(/^@/, '')
+    .replace(/[^a-z0-9_-]/g, '');
+}
+
+function uniqueUsername(base) {
+  const clean = cleanUsername(base) || 'creator';
+  let candidate = clean.slice(0, 30);
+  if (!USERNAME_PATTERN.test(candidate)) {
+    candidate = `creator-${candidate}`.slice(0, 30);
+  }
+  let suffix = 0;
+  while (getUserByUsername(candidate)) {
+    suffix += 1;
+    const suffixText = `-${suffix}`;
+    candidate = `${candidate.slice(0, 30 - suffixText.length)}${suffixText}`;
+  }
+  return candidate;
+}
 
 function formatUser(user) {
   if (!user) return null;
@@ -54,18 +100,46 @@ function formatUser(user) {
 }
 
 /**
- * POST /api/auth/login
- * Standard credential authentication: Email (or Username) + Password
+ * Prevent verification-email bombing: one message per type per email each minute.
  */
-authRouter.post('/login', async (req, res) => {
+function verificationRequestedTooRecently(email, type) {
+  const cutoff = Date.now() - 60_000;
+  const row = db.prepare(`
+    SELECT id FROM verification_codes
+    WHERE email = ? AND type = ? AND created_at > ?
+    LIMIT 1
+  `).get(email, type, cutoff);
+  return Boolean(row);
+}
+
+function isValidAvatarUrl(value) {
+  if (value === undefined || value === null || value === '') return true;
+  if (typeof value !== 'string' || value.length > 500) return false;
   try {
-    const { email, password } = req.body;
+    const url = new URL(value);
+    return url.protocol === 'https:' || url.protocol === 'http:';
+  } catch (e) {
+    return false;
+  }
+}
+
+/**
+ * POST /api/auth/login
+ * Password authentication. Users without a password must use the OTP flow.
+ */
+authRouter.post('/login', loginLimiter, async (req, res) => {
+  try {
+    const { email, password } = req.body || {};
 
     if (!email || !password) {
       return res.status(400).json({
         success: false,
         error: 'Please enter your email/username and password.'
       });
+    }
+
+    if (typeof email !== 'string' || typeof password !== 'string') {
+      return res.status(400).json({ success: false, error: 'Invalid credentials.' });
     }
 
     const identifier = email.trim().toLowerCase().replace(/^@/, '');
@@ -108,55 +182,21 @@ authRouter.post('/login', async (req, res) => {
       }
     }
 
-    // If still not found, check if user has a pending registration with matching password
-    if (!user) {
-      try {
-        const pendingRow = db.prepare(`
-          SELECT * FROM verification_codes 
-          WHERE LOWER(email) = ? AND type = 'signup' AND pending_data IS NOT NULL 
-          ORDER BY created_at DESC LIMIT 1
-        `).get(identifier);
-
-        if (pendingRow && pendingRow.pending_data) {
-          const pending = JSON.parse(pendingRow.pending_data);
-          if (pending && pending.passwordHash && verifyPassword(password, pending.passwordHash)) {
-            user = createUser({
-              email: pendingRow.email,
-              name: pending.name || pendingRow.email.split('@')[0],
-              username: pending.username || pendingRow.email.split('@')[0],
-              provider: 'email',
-              discipline: pending.discipline || 'Content',
-              passwordHash: pending.passwordHash
-            });
-          }
-        }
-      } catch (pendingErr) {
-        console.warn('[Auth] Pending registration activation note:', pendingErr.message);
-      }
+    if (!user || !user.password_hash) {
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid email or password. If you signed up with a wallet, use wallet sign-in.'
+      });
     }
 
-    if (!user) {
+    const isValid = verifyPassword(password, user.password_hash);
+    if (!isValid) {
       return res.status(401).json({
         success: false,
         error: 'Invalid email or password. Please check your credentials.'
       });
     }
 
-    // Check if user has a password configured
-    if (!user.password_hash) {
-      // Legacy user without password: set their password to what was provided
-      updateUserPassword(user.id, password);
-    } else {
-      const isValid = verifyPassword(password, user.password_hash);
-      if (!isValid) {
-        return res.status(401).json({
-          success: false,
-          error: 'Invalid email or password. Please check your credentials.'
-        });
-      }
-    }
-
-    // Generate persistent session
     const { token } = createSession(user.id);
 
     return res.json({
@@ -173,72 +213,64 @@ authRouter.post('/login', async (req, res) => {
 
 /**
  * POST /api/auth/signup
- * Standard registration: validates fields, hashes password, and dispatches 6-digit email OTP
+ * Creates a pending registration and emails a 6-digit OTP. The account is only
+ * created after the code is verified.
  */
-authRouter.post('/signup', async (req, res) => {
+authRouter.post('/signup', signupLimiter, async (req, res) => {
   try {
-    const { name, username, email, password, discipline } = req.body;
+    const { name, username, email, password, discipline } = req.body || {};
 
-    if (!email || !email.includes('@') || !email.includes('.')) {
+    const normalizedEmail = normalizeEmail(email);
+    if (!isValidEmail(normalizedEmail)) {
       return res.status(400).json({ success: false, error: 'Please enter a valid email address.' });
     }
 
-    if (!password || password.length < 8) {
-      return res.status(400).json({ success: false, error: 'Password must be at least 8 characters long.' });
+    if (typeof password !== 'string' || password.length < 8 || password.length > 128) {
+      return res.status(400).json({ success: false, error: 'Password must be 8-128 characters long.' });
     }
 
-    const normalizedEmail = email.trim().toLowerCase();
-    const cleanUsername = (username || normalizedEmail.split('@')[0])
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9_-]/g, '');
+    const finalUsername = cleanUsername(username || normalizedEmail.split('@')[0]);
+    if (!USERNAME_PATTERN.test(finalUsername)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Handle must be 3-30 characters long and contain only letters, numbers, underscores or hyphens.'
+      });
+    }
 
-    // Check if email already registered
-    const existingUser = getUserByEmail(normalizedEmail);
-    if (existingUser) {
+    if (getUserByEmail(normalizedEmail)) {
       return res.status(409).json({
         success: false,
         error: 'An account with this email already exists. Please log in.'
       });
     }
 
-    // Check if username already taken
-    const existingUsername = getUserByUsername(cleanUsername);
-    if (existingUsername) {
+    if (getUserByUsername(finalUsername)) {
       return res.status(409).json({
         success: false,
-        error: `Username @${cleanUsername} is already taken. Please choose another handle.`
+        error: `Username @${finalUsername} is already taken. Please choose another handle.`
       });
     }
 
-    // Securely hash password
-    const passwordHash = hashPassword(password);
+    if (discipline !== undefined && !DISCIPLINES.has(discipline)) {
+      return res.status(400).json({ success: false, error: 'Invalid specialty selected.' });
+    }
 
-    // Save pending registration data in verification_codes
+    if (verificationRequestedTooRecently(normalizedEmail, 'signup')) {
+      return res.status(429).json({
+        success: false,
+        error: 'A verification code was sent recently. Please wait a minute before requesting another.'
+      });
+    }
+
     const pendingData = {
-      name: (name || cleanUsername).trim(),
-      username: cleanUsername,
+      name: String(name || finalUsername).trim().slice(0, 80),
+      username: finalUsername,
       discipline: discipline || 'Content',
-      passwordHash
+      passwordHash: hashPassword(password)
     };
 
     const { code, expiresAt } = createVerificationCode(normalizedEmail, 'signup', pendingData);
 
-    // Persist user immediately so credentials work for instant login
-    try {
-      createUser({
-        email: normalizedEmail,
-        name: (name || cleanUsername).trim(),
-        username: cleanUsername,
-        provider: 'email',
-        discipline: discipline || 'Content',
-        passwordHash
-      });
-    } catch (createErr) {
-      console.warn('[Signup] Immediate user creation note:', createErr.message);
-    }
-
-    // Dispatch email via Gmail SMTP or fallback
     let emailResult = { dispatched: false, previewUrl: null };
     try {
       emailResult = await sendVerificationEmail(normalizedEmail, code, 'signup');
@@ -250,105 +282,148 @@ authRouter.post('/signup', async (req, res) => {
       success: true,
       message: `A 6-digit verification code has been dispatched to ${normalizedEmail}. Please check your inbox or spam folder.`,
       email: normalizedEmail,
-      previewUrl: emailResult.previewUrl || null,
-      expiresAt
+      expiresAt,
+      ...(process.env.NODE_ENV !== 'production' && emailResult.previewUrl
+        ? { previewUrl: emailResult.previewUrl }
+        : {})
     });
   } catch (err) {
     console.error('[Auth Error] signup failed:', err);
-    return res.status(500).json({ success: false, error: 'Failed to initiate signup process: ' + err.message });
+    return res.status(500).json({ success: false, error: 'Failed to initiate signup process.' });
   }
 });
 
 /**
  * POST /api/auth/send-code
- * Sends a 6-digit verification OTP for passwordless login or password reset
+ * Sends a 6-digit verification OTP.
+ *
+ * Allowed types: `login` and `reset`. Signup codes are only issued by
+ * /api/auth/signup so that pending profile data is always server-controlled.
+ * Responses are intentionally generic for unknown accounts to avoid account
+ * enumeration.
  */
-authRouter.post('/send-code', async (req, res) => {
+authRouter.post('/send-code', sendCodeLimiter, async (req, res) => {
   try {
-    const { email, type = 'login' } = req.body;
+    const { email, type = 'login' } = req.body || {};
+    const normalizedEmail = normalizeEmail(email);
 
-    if (!email || !email.includes('@') || !email.includes('.')) {
-      return res.status(400).json({ success: false, error: 'Please enter a valid email address' });
+    if (!isValidEmail(normalizedEmail)) {
+      return res.status(400).json({ success: false, error: 'Please enter a valid email address.' });
     }
 
-    const normalizedEmail = email.trim().toLowerCase();
-    const existingUser = getUserByEmail(normalizedEmail);
+    if (!['login', 'reset'].includes(type)) {
+      return res.status(400).json({ success: false, error: 'Unsupported verification type.' });
+    }
 
-    // If login mode and account doesn't exist, inform user
-    if (type === 'login' && !existingUser) {
-      return res.status(404).json({
+    const genericResponse = {
+      success: true,
+      message: 'If an account exists for that email, a 6-digit verification code has been sent.',
+      email: normalizedEmail,
+      type
+    };
+
+    const existingUser = getUserByEmail(normalizedEmail);
+    if (!existingUser) {
+      return res.json(genericResponse);
+    }
+
+    if (verificationRequestedTooRecently(normalizedEmail, type)) {
+      return res.status(429).json({
         success: false,
-        userExists: false,
-        error: 'No account found with this email. Please create an account first.'
+        error: 'A verification code was sent recently. Please wait a minute before requesting another.'
       });
     }
 
-    // Generate genuine 6-digit code
     const { code, expiresAt } = createVerificationCode(normalizedEmail, type);
 
-    // Dispatch email via nodemailer or fallback
-    let emailResult = { dispatched: false, previewUrl: null };
     try {
-      emailResult = await sendVerificationEmail(normalizedEmail, code, type);
+      await sendVerificationEmail(normalizedEmail, code, type);
     } catch (mailErr) {
       console.warn('[Send-code Email Warning]:', mailErr.message);
     }
 
-    return res.json({
-      success: true,
-      message: `A 6-digit verification code has been dispatched to ${normalizedEmail}. Please check your inbox or spam folder.`,
-      email: normalizedEmail,
-      type,
-      previewUrl: emailResult.previewUrl || null,
-      expiresAt
-    });
+    return res.json({ ...genericResponse, expiresAt });
   } catch (err) {
     console.error('[Auth Error] send-code failed:', err);
-    return res.status(500).json({ success: false, error: 'Failed to dispatch verification email: ' + err.message });
+    return res.status(500).json({ success: false, error: 'Failed to dispatch verification email.' });
   }
 });
 
 /**
  * POST /api/auth/verify-code
- * Verifies 6-digit OTP code, creates or activates account with hashed password, and logs in
+ * Verifies a purpose-bound OTP and only then creates/activates the account or
+ * resets the password.
  */
-authRouter.post('/verify-code', (req, res) => {
+authRouter.post('/verify-code', verifyCodeLimiter, (req, res) => {
   try {
-    const { email, code, name, username, discipline, password } = req.body;
+    const { email, code, type } = req.body || {};
+    const normalizedEmail = normalizeEmail(email);
 
-    if (!email || !code) {
-      return res.status(400).json({ success: false, error: 'Email and 6-digit code are required' });
+    if (!isValidEmail(normalizedEmail) || !code) {
+      return res.status(400).json({ success: false, error: 'Email and 6-digit code are required.' });
     }
 
-    const verification = verifyCode(email, code);
+    if (!VERIFICATION_TYPES.has(type)) {
+      return res.status(400).json({ success: false, error: 'A valid verification type is required.' });
+    }
+
+    const verification = verifyCode(normalizedEmail, String(code), type);
     if (!verification.valid) {
-      return res.status(400).json({ success: false, error: verification.error || 'Invalid or expired verification code' });
+      return res.status(400).json({
+        success: false,
+        error: verification.error || 'Invalid or expired verification code'
+      });
     }
 
-    let user = getUserByEmail(email);
+    let user = getUserByEmail(normalizedEmail);
 
-    // If user does not exist yet, finalize registration with pending data
-    if (!user) {
-      const pending = verification.pendingData || {};
-      const finalName = pending.name || name || email.split('@')[0];
-      const finalUsername = pending.username || username || email.split('@')[0];
-      const finalDiscipline = pending.discipline || discipline || 'Content';
-      const finalPasswordHash = pending.passwordHash || (password ? hashPassword(password) : null);
+    if (type === 'signup') {
+      if (user) {
+        return res.status(409).json({
+          success: false,
+          error: 'An account with this email already exists. Please log in.'
+        });
+      }
+
+      const pending = verification.pendingData;
+      if (!pending || typeof pending !== 'object' || !pending.passwordHash || !pending.username) {
+        return res.status(400).json({
+          success: false,
+          error: 'Registration data is missing or expired. Please sign up again.'
+        });
+      }
+
+      if (getUserByUsername(pending.username)) {
+        return res.status(409).json({
+          success: false,
+          error: `Username @${pending.username} is already taken. Please sign up with another handle.`
+        });
+      }
 
       user = createUser({
-        email,
-        name: finalName,
-        username: finalUsername,
+        email: normalizedEmail,
+        name: pending.name,
+        username: pending.username,
         provider: 'email',
-        discipline: finalDiscipline,
-        passwordHash: finalPasswordHash
+        discipline: DISCIPLINES.has(pending.discipline) ? pending.discipline : 'Content',
+        passwordHash: pending.passwordHash
       });
-    } else if (password) {
-      // If user exists and provided a password (e.g. password reset flow)
+    } else if (type === 'reset') {
+      if (!user) {
+        return res.status(400).json({ success: false, error: 'Invalid or expired verification code' });
+      }
+      const { password } = req.body || {};
+      if (typeof password !== 'string' || password.length < 8 || password.length > 128) {
+        return res.status(400).json({ success: false, error: 'New password must be 8-128 characters long.' });
+      }
       updateUserPassword(user.id, password);
+    } else {
+      // login
+      if (!user) {
+        return res.status(400).json({ success: false, error: 'Invalid or expired verification code' });
+      }
     }
 
-    // Create persistent session
     const { token } = createSession(user.id);
 
     return res.json({
@@ -363,32 +438,65 @@ authRouter.post('/verify-code', (req, res) => {
   }
 });
 
-// Alias for verify-code
-authRouter.post('/verify-signup', (req, res, next) => {
+// Backwards-compatible alias; both names hit the same secure handler.
+authRouter.post('/verify-signup', verifyCodeLimiter, (req, res, next) => {
   req.url = '/verify-code';
   authRouter.handle(req, res, next);
 });
 
 /**
  * POST /api/auth/google
- * Verified Google OAuth handler
+ * Accepts a real Google ID token (`credential` or `idToken`) and verifies it
+ * with Google's tokeninfo endpoint. There is no client-supplied email path.
+ *
+ * Configure GOOGLE_CLIENT_ID (comma-separated allowed) to enable this route.
  */
-authRouter.post('/google', (req, res) => {
+authRouter.post('/google', loginLimiter, async (req, res) => {
   try {
-    const { email, name, avatar } = req.body;
-
-    if (!email) {
-      return res.status(400).json({ success: false, error: 'Google email is required' });
+    const credential = req.body?.credential || req.body?.idToken;
+    if (!credential || typeof credential !== 'string') {
+      return res.status(400).json({ success: false, error: 'Google credential is required.' });
     }
 
-    let user = getUserByEmail(email);
+    const configuredAudiences = String(process.env.GOOGLE_CLIENT_ID || '')
+      .split(',')
+      .map(value => value.trim())
+      .filter(Boolean);
 
+    if (configuredAudiences.length === 0) {
+      return res.status(503).json({
+        success: false,
+        error: 'Google sign-in is not configured on this server.'
+      });
+    }
+
+    const verificationRes = await fetch(
+      `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`,
+      { signal: AbortSignal.timeout(8000) }
+    );
+
+    if (!verificationRes.ok) {
+      return res.status(401).json({ success: false, error: 'Google credential verification failed.' });
+    }
+
+    const payload = await verificationRes.json();
+    const issuerValid = payload.iss === 'accounts.google.com' || payload.iss === 'https://accounts.google.com';
+    const audienceValid = configuredAudiences.includes(payload.aud);
+    const emailVerified = payload.email_verified === true || payload.email_verified === 'true';
+    const notExpired = Number(payload.exp) * 1000 > Date.now();
+    const normalizedGoogleEmail = normalizeEmail(payload.email);
+
+    if (!issuerValid || !audienceValid || !emailVerified || !notExpired || !isValidEmail(normalizedGoogleEmail)) {
+      return res.status(401).json({ success: false, error: 'Google credential verification failed.' });
+    }
+
+    let user = getUserByEmail(normalizedGoogleEmail);
     if (!user) {
       user = createUser({
-        email,
-        name: name || email.split('@')[0],
-        username: email.split('@')[0],
-        avatar: avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+        email: normalizedGoogleEmail,
+        name: String(payload.name || normalizedGoogleEmail.split('@')[0]).slice(0, 80),
+        username: uniqueUsername(normalizedGoogleEmail.split('@')[0]),
+        avatar: typeof payload.picture === 'string' && payload.picture.startsWith('https://') ? payload.picture : undefined,
         provider: 'google',
         discipline: 'Design'
       });
@@ -403,78 +511,37 @@ authRouter.post('/google', (req, res) => {
     });
   } catch (err) {
     console.error('[Auth Error] Google login failed:', err);
-    return res.status(500).json({ success: false, error: 'Google authentication failed' });
+    return res.status(500).json({ success: false, error: 'Google authentication failed.' });
   }
 });
 
-authRouter.post('/google-callback', (req, res, next) => {
+authRouter.post('/google-callback', loginLimiter, (req, res, next) => {
   req.url = '/google';
   authRouter.handle(req, res, next);
 });
 
 /**
  * POST /api/auth/wallet
- * Web3 wallet connection login
+ * Removed: this route used to issue a session for any supplied address without
+ * proof of ownership. Wallet sessions must be created through /wallet-verify,
+ * which requires a valid personal_sign signature.
  */
-authRouter.post('/wallet', (req, res) => {
-  try {
-    const { address } = req.body;
-
-    if (!address || !address.startsWith('0x')) {
-      return res.status(400).json({ success: false, error: 'Valid EVM address required' });
-    }
-
-    const normalizedAddress = address.toLowerCase();
-    const fakeEmail = `${normalizedAddress.slice(2, 10)}@arc.user`;
-
-    let user = getUserByEmail(fakeEmail);
-
-    if (!user) {
-      user = createUser({
-        email: fakeEmail,
-        name: `Arc Creator (${address.slice(0, 6)}...${address.slice(-4)})`,
-        username: `arc-${address.slice(2, 8).toLowerCase()}`,
-        avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
-        provider: 'wallet'
-      });
-    }
-
-    const { token } = createSession(user.id);
-
-    return res.json({
-      success: true,
-      user: formatUser(user),
-      token
-    });
-  } catch (err) {
-    console.error('[Auth Error] Wallet login failed:', err);
-    return res.status(500).json({ success: false, error: 'Wallet login failed' });
-  }
+authRouter.post('/wallet', walletLimiter, (req, res) => {
+  return res.status(410).json({
+    success: false,
+    error: 'Unsigned wallet login is no longer supported. Use wallet signature verification.'
+  });
 });
 
 /**
  * GET /api/auth/me
- * Retrieves current session user
  */
-authRouter.get('/me', (req, res) => {
+authRouter.get('/me', requireAuth, (req, res) => {
   try {
-    const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
-
-    if (!token) {
-      return res.status(401).json({ success: false, error: 'No authorization token' });
-    }
-
-    const user = getUserByToken(token);
-    if (!user) {
-      return res.status(401).json({ success: false, error: 'Invalid or expired session' });
-    }
-
-    const transactions = getUserDisbursements(user.email, user.wallet_address);
-
+    const transactions = getUserDisbursements(req.user.email, req.user.wallet_address);
     return res.json({
       success: true,
-      user: formatUser(user),
+      user: formatUser(req.user),
       transactions
     });
   } catch (err) {
@@ -483,26 +550,25 @@ authRouter.get('/me', (req, res) => {
 });
 
 /**
- * GET /api/auth/transactions
- * Retrieves collected bounty payouts and transactions for the creator
+ * POST /api/auth/logout
+ * Revokes the presented session token. Idempotent: missing or unknown tokens
+ * still return success so clients can always complete local sign-out.
  */
-authRouter.get('/transactions', (req, res) => {
+authRouter.post('/logout', (req, res) => {
+  const token = getBearerToken(req);
+  if (token) deleteSession(token);
+  return res.json({ success: true, message: 'Signed out successfully.' });
+});
+
+/**
+ * GET /api/auth/transactions
+ * Always scoped to the authenticated session. Identity query parameters are
+ * ignored so callers cannot read another creator's payouts.
+ */
+authRouter.get('/transactions', requireAuth, profileLimiter, (req, res) => {
   try {
-    const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
-    let user = null;
-    if (token) {
-      user = getUserByToken(token);
-    }
-
-    const email = req.query.email || (user ? user.email : null);
-    const address = req.query.address || (user ? user.wallet_address : null);
-
-    const transactions = getUserDisbursements(email, address);
-    return res.json({
-      success: true,
-      transactions
-    });
+    const transactions = getUserDisbursements(req.user.email, req.user.wallet_address);
+    return res.json({ success: true, transactions });
   } catch (err) {
     return res.status(500).json({ success: false, error: 'Failed to retrieve transactions' });
   }
@@ -510,26 +576,16 @@ authRouter.get('/transactions', (req, res) => {
 
 /**
  * GET /api/auth/profile-stats
- * Returns accurate user stats (earnings, submissions count, wins count, submissions list)
+ * Always scoped to the authenticated session.
  */
-authRouter.get('/profile-stats', (req, res) => {
+authRouter.get('/profile-stats', requireAuth, profileLimiter, (req, res) => {
   try {
-    const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
-    let user = null;
-    if (token) {
-      user = getUserByToken(token);
+    if (req.query.userId && req.query.userId !== req.user.id) {
+      return res.status(403).json({ success: false, error: 'You may only view your own profile stats.' });
     }
 
-    const userId = req.query.userId || (user ? user.id : null);
-    const email = req.query.email || (user ? user.email : null);
-    const address = req.query.address || (user ? user.wallet_address : null);
-
-    const stats = getUserProfileStats(userId, email, address);
-    return res.json({
-      success: true,
-      stats
-    });
+    const stats = getUserProfileStats(req.user.id, req.user.email, req.user.wallet_address);
+    return res.json({ success: true, stats });
   } catch (err) {
     console.error('[Auth Error] profile-stats failed:', err);
     return res.status(500).json({ success: false, error: 'Failed to retrieve profile stats' });
@@ -538,20 +594,16 @@ authRouter.get('/profile-stats', (req, res) => {
 
 /**
  * GET /api/auth/wallet-nonce
- * Generates an authentic EIP-4361 cryptographic challenge for the connecting wallet
  */
-authRouter.get('/wallet-nonce', (req, res) => {
+authRouter.get('/wallet-nonce', walletLimiter, (req, res) => {
   try {
     const { address } = req.query;
-    if (!address || !address.startsWith('0x')) {
+    if (!isValidEvmAddress(address)) {
       return res.status(400).json({ success: false, error: 'Valid EVM address required' });
     }
 
     const challenge = createWalletChallenge(address);
-    return res.json({
-      success: true,
-      ...challenge
-    });
+    return res.json({ success: true, ...challenge });
   } catch (err) {
     console.error('[Auth Error] wallet-nonce failed:', err);
     return res.status(500).json({ success: false, error: 'Failed to generate cryptographic challenge' });
@@ -560,13 +612,28 @@ authRouter.get('/wallet-nonce', (req, res) => {
 
 /**
  * POST /api/auth/wallet-verify
- * Cryptographically verifies EVM personal_sign signature using viem recoverMessageAddress
+ * Verifies an EIP-191 personal_sign signature. When an Authorization header is
+ * present, the verified wallet is linked to that session's user. Without one,
+ * the route performs wallet-only sign-in/registration.
  */
-authRouter.post('/wallet-verify', async (req, res) => {
+authRouter.post('/wallet-verify', walletLimiter, async (req, res) => {
   try {
-    const { address, signature, nonce } = req.body;
-    if (!address || !signature || !nonce) {
-      return res.status(400).json({ success: false, error: 'Address, cryptographic signature, and nonce are required' });
+    const { address, signature, nonce } = req.body || {};
+
+    if (!isValidEvmAddress(address) || !signature || !nonce) {
+      return res.status(400).json({
+        success: false,
+        error: 'A valid address, cryptographic signature, and nonce are required.'
+      });
+    }
+
+    const authHeader = req.headers.authorization;
+    let authUser = null;
+    if (authHeader) {
+      authUser = getSessionUser(req);
+      if (!authUser) {
+        return res.status(401).json({ success: false, error: 'Invalid or expired session.' });
+      }
     }
 
     const challengeCheck = verifyWalletChallenge(address, nonce);
@@ -574,7 +641,6 @@ authRouter.post('/wallet-verify', async (req, res) => {
       return res.status(400).json({ success: false, error: challengeCheck.error });
     }
 
-    // Cryptographic signature recovery via viem
     const recoveredAddress = await recoverMessageAddress({
       message: challengeCheck.message,
       signature
@@ -587,34 +653,27 @@ authRouter.post('/wallet-verify', async (req, res) => {
       });
     }
 
-    // Check if request is from an existing authenticated user session
-    const authHeader = req.headers.authorization;
-    let authUser = null;
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      authUser = getUserByToken(authHeader.split(' ')[1]);
-    }
-    if (!authUser && req.body.userId) {
-      authUser = getUserById(req.body.userId);
-    }
-
     let user = null;
     if (authUser) {
-      // User is already logged in: link this verified EVM wallet to their existing account
       user = updateUserWallet(authUser.id, address);
     } else {
-      // Standalone wallet sign-in: check if user exists with this wallet
       user = getUserByWalletAddress(address);
       if (!user) {
-        // First-time wallet sign-in: register user
-        const fakeEmail = `${address.slice(2, 10).toLowerCase()}@arc.user`;
+        const pseudoEmail = `${address.toLowerCase()}@wallet.botbounty`;
+        const existingPseudo = getUserByEmail(pseudoEmail);
+        if (existingPseudo) {
+          return res.status(409).json({
+            success: false,
+            error: 'This wallet is associated with a legacy account. Please contact support.'
+          });
+        }
         user = createUser({
-          email: fakeEmail,
+          email: pseudoEmail,
           name: `Arc Creator (${address.slice(0, 6)}...${address.slice(-4)})`,
-          username: `arc-${address.slice(2, 8).toLowerCase()}`,
-          avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
-          provider: 'wallet'
+          username: uniqueUsername(`arc-${address.slice(2, 10)}`),
+          provider: 'wallet',
+          walletAddress: address
         });
-        user = updateUserWallet(user.id, address);
       }
     }
 
@@ -627,36 +686,50 @@ authRouter.post('/wallet-verify', async (req, res) => {
     });
   } catch (err) {
     console.error('[Auth Error] wallet-verify failed:', err);
-    return res.status(500).json({ success: false, error: 'Cryptographic verification error: ' + err.message });
+    const message = err.message && err.message.includes('already linked')
+      ? err.message
+      : 'Cryptographic verification error.';
+    return res.status(err.message && err.message.includes('already linked') ? 409 : 500).json({
+      success: false,
+      error: message
+    });
   }
 });
 
 /**
  * POST /api/auth/social-connect
- * Links or unlinks Telegram, Discord, X, or GitHub with live validation
+ * Links or unlinks Telegram, Discord, X, or GitHub for the authenticated user.
  */
-authRouter.post('/social-connect', async (req, res) => {
+authRouter.post('/social-connect', requireAuth, profileLimiter, async (req, res) => {
   try {
-    const { userId, platform, handle, action = 'connect' } = req.body;
-    if (!userId || !platform) {
-      return res.status(400).json({ success: false, error: 'User ID and platform are required' });
+    const { platform, handle, action = 'connect' } = req.body || {};
+
+    if (!SOCIAL_PLATFORMS.has(platform)) {
+      return res.status(400).json({ success: false, error: 'Unsupported social platform.' });
     }
 
     if (action === 'disconnect') {
-      const updatedUser = updateUserSocial(userId, platform, null);
+      const updatedUser = updateUserSocial(req.user.id, platform, null);
       return res.json({ success: true, user: formatUser(updatedUser) });
     }
 
-    const cleanHandle = handle ? handle.trim().replace(/^@/, '') : '';
-    if (!cleanHandle) {
-      return res.status(400).json({ success: false, error: 'Handle cannot be empty' });
+    if (action !== 'connect') {
+      return res.status(400).json({ success: false, error: 'Unsupported social action.' });
     }
 
-    // Real GitHub API live verification
+    const cleanHandle = String(handle || '').trim().replace(/^@/, '');
+    if (!cleanHandle || cleanHandle.length > 64 || !/^[A-Za-z0-9_.-]+$/.test(cleanHandle)) {
+      return res.status(400).json({ success: false, error: 'Handle is invalid.' });
+    }
+
     if (platform === 'github') {
       try {
-        const ghRes = await fetch(`https://api.github.com/users/${cleanHandle}`, {
-          headers: { 'User-Agent': 'ArcBounty-Verification-Engine' }
+        const ghRes = await fetch(`https://api.github.com/users/${encodeURIComponent(cleanHandle)}`, {
+          headers: {
+            'User-Agent': 'ArcBounty-Verification-Engine',
+            'Accept': 'application/vnd.github+json'
+          },
+          signal: AbortSignal.timeout(8000)
         });
         if (ghRes.status === 404) {
           return res.status(404).json({
@@ -664,50 +737,72 @@ authRouter.post('/social-connect', async (req, res) => {
             error: `GitHub account "@${cleanHandle}" does not exist. Please check the username.`
           });
         }
+        if (!ghRes.ok) {
+          return res.status(502).json({
+            success: false,
+            error: 'GitHub verification is temporarily unavailable. Please try again.'
+          });
+        }
       } catch (e) {
-        console.warn('[Social Auth] GitHub API network warning:', e.message);
+        return res.status(502).json({
+          success: false,
+          error: 'GitHub verification is temporarily unavailable. Please try again.'
+        });
       }
     }
 
-    const updatedUser = updateUserSocial(userId, platform, cleanHandle);
+    const updatedUser = updateUserSocial(req.user.id, platform, cleanHandle);
     return res.json({ success: true, user: formatUser(updatedUser) });
   } catch (err) {
     console.error('[Auth Error] social-connect failed:', err);
-    return res.status(500).json({ success: false, error: err.message || 'Failed to update social connection' });
+    return res.status(500).json({ success: false, error: 'Failed to update social connection' });
   }
 });
 
 /**
  * POST /api/auth/connect-wallet
- * Connects or switches EVM wallet address for user
+ * Removed: unverified wallet changes are not permitted. Use /wallet-verify with
+ * a signed challenge while authenticated.
  */
-authRouter.post('/connect-wallet', (req, res) => {
-  try {
-    const { userId, address } = req.body;
-    if (!userId || !address) {
-      return res.status(400).json({ success: false, error: 'User ID and address are required' });
-    }
-
-    const updatedUser = updateUserWallet(userId, address);
-    return res.json({ success: true, user: formatUser(updatedUser) });
-  } catch (err) {
-    console.error('[Auth Error] connect-wallet failed:', err);
-    return res.status(500).json({ success: false, error: err.message || 'Failed to connect wallet' });
-  }
+authRouter.post('/connect-wallet', walletLimiter, (req, res) => {
+  return res.status(410).json({
+    success: false,
+    error: 'Wallet changes require a signed challenge. Use wallet signature verification.'
+  });
 });
 
 /**
  * POST /api/auth/update-profile
- * Updates creator profile details
+ * Self-service profile updates only; the user ID always comes from the session.
  */
-authRouter.post('/update-profile', (req, res) => {
+authRouter.post('/update-profile', requireAuth, profileLimiter, (req, res) => {
   try {
-    const { userId, name, username, bio, discipline, avatar } = req.body;
-    if (!userId) {
-      return res.status(400).json({ success: false, error: 'User ID is required' });
+    const { name, username, bio, discipline, avatar } = req.body || {};
+
+    if (name !== undefined && (typeof name !== 'string' || !name.trim() || name.trim().length > 80)) {
+      return res.status(400).json({ success: false, error: 'Name must be 1-80 characters.' });
     }
 
-    const updatedUser = updateUserProfile(userId, { name, username, bio, discipline, avatar });
+    if (bio !== undefined && (typeof bio !== 'string' || bio.length > 500)) {
+      return res.status(400).json({ success: false, error: 'Bio must be 500 characters or fewer.' });
+    }
+
+    if (discipline !== undefined && !DISCIPLINES.has(discipline)) {
+      return res.status(400).json({ success: false, error: 'Invalid specialty selected.' });
+    }
+
+    if (!isValidAvatarUrl(avatar)) {
+      return res.status(400).json({ success: false, error: 'Avatar must be a valid HTTP(S) URL.' });
+    }
+
+    const updatedUser = updateUserProfile(req.user.id, {
+      name: name !== undefined ? name.trim() : undefined,
+      username,
+      bio: bio !== undefined ? bio.trim() : undefined,
+      discipline,
+      avatar
+    });
+
     return res.json({ success: true, user: formatUser(updatedUser) });
   } catch (err) {
     console.error('[Auth Error] update-profile failed:', err.message);
@@ -723,37 +818,37 @@ authRouter.post('/update-profile', (req, res) => {
 
 /**
  * GET /api/auth/check-username
- * Real-time endpoint to check if a creator handle is available
  */
-authRouter.get('/check-username', (req, res) => {
+authRouter.get('/check-username', profileLimiter, (req, res) => {
   try {
-    const { username, userId } = req.query;
-    if (!username) {
-      return res.status(400).json({ success: false, error: 'Username parameter is required' });
+    const { username } = req.query;
+    if (!username || typeof username !== 'string') {
+      return res.status(400).json({ success: false, error: 'Username parameter is required.' });
     }
 
-    const cleanUsername = username.trim().toLowerCase().replace(/^@/, '').replace(/[^a-z0-9_-]/g, '');
-    if (!cleanUsername || cleanUsername.length < 3) {
+    const clean = cleanUsername(username);
+    if (!USERNAME_PATTERN.test(clean)) {
       return res.json({
         success: true,
         available: false,
-        username: cleanUsername,
-        message: 'Handle must be at least 3 characters long (letters, numbers, _, -).'
+        username: clean,
+        message: 'Handle must be 3-30 characters long (letters, numbers, _, -).'
       });
     }
 
-    const existing = getUserByUsername(cleanUsername);
-    const isTaken = Boolean(existing && (!userId || existing.id !== userId));
+    const sessionUser = getSessionUser(req);
+    const existing = getUserByUsername(clean);
+    const isTaken = Boolean(existing && (!sessionUser || existing.id !== sessionUser.id));
 
     return res.json({
       success: true,
       available: !isTaken,
-      username: cleanUsername,
+      username: clean,
       message: isTaken
-        ? `Creator handle "@${cleanUsername}" is already taken.`
-        : `Creator handle "@${cleanUsername}" is available!`
+        ? `Creator handle "@${clean}" is already taken.`
+        : `Creator handle "@${clean}" is available!`
     });
   } catch (err) {
-    return res.status(500).json({ success: false, error: err.message });
+    return res.status(500).json({ success: false, error: 'Failed to check username availability.' });
   }
 });

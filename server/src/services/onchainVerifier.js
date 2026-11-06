@@ -20,6 +20,40 @@ export function getPublicClient() {
   });
 }
 
+function chainBypassEnabled() {
+  // Test-only escape hatch. It must be explicitly enabled in addition to
+  // NODE_ENV=test so a misconfigured production process cannot silently skip
+  // on-chain verification.
+  return process.env.NODE_ENV === 'test' && process.env.ALLOW_UNVERIFIED_CHAIN_TXS === 'true';
+}
+
+function expectedBountyIdForTest(txHash) {
+  // Derive a stable unique 32-byte identifier from the transaction hash so
+  // multiple simulated bounties do not collide.
+  return `0x${txHash.slice(2).padEnd(64, '0').slice(0, 64)}`;
+}
+
+/**
+ * Convert a decimal token amount to integer base units without floating-point
+ * rounding. Accepts bigint, integer, or decimal string/number input.
+ */
+export function toBaseUnits(value, decimals) {
+  if (typeof value === 'bigint') return value;
+
+  const text = String(value).trim();
+  if (!/^\d+(?:\.\d+)?$/.test(text)) {
+    throw new Error(`Invalid token amount: "${value}".`);
+  }
+
+  const [whole, fraction = ''] = text.split('.');
+  if (fraction.length > decimals && /[1-9]/.test(fraction.slice(decimals))) {
+    throw new Error(`Token amount "${value}" has more than ${decimals} decimal places.`);
+  }
+
+  const paddedFraction = (fraction.slice(0, decimals) + '0'.repeat(decimals)).slice(0, decimals);
+  return BigInt(whole) * (10n ** BigInt(decimals)) + BigInt(paddedFraction || '0');
+}
+
 /**
  * Validate 66-character hex format (0x + 64 hex chars)
  */
@@ -54,7 +88,12 @@ export function isSettlementTxReused(txHash) {
  * 4. Interacted with active Escrow contract
  * 5. Emitted BountyCreated event with matching settlement token (Native $BOT address(0)) and amount
  */
-export async function verifyDepositTransaction({ txHash, expectedAmount, expectedToken = '0x0000000000000000000000000000000000000000' }) {
+export async function verifyDepositTransaction({
+  txHash,
+  expectedAmount,
+  expectedToken = '0x0000000000000000000000000000000000000000',
+  expectedMaintainer
+}) {
   if (!isValidTxHashFormat(txHash)) {
     throw new Error(`Invalid transaction hash format: "${txHash}". Expected 66-character hex.`);
   }
@@ -63,15 +102,15 @@ export async function verifyDepositTransaction({ txHash, expectedAmount, expecte
     throw new Error(`Transaction hash ${txHash} has already been used to fund another bounty.`);
   }
 
-  // Allow bypass in memory test environment unless explicit live verification is requested
-  if (process.env.NODE_ENV === 'test' && (!process.env.VERIFY_LIVE_BOHR || process.env.VERIFY_LIVE_BOHR !== 'true')) {
+  if (chainBypassEnabled()) {
     return {
       verified: true,
       simulated: true,
       txHash,
-      bountyId: '0x' + '1'.repeat(64),
-      maintainer: '0xBE0aaE21b6252aa1207cAa50A753e8C45bCBCbc5',
-      amountWei: '10000000000000000'
+      bountyId: expectedBountyIdForTest(txHash),
+      maintainer: expectedMaintainer || null,
+      settlementToken: expectedToken,
+      amountWei: expectedAmount !== undefined ? toBaseUnits(expectedAmount, 18).toString() : '0'
     };
   }
 
@@ -127,12 +166,19 @@ export async function verifyDepositTransaction({ txHash, expectedAmount, expecte
     throw new Error(`Settlement token ${settlementToken} does not match expected token (${expectedToken}).`);
   }
 
+  // The funding wallet must be the same account that is creating the bounty.
+  if (expectedMaintainer && maintainer.toLowerCase() !== expectedMaintainer.toLowerCase()) {
+    throw new Error(`On-chain maintainer ${maintainer} does not match the authenticated wallet (${expectedMaintainer}).`);
+  }
+
   // Check amount matches if expectedAmount is provided
   if (expectedAmount !== undefined && expectedAmount !== null) {
-    const isUsdt = settlementToken.toLowerCase() === (process.env.USDT_ADDRESS || '0x75edc9335175fc0552d51d48439f229c10420fe3').toLowerCase() || settlementToken.toLowerCase() === '0xababc7ddc03e501d190c676bf3d92ef0e6e87a3c';
-    const decimals = isUsdt ? 6 : 18;
-    const expectedAmountWei = typeof expectedAmount === 'bigint' ? expectedAmount : BigInt(Math.round(parseFloat(expectedAmount) * Math.pow(10, decimals)));
-    // Allow slight tolerance or exact match
+    const decimals = tokenDecimals(settlementToken);
+    const expectedAmountWei = toBaseUnits(expectedAmount, decimals);
+    if (expectedAmountWei <= 0n) {
+      throw new Error('Expected bounty amount must be greater than zero.');
+    }
+    // Deposits may overfund a bounty, but never underfund it.
     if (amount < expectedAmountWei) {
       throw new Error(`On-chain funded amount (${amount.toString()}) is less than required bounty amount (${expectedAmountWei.toString()}).`);
     }
@@ -176,14 +222,18 @@ export async function verifySettlementTransaction({
   let receipt = injectedReceipt;
 
   if (!receipt) {
-    // Allow bypass in memory test environment unless explicit live verification is requested
-    if (process.env.NODE_ENV === 'test' && (!process.env.VERIFY_LIVE_BOHR || process.env.VERIFY_LIVE_BOHR !== 'true')) {
+    if (chainBypassEnabled()) {
+      const simulatedDecimals = 18;
       return {
         verified: true,
         simulated: true,
         txHash,
+        bountyId: expectedBountyId,
         solver: expectedSolver,
-        amountWei: '10000000000000000'
+        settlementToken: '0x0000000000000000000000000000000000000000',
+        amountWei: expectedAmount !== undefined
+          ? toBaseUnits(expectedAmount, simulatedDecimals).toString()
+          : '0'
       };
     }
 
@@ -234,10 +284,9 @@ export async function verifySettlementTransaction({
 
   const { bountyId, solver, amount, settlementToken, prUrl, timedOut } = settledEvent.args;
 
-  // Review timeout auto-claims are strictly disabled throughout the native-$BOT pilot
-  if (timedOut) {
-    throw new Error('Review timeout auto-claims (claimTimeoutRelease) are disabled throughout the native-$BOT pilot. All settlements require maintainer verification and release.');
-  }
+  // Timeout auto-claims are a legitimate contract path: the escrow enforces the
+  // review deadline and pays the assigned solver. The server records the event
+  // exactly as emitted instead of refusing to recognize a real on-chain payout.
 
   // Verify recipient solver matches
   if (expectedSolver && solver.toLowerCase() !== expectedSolver.toLowerCase()) {
@@ -249,12 +298,15 @@ export async function verifySettlementTransaction({
     throw new Error(`On-chain settlement bountyId (${bountyId}) does not match this bounty.`);
   }
 
-  // Check amount using the settled token's decimals (6 for USDT, 18 for native BOT)
+  // The recorded reward must match the on-chain settlement exactly.
   if (expectedAmount !== undefined && expectedAmount !== null) {
     const decimals = tokenDecimals(settlementToken);
-    const expectedAmountWei = typeof expectedAmount === 'bigint' ? expectedAmount : BigInt(Math.round(parseFloat(expectedAmount) * Math.pow(10, decimals)));
-    if (amount < expectedAmountWei) {
-      throw new Error(`On-chain settled amount (${amount.toString()} base units) is less than expected reward amount (${expectedAmountWei.toString()} base units).`);
+    const expectedAmountWei = toBaseUnits(expectedAmount, decimals);
+    if (expectedAmountWei <= 0n) {
+      throw new Error('Expected settlement amount must be greater than zero.');
+    }
+    if (amount !== expectedAmountWei) {
+      throw new Error(`On-chain settled amount (${amount.toString()} base units) does not match expected reward amount (${expectedAmountWei.toString()} base units).`);
     }
   }
 
@@ -283,7 +335,7 @@ export async function verifySubmissionTransaction({ txHash, expectedSolver, expe
     throw new Error(`Invalid transaction hash format: "${txHash}". Expected 66-character hex.`);
   }
 
-  if (process.env.NODE_ENV === 'test' && (!process.env.VERIFY_LIVE_BOHR || process.env.VERIFY_LIVE_BOHR !== 'true')) {
+  if (chainBypassEnabled()) {
     return { verified: true, simulated: true, txHash, solver: expectedSolver, bountyId: expectedBountyId };
   }
 

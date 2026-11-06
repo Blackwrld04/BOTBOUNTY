@@ -2,9 +2,23 @@ import { createPublicClient, createWalletClient, http, parseEther, parseAbi, for
 import { privateKeyToAccount, generatePrivateKey } from 'viem/accounts';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
-const MAINTAINER_PK = '0x285a7ba57b39eba8d310644c684f47c8231bcd3326ac036883491774de20ddb7';
-const RPC_URL = 'https://rpc.bohr.life';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const MAINTAINER_PK = process.env.MAINTAINER_PRIVATE_KEY;
+const RPC_URL = process.env.BOT_RPC_URL || 'https://rpc.bohr.life';
+
+if (!MAINTAINER_PK || !/^0x[0-9a-fA-F]{64}$/.test(MAINTAINER_PK)) {
+  console.error(
+    'Missing MAINTAINER_PRIVATE_KEY.\n' +
+    'Export a dedicated, low-balance testnet key before running this script, e.g.:\n' +
+    '  MAINTAINER_PRIVATE_KEY=0x... node scripts/deploy_and_test_timeout_on_bohr.js\n' +
+    'Never commit or reuse a production key.'
+  );
+  process.exit(1);
+}
 
 const maintainerAccount = privateKeyToAccount(MAINTAINER_PK);
 const publicClient = createPublicClient({ transport: http(RPC_URL) });
@@ -14,7 +28,7 @@ const maintainerWallet = createWalletClient({
 });
 
 // Read compiled contract artifact from out/BotBountyEscrowTimeoutTest.sol/BotBountyEscrowTimeoutTest.json
-const artifactPath = path.resolve('../contracts/out/BotBountyEscrowTimeoutTest.sol/BotBountyEscrowTimeoutTest.json');
+const artifactPath = path.resolve(__dirname, '../../contracts/out/BotBountyEscrowTimeoutTest.sol/BotBountyEscrowTimeoutTest.json');
 const artifact = JSON.parse(fs.readFileSync(artifactPath, 'utf8'));
 
 async function main() {

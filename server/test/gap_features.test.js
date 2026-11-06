@@ -7,34 +7,33 @@ import {
   updateBountySubmission,
   getBountySubmissions,
   scoreBountySubmission,
-  disburseMultiWinnerRewards,
+  disburseBountyReward,
   addBountyDiscussion,
   getBountyDiscussions,
   scanArcEscrowDeposits,
   getAuditLedgerData
 } from '../src/db.js';
 
-describe('ArcBounty Integrated Gap Features Tests', () => {
-  const bountyId = 'bounty-gap-test-' + Date.now();
+const txHash = (char) => `0x${char.repeat(64)}`;
 
+describe('BotBounty Integrated Features Tests', () => {
   const bounty = createBountyRecord({
-    id: bountyId,
-    title: 'Integrated Gaps Test Bounty',
+    title: 'Integrated Features Test Bounty',
     category: 'DEV',
     amount: 3000,
+    depositTx: txHash('a'),
     maintainer: '0x1111111111111111111111111111111111111111',
-    maintainerName: 'Circle Arc Foundation',
-    maintainerEmail: 'sponsor@arc.network',
+    maintainerName: 'BOT Chain Foundation',
+    maintainerEmail: 'sponsor@botbounty.ai',
     deadlineDays: 7
   });
   approveBountyRecord(bounty.id);
 
-  it('Gap 1 & 2: records submission with co-creator collaboration and allows revision before deadline', () => {
-    // 1. Submit with co-creator split
+  it('records a submission with co-creator collaboration and allows revision before deadline', () => {
     const sub = createBountySubmission({
       bountyId: bounty.id,
       creatorName: 'Lead Contributor',
-      creatorEmail: 'lead@arc.dev',
+      creatorEmail: 'lead@botbounty.dev',
       walletAddress: '0x2222222222222222222222222222222222222222',
       submissionUrl: 'https://github.com/lead/project/pull/1',
       notes: 'Initial release version 1',
@@ -47,13 +46,12 @@ describe('ArcBounty Integrated Gap Features Tests', () => {
     assert.equal(sub.collaborators.length, 1);
     assert.equal(sub.collaborators[0].share, 40);
 
-    // 2. Creator revises their submission before deadline
     const updated = updateBountySubmission({
       bountyId: bounty.id,
       submissionId: sub.id,
       submissionUrl: 'https://github.com/lead/project/pull/1-revised',
       notes: 'Revised version 2 with security enhancements',
-      submitterEmail: 'lead@arc.dev',
+      submitterEmail: 'lead@botbounty.dev',
       submitterWallet: '0x2222222222222222222222222222222222222222',
       collaborators: [
         { address: '0x3333333333333333333333333333333333333333', share: 50, role: 'Co-Founder' }
@@ -64,15 +62,14 @@ describe('ArcBounty Integrated Gap Features Tests', () => {
     assert.equal(updated.submissionUrl, 'https://github.com/lead/project/pull/1-revised');
     assert.equal(updated.collaborators[0].share, 50);
 
-    // 3. Inspect submissions and history
     const allSubs = getBountySubmissions(bounty.id);
-    const foundSub = allSubs.find(s => s.id === sub.id);
+    const foundSub = allSubs.find((s) => s.id === sub.id);
     assert.ok(foundSub);
     assert.equal(foundSub.revision_history.length, 1);
     assert.equal(foundSub.revision_history[0].submissionUrl, 'https://github.com/lead/project/pull/1');
   });
 
-  it('Gap 3: enables public community discussion / Q&A under the bounty', () => {
+  it('enables public community discussion / Q&A under the bounty', () => {
     const comment1 = addBountyDiscussion({
       bountyId: bounty.id,
       authorName: 'Curious Builder',
@@ -84,10 +81,10 @@ describe('ArcBounty Integrated Gap Features Tests', () => {
     assert.ok(comment1.id);
     assert.equal(comment1.bountyId, bounty.id);
 
-    const comment2 = addBountyDiscussion({
+    addBountyDiscussion({
       bountyId: bounty.id,
-      authorName: 'Circle Arc Sponsor',
-      authorHandle: '@arc_official',
+      authorName: 'BOT Chain Sponsor',
+      authorHandle: '@bot_official',
       authorRole: 'sponsor',
       content: 'Yes! Strict null checks and 100% type coverage are expected.'
     });
@@ -98,27 +95,25 @@ describe('ArcBounty Integrated Gap Features Tests', () => {
     assert.equal(thread[1].author_role, 'sponsor');
   });
 
-  it('Gap 4: auto-detects incoming Arc Escrow deposits', () => {
+  it('lists pending escrow deposits for administrator review', () => {
     const scan = scanArcEscrowDeposits();
     assert.equal(scan.success, true);
     assert.ok(Array.isArray(scan.verifiedDeposits));
   });
 
-  it('Gap 5: records structured rubric scores and distributes multi-winner tiered prizes', () => {
-    // Submit 2nd participant
+  it('records structured rubric scores and settles the explicit winner with a verified hash', () => {
     const sub2 = createBountySubmission({
       bountyId: bounty.id,
       creatorName: 'Second Builder',
-      creatorEmail: 'second@arc.dev',
+      creatorEmail: 'second@botbounty.dev',
       walletAddress: '0x4444444444444444444444444444444444444444',
       submissionUrl: 'https://github.com/second/repo/pull/2',
       notes: 'Runner up submission'
     });
 
     const subs = getBountySubmissions(bounty.id);
-    const sub1 = subs[1]; // First submission
+    const sub1 = subs.find((s) => s.creator_email === 'lead@botbounty.dev');
 
-    // Score both submissions with rubrics
     scoreBountySubmission({
       submissionId: sub1.id,
       scoreCodeQuality: 9,
@@ -135,32 +130,42 @@ describe('ArcBounty Integrated Gap Features Tests', () => {
       reviewerNotes: 'Solid UX and creative presentation.'
     });
 
-    // Verify scores stored
     const refreshedSubs = getBountySubmissions(bounty.id);
-    const scoredSub1 = refreshedSubs.find(s => s.id === sub1.id);
+    const scoredSub1 = refreshedSubs.find((s) => s.id === sub1.id);
     assert.equal(scoredSub1.score_code_quality, 9);
     assert.equal(scoredSub1.reviewer_notes, 'Exceptional architecture and sub-second test execution.');
 
-    // Execute Multi-Winner Payout: 1st Place = $2000, 2nd Place = $1000
-    const payoutResult = disburseMultiWinnerRewards({
+    // Settlement must name the winner and provide a verifiable on-chain hash.
+    assert.throws(() => {
+      disburseBountyReward({
+        bountyId: bounty.id,
+        submissionId: sub1.id,
+        adminEmail: 'treasury@botbounty.io',
+        customAmount: 2000
+      });
+    }, /settlement transaction hash/i);
+
+    const settlementHash = txHash('b');
+    const payoutResult = disburseBountyReward({
       bountyId: bounty.id,
-      winners: [
-        { submissionId: sub1.id, rank: 1, amount: 2000 },
-        { submissionId: sub2.id, rank: 2, amount: 1000 }
-      ],
-      adminEmail: 'treasury@arcbounty.io'
+      submissionId: sub1.id,
+      adminEmail: 'treasury@botbounty.io',
+      customAmount: 2000,
+      txHash: settlementHash
     });
 
     assert.equal(payoutResult.success, true);
-    assert.equal(payoutResult.winners.length, 2);
-    assert.equal(payoutResult.winners[0].amount, 2000);
-    assert.equal(payoutResult.winners[1].amount, 1000);
+    assert.equal(payoutResult.amount, 2000);
+    assert.equal(payoutResult.txHash, settlementHash);
+    assert.equal(payoutResult.recipient, '0x2222222222222222222222222222222222222222');
   });
 
-  it('Gap 7: generates exportable audit ledger data for DAO compliance', () => {
+  it('generates exportable audit ledger data for DAO compliance', () => {
     const ledger = getAuditLedgerData();
     assert.ok(Array.isArray(ledger));
-    assert.ok(ledger.length >= 2, 'Audit ledger should contain the multi-winner disbursements');
-    assert.ok(ledger[0].tx_hash.startsWith('0x'));
+    const entry = ledger.find((row) => row.bounty_id === bounty.id);
+    assert.ok(entry, 'Audit ledger should contain the settled disbursement');
+    assert.equal(entry.tx_hash, txHash('b'));
+    assert.equal(entry.amount_usdc, 2000);
   });
 });

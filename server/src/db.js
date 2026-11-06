@@ -60,6 +60,7 @@ db.exec(`
     code TEXT NOT NULL,
     type TEXT NOT NULL,
     pending_data TEXT,
+    attempts INTEGER DEFAULT 0,
     expires_at INTEGER NOT NULL,
     used INTEGER DEFAULT 0,
     created_at INTEGER NOT NULL
@@ -164,6 +165,7 @@ try { db.exec(`ALTER TABLE users ADD COLUMN x TEXT;`); } catch (e) {}
 try { db.exec(`ALTER TABLE users ADD COLUMN github TEXT;`); } catch (e) {}
 try { db.exec(`ALTER TABLE users ADD COLUMN password_hash TEXT;`); } catch (e) {}
 try { db.exec(`ALTER TABLE verification_codes ADD COLUMN pending_data TEXT;`); } catch (e) {}
+try { db.exec(`ALTER TABLE verification_codes ADD COLUMN attempts INTEGER DEFAULT 0;`); } catch (e) {}
 try { db.exec(`ALTER TABLE bounties ADD COLUMN reward_distribution TEXT;`); } catch (e) {}
 try { db.exec(`ALTER TABLE bounty_submissions ADD COLUMN revision_count INTEGER DEFAULT 1;`); } catch (e) {}
 try { db.exec(`ALTER TABLE bounty_submissions ADD COLUMN revision_history TEXT DEFAULT '[]';`); } catch (e) {}
@@ -219,10 +221,18 @@ export function updateUserPassword(userId, newPassword) {
 
 
 /**
- * Generate an Arc L1 simulation address
+ * Validate a checksum-agnostic EVM address (0x + 40 hex characters).
  */
-function generateArcAddress() {
-  return '0x' + crypto.randomBytes(20).toString('hex');
+export function isValidEvmAddress(address) {
+  return typeof address === 'string' && /^0x[0-9a-fA-F]{40}$/.test(address.trim());
+}
+
+/**
+ * Canonical storage form for an EVM address: trimmed and lower-cased.
+ * Returns null when the value is not a valid address.
+ */
+export function normalizeEvmAddress(address) {
+  return isValidEvmAddress(address) ? address.trim().toLowerCase() : null;
 }
 
 /**
@@ -230,52 +240,84 @@ function generateArcAddress() {
  */
 export function createVerificationCode(email, type = 'login', pendingData = null) {
   const normalizedEmail = email.trim().toLowerCase();
-  
-  // Invalidate any existing unused codes for this email
-  const invalidateStmt = db.prepare(`
-    UPDATE verification_codes SET used = 1 WHERE email = ? AND used = 0
-  `);
-  invalidateStmt.run(normalizedEmail);
 
-  // Generate 6-digit code
-  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  // Invalidate any existing unused codes of the same purpose for this email
+  const invalidateStmt = db.prepare(`
+    UPDATE verification_codes SET used = 1 WHERE email = ? AND type = ? AND used = 0
+  `);
+  invalidateStmt.run(normalizedEmail, type);
+
+  // Cryptographically secure 6-digit code
+  const code = String(crypto.randomInt(100000, 1000000));
   const now = Date.now();
   const expiresAt = now + 10 * 60 * 1000; // 10 minutes expiry
   const serializedPending = pendingData ? (typeof pendingData === 'string' ? pendingData : JSON.stringify(pendingData)) : null;
 
   const insertStmt = db.prepare(`
-    INSERT INTO verification_codes (email, code, type, pending_data, expires_at, used, created_at)
-    VALUES (?, ?, ?, ?, ?, 0, ?)
+    INSERT INTO verification_codes (email, code, type, pending_data, attempts, expires_at, used, created_at)
+    VALUES (?, ?, ?, ?, 0, ?, 0, ?)
   `);
   insertStmt.run(normalizedEmail, code, type, serializedPending, expiresAt, now);
-
-  console.log(`[Auth Service] Verification code generated for ${normalizedEmail}: [${code}] (Type: ${type})`);
 
   return { code, expiresAt };
 }
 
 /**
- * Verify a 6-digit code for an email
+ * Verify a 6-digit code for an email.
+ *
+ * Codes are single-use, purpose-bound, expire after 10 minutes, and allow at
+ * most five incorrect attempts before being invalidated.
  */
-export function verifyCode(email, code) {
-  const normalizedEmail = email.trim().toLowerCase();
-  const normalizedCode = code.trim();
-  const now = Date.now();
+export function verifyCode(email, code, expectedType = null) {
+  const normalizedEmail = String(email || '').trim().toLowerCase();
+  const normalizedCode = String(code || '').trim();
 
-  const queryStmt = db.prepare(`
-    SELECT * FROM verification_codes 
-    WHERE email = ? AND code = ? AND used = 0 AND expires_at > ?
-    ORDER BY created_at DESC LIMIT 1
-  `);
-  const record = queryStmt.get(normalizedEmail, normalizedCode, now);
+  if (!/^\d{6}$/.test(normalizedCode)) {
+    return { valid: false, error: 'Invalid or expired verification code' };
+  }
+
+  const now = Date.now();
+  const queryStmt = expectedType
+    ? db.prepare(`
+        SELECT * FROM verification_codes
+        WHERE email = ? AND type = ? AND used = 0 AND expires_at > ?
+        ORDER BY created_at DESC LIMIT 1
+      `)
+    : db.prepare(`
+        SELECT * FROM verification_codes
+        WHERE email = ? AND used = 0 AND expires_at > ?
+        ORDER BY created_at DESC LIMIT 1
+      `);
+
+  const record = expectedType
+    ? queryStmt.get(normalizedEmail, expectedType, now)
+    : queryStmt.get(normalizedEmail, now);
 
   if (!record) {
     return { valid: false, error: 'Invalid or expired verification code' };
   }
 
-  // Mark as used
-  const updateStmt = db.prepare(`UPDATE verification_codes SET used = 1 WHERE id = ?`);
-  updateStmt.run(record.id);
+  if (Number(record.attempts || 0) >= 5) {
+    db.prepare(`UPDATE verification_codes SET used = 1 WHERE id = ?`).run(record.id);
+    return { valid: false, error: 'Too many incorrect attempts. Please request a new code.' };
+  }
+
+  const expected = Buffer.from(String(record.code));
+  const supplied = Buffer.from(normalizedCode);
+  const matches = expected.length === supplied.length && crypto.timingSafeEqual(expected, supplied);
+
+  if (!matches) {
+    const attempts = Number(record.attempts || 0) + 1;
+    if (attempts >= 5) {
+      db.prepare(`UPDATE verification_codes SET attempts = ?, used = 1 WHERE id = ?`).run(attempts, record.id);
+      return { valid: false, error: 'Too many incorrect attempts. Please request a new code.' };
+    }
+    db.prepare(`UPDATE verification_codes SET attempts = ? WHERE id = ?`).run(attempts, record.id);
+    return { valid: false, error: 'Invalid or expired verification code' };
+  }
+
+  // Mark as used only after a successful match
+  db.prepare(`UPDATE verification_codes SET used = 1 WHERE id = ?`).run(record.id);
 
   let pendingData = null;
   if (record.pending_data) {
@@ -293,13 +335,13 @@ export function verifyCode(email, code) {
  * Check if an email or wallet address has administrative privileges
  */
 export function isAdminUser(email, walletAddress) {
-  const adminEmails = (process.env.ADMIN_EMAILS || 'olajideabdulquadri22@gmail.com')
+  // Administrators must be explicitly configured. There is deliberately no
+  // built-in/default administrator email or wallet.
+  const adminEmails = (process.env.ADMIN_EMAILS || '')
     .split(',')
     .map(e => e.trim().toLowerCase())
     .filter(Boolean);
 
-
-  
   const adminWallets = (process.env.ADMIN_WALLETS || '')
     .split(',')
     .map(w => w.trim().toLowerCase())
@@ -366,6 +408,7 @@ export function createUser({
   discipline = 'Content',
   password = null,
   passwordHash = null,
+  walletAddress = null,
   strictUsername = false
 }) {
   const normalizedEmail = email.trim().toLowerCase();
@@ -375,7 +418,22 @@ export function createUser({
     .replace(/[^a-z0-9_-]/g, '');
 
   if (!cleanUsername) {
-    cleanUsername = 'creator-' + Math.floor(1000 + Math.random() * 9000);
+    cleanUsername = 'creator-' + crypto.randomInt(1000, 10000);
+  }
+
+  const normalizedWallet = walletAddress === null || walletAddress === undefined
+    ? null
+    : normalizeEvmAddress(walletAddress);
+
+  if (walletAddress !== null && walletAddress !== undefined && !normalizedWallet) {
+    throw new Error('Valid EVM wallet address required');
+  }
+
+  if (normalizedWallet) {
+    const existingWallet = db.prepare(`SELECT id FROM users WHERE LOWER(wallet_address) = ?`).get(normalizedWallet);
+    if (existingWallet) {
+      throw new Error('This wallet address is already linked to another account.');
+    }
   }
 
   if (strictUsername && getUserByUsername(cleanUsername)) {
@@ -391,7 +449,6 @@ export function createUser({
   }
 
   const id = 'usr_' + crypto.randomBytes(12).toString('hex');
-  const walletAddress = generateArcAddress();
   const defaultAvatar = avatar || `https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80`;
   const now = Date.now();
   const initialBalance = 0.0; // Creator collected earnings start at $0 until disbursed by admin from escrow
@@ -408,7 +465,7 @@ export function createUser({
     name || cleanUsername,
     finalUsername,
     defaultAvatar,
-    walletAddress,
+    normalizedWallet,
     initialBalance,
     provider,
     discipline,
@@ -460,6 +517,15 @@ export function getUserByToken(token) {
 }
 
 /**
+ * Revoke a session token (used by logout).
+ */
+export function deleteSession(token) {
+  if (!token) return false;
+  const info = db.prepare(`DELETE FROM sessions WHERE token = ?`).run(token);
+  return info.changes > 0;
+}
+
+/**
  * Connect or disconnect a social platform for a user
  * platforms supported: 'telegram', 'discord', 'x', 'github'
  */
@@ -484,12 +550,17 @@ export function updateUserSocial(userId, platform, handle) {
  * Connect or update wallet address for a user
  */
 export function updateUserWallet(userId, walletAddress) {
-  if (!walletAddress || !walletAddress.startsWith('0x')) {
+  const normalized = normalizeEvmAddress(walletAddress);
+  if (!normalized) {
     throw new Error('Valid EVM wallet address required');
+  }
+  const existing = db.prepare(`SELECT id FROM users WHERE LOWER(wallet_address) = ? AND id != ?`).get(normalized, userId);
+  if (existing) {
+    throw new Error('This wallet address is already linked to another account.');
   }
 
   const stmt = db.prepare(`UPDATE users SET wallet_address = ? WHERE id = ?`);
-  stmt.run(walletAddress.toLowerCase(), userId);
+  stmt.run(normalized, userId);
 
   const updated = getUserById(userId);
   if (isExternalDbConfigured() && updated) {
@@ -544,9 +615,10 @@ export function updateUserProfile(userId, { name, username, bio, discipline, ava
  * Get user by wallet address
  */
 export function getUserByWalletAddress(address) {
-  if (!address) return null;
-  const stmt = db.prepare(`SELECT * FROM users WHERE wallet_address = ?`);
-  return formatUserRecord(stmt.get(address.toLowerCase()));
+  const normalized = normalizeEvmAddress(address);
+  if (!normalized) return null;
+  const stmt = db.prepare(`SELECT * FROM users WHERE LOWER(wallet_address) = ?`);
+  return formatUserRecord(stmt.get(normalized));
 }
 
 /**
@@ -1159,67 +1231,37 @@ try {
   ensureActiveBounties();
 } catch (e) {}
 
-export function ensureSeedUsers() {
-  if (process.env.DB_PATH === ":memory:") return;
-  try {
-    const seedAccounts = [
-      {
-        email: 'abdulquadriolajide22@gmail.com',
-        username: 'olajide',
-        name: 'olajide',
-        password: 'Abdul34@',
-        wallet: '0xe2ffb8d71f757d4c1a25b1e1e6169e573d031757',
-        role: 'creator',
-        discipline: 'Development'
-      },
-      {
-        email: 'olajideabdulquadri22@gmail.com',
-        username: 'olajide-admin',
-        name: 'Olajide Admin',
-        password: 'Abdul34@',
-        wallet: '0x461cd48D95993242bB04774cc68042795586BbAd',
-        role: 'admin',
-        discipline: 'Development'
-      }
-    ];
+/**
+ * Security migration: earlier releases created accounts with well-known demo
+ * passwords. Never seed credentials again, and neutralize any legacy rows that
+ * still use the published password while preserving the account itself.
+ */
+export function purgeLegacySeedCredentials() {
+  if (process.env.DB_PATH === ':memory:') return;
+  const legacyEmails = [
+    'abdulquadriolajide22@gmail.com',
+    'olajideabdulquadri22@gmail.com'
+  ];
+  const legacyPasswords = ['Abdul34@'];
 
-    for (const acc of seedAccounts) {
-      const existing = getUserByEmail(acc.email) || getUserByUsername(acc.username);
-      const hash = hashPassword(acc.password);
-      if (existing) {
-        db.prepare(`UPDATE users SET password_hash = ?, email = ?, username = ? WHERE id = ?`).run(
-          hash,
-          acc.email,
-          acc.username,
-          existing.id
-        );
-      } else {
-        const id = 'usr_' + crypto.randomBytes(12).toString('hex');
-        const now = Date.now();
-        db.prepare(`
-          INSERT INTO users (id, email, name, username, avatar, wallet_address, usdc_balance, provider, role, discipline, bio, password_hash, created_at)
-          VALUES (?, ?, ?, ?, ?, ?, 0.0, 'email', ?, ?, 'Web3 Creator on BOT Chain', ?, ?)
-        `).run(
-          id,
-          acc.email,
-          acc.name,
-          acc.username,
-          'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-          acc.wallet,
-          acc.role,
-          acc.discipline,
-          hash,
-          now
-        );
+  try {
+    for (const email of legacyEmails) {
+      const row = db.prepare(`SELECT id, email, password_hash FROM users WHERE LOWER(email) = ?`).get(email);
+      if (!row || !row.password_hash) continue;
+
+      const usesLegacyPassword = legacyPasswords.some((password) => verifyPassword(password, row.password_hash));
+      if (usesLegacyPassword) {
+        db.prepare(`UPDATE users SET password_hash = NULL, role = 'creator' WHERE id = ?`).run(row.id);
+        console.warn(`[Security] Cleared a known legacy seed password for ${row.email}. Rotate this account immediately.`);
       }
     }
   } catch (err) {
-    console.warn('[Database] ensureSeedUsers warning:', err.message);
+    console.warn('[Database] Legacy credential cleanup warning:', err.message);
   }
 }
 
 try {
-  ensureSeedUsers();
+  purgeLegacySeedCredentials();
 } catch (e) {}
 
 export function syncExpiredBounties() {
@@ -1412,10 +1454,17 @@ export function getBountyById(id) {
 /**
  * Create a new bounty with escrow deposit tracking
  */
-export function createBountyRecord(data) {
-  const id = data.id || `bounty-arc-${Date.now().toString().slice(-4)}-${crypto.randomBytes(3).toString('hex')}`;
+export function createBountyRecord(data = {}) {
+  if (!data.title || typeof data.title !== 'string') {
+    throw new Error('Bounty title is required');
+  }
+  if (!data.depositTx) {
+    throw new Error('A verified on-chain escrow deposit transaction is required');
+  }
+
+  const id = `bounty-arc-${Date.now().toString().slice(-4)}-${crypto.randomBytes(3).toString('hex')}`;
   const bountyId = `0x${crypto.randomBytes(32).toString('hex')}`;
-  const escrowWallet = data.escrowWallet || process.env.ESCROW_CONTRACT_ADDRESS || process.env.ESCROW_WALLET_ADDRESS || '0xB128F2f442554B6517D779788F28F2EB2612164A';
+  const escrowWallet = config.escrowContractAddress;
   const now = Date.now();
   const deadlineDays = parseInt(data.deadlineDays || '14', 10);
   const deadline = data.deadline ? parseInt(data.deadline, 10) : (now + deadlineDays * 86400000);
@@ -1425,11 +1474,22 @@ export function createBountyRecord(data) {
   }
   const categoryName = data.categoryName || (category === 'CONTENT' ? 'Content' : data.category);
   const tagsJson = JSON.stringify(Array.isArray(data.tags) ? data.tags : [category, 'Arc', 'USDC']);
-  const initialStatus = data.status || 'Pending Review';
-  const initialPaymentStatus = data.paymentStatus || (initialStatus === 'Open' ? 'funded' : 'pending_review');
+
+  // Client-supplied status, payment status and escrow address are deliberately
+  // ignored. Every new bounty starts pending administrator review.
+  const initialStatus = 'Pending Review';
+  const initialPaymentStatus = 'pending_review';
   const rewardDistributionJson = data.rewardDistribution
     ? (typeof data.rewardDistribution === 'string' ? data.rewardDistribution : JSON.stringify(data.rewardDistribution))
     : null;
+
+  const amount = parseFloat(data.amount || 0);
+  if (!Number.isFinite(amount) || amount <= 0) {
+    throw new Error('Bounty amount must be greater than zero');
+  }
+  if (!Number.isFinite(deadline) || deadline <= now) {
+    throw new Error('Bounty deadline must be in the future');
+  }
 
   const stmt = db.prepare(`
     INSERT INTO bounties (
@@ -1447,24 +1507,22 @@ export function createBountyRecord(data) {
     )
   `);
 
-  const depositTx = data.depositTx || (process.env.NODE_ENV === 'test' ? ('0x' + 'd'.repeat(64)) : null);
-
   stmt.run(
     id,
     bountyId,
-    data.title,
+    data.title.trim(),
     category,
     categoryName,
     data.categoryColor || '#e9a13f',
     data.submissionType || 'Deliverable URL',
     data.issueUrl || `https://arcbounty.io/task/${id}`,
-    parseFloat(data.amount || 0),
+    amount,
     tagsJson,
     initialStatus,
     initialPaymentStatus,
-    depositTx,
+    data.depositTx,
     escrowWallet,
-    data.maintainer || '0x461cd48D95993242bB04774cc68042795586BbAd',
+    data.maintainer || null,
     data.maintainerName || 'Circle Creative Guild',
     data.maintainerEmail || null,
     data.description || 'Deliver high quality content satisfying specifications.',
@@ -1576,8 +1634,22 @@ export function createBountySubmission({
     throw new Error('Bounty creators cannot participate in or submit solutions to their own bounties.');
   }
 
-  if (!submissionUrl) throw new Error('Deliverable URL is required');
-  if (!walletAddress) throw new Error('Payout wallet address is required');
+  if (!submissionUrl || typeof submissionUrl !== 'string') throw new Error('Deliverable URL is required');
+  try {
+    const parsedUrl = new URL(submissionUrl);
+    if (parsedUrl.protocol !== 'https:' && parsedUrl.protocol !== 'http:') {
+      throw new Error('unsupported protocol');
+    }
+  } catch (e) {
+    throw new Error('Deliverable URL must be a valid HTTP(S) link');
+  }
+  const payoutWallet = normalizeEvmAddress(walletAddress);
+  if (!payoutWallet || payoutWallet === '0x0000000000000000000000000000000000000000') {
+    throw new Error('A valid payout wallet address is required');
+  }
+  if (notes && (typeof notes !== 'string' || notes.length > 2000)) {
+    throw new Error('Submission notes must be 2000 characters or fewer');
+  }
 
   // Strictly prevent duplicate submissions by the same creator on the same bounty
   const existingSubmission = db.prepare(`
@@ -1620,7 +1692,7 @@ export function createBountySubmission({
     creatorId || null,
     creatorName || 'Anonymous Creator',
     creatorEmail || null,
-    walletAddress.toLowerCase(),
+    payoutWallet,
     submissionUrl,
     notes || null,
     solverType,
@@ -1651,8 +1723,8 @@ export function createBountySubmission({
     bounty_id: bounty.id,
     submissionUrl,
     submission_url: submissionUrl,
-    walletAddress,
-    wallet_address: walletAddress,
+    walletAddress: payoutWallet,
+    wallet_address: payoutWallet,
     creatorName,
     creator_name: creatorName,
     creatorEmail,
@@ -1694,6 +1766,19 @@ export function updateBountySubmission({
 
   const sub = db.prepare(`SELECT * FROM bounty_submissions WHERE id = ? AND bounty_id = ?`).get(submissionId, bounty.id);
   if (!sub) throw new Error('Submission not found');
+
+  if (submissionUrl !== undefined) {
+    if (typeof submissionUrl !== 'string') throw new Error('Deliverable URL must be a valid HTTP(S) link');
+    try {
+      const parsedUrl = new URL(submissionUrl);
+      if (parsedUrl.protocol !== 'https:' && parsedUrl.protocol !== 'http:') throw new Error('unsupported protocol');
+    } catch (e) {
+      throw new Error('Deliverable URL must be a valid HTTP(S) link');
+    }
+  }
+  if (notes !== undefined && (typeof notes !== 'string' || notes.length > 2000)) {
+    throw new Error('Submission notes must be 2000 characters or fewer');
+  }
 
   // Verify ownership strictly from authenticated credentials
   const subEmail = (sub.creator_email || '').toLowerCase().trim();
@@ -1933,19 +2018,58 @@ export function disburseMultiWinnerRewards({
   const bounty = getBountyById(bountyId);
   if (!bounty) throw new Error('Bounty not found');
 
+  if (bounty.status === 'Settled' || bounty.paymentStatus === 'settled' || bounty.payment_status === 'settled') {
+    throw new Error('This bounty has already been settled.');
+  }
+
+  if (!Array.isArray(winners) || winners.length === 0) {
+    throw new Error('At least one winner is required.');
+  }
+
   const results = [];
   const now = Date.now();
+  const seenSubmissions = new Set();
+  const seenTxHashes = new Set();
+  let totalAmount = 0;
 
   for (const winner of winners) {
     const sub = db.prepare(`SELECT * FROM bounty_submissions WHERE id = ? AND bounty_id = ?`).get(winner.submissionId, bounty.id);
-    if (!sub) continue;
-
-    const txHash = winner.txHash || (process.env.NODE_ENV === 'test' ? ('0x' + 's'.repeat(64)) : null);
-    if (!txHash) {
-      throw new Error(`Winning solver ${sub.wallet_address} is missing verified on-chain settlement txHash.`);
+    if (!sub) {
+      throw new Error(`Submission ${winner.submissionId} does not belong to this bounty.`);
     }
+    if (seenSubmissions.has(sub.id)) {
+      throw new Error('Each winner must reference a unique submission.');
+    }
+    seenSubmissions.add(sub.id);
+
+    if (sub.status === 'awarded' || Number(sub.reward_paid) > 0) {
+      throw new Error(`Submission ${sub.id} has already been awarded.`);
+    }
+
+    const txHash = winner.txHash;
+    if (!txHash || typeof txHash !== 'string' || !/^0x[0-9a-fA-F]{64}$/.test(txHash)) {
+      throw new Error(`Winning solver ${sub.wallet_address} is missing a valid on-chain settlement txHash.`);
+    }
+    if (seenTxHashes.has(txHash.toLowerCase())) {
+      throw new Error('Each winner must reference a distinct settlement transaction.');
+    }
+    seenTxHashes.add(txHash.toLowerCase());
+
+    const reusedTx = db.prepare(`SELECT id FROM disbursements WHERE LOWER(tx_hash) = LOWER(?) LIMIT 1`).get(txHash);
+    if (reusedTx) {
+      throw new Error('A settlement transaction has already been recorded.');
+    }
+
+    const amountToPay = parseFloat(winner.amount);
+    if (!Number.isFinite(amountToPay) || amountToPay <= 0) {
+      throw new Error('Every winner amount must be greater than zero.');
+    }
+    totalAmount += amountToPay;
+    if (totalAmount > Number(bounty.amount) + 0.0000001) {
+      throw new Error('The sum of winner amounts cannot exceed the bounty amount.');
+    }
+
     const disbId = 'disb_' + crypto.randomBytes(8).toString('hex');
-    const amountToPay = parseFloat(winner.amount) || 0;
 
     db.prepare(`
       INSERT INTO disbursements (
@@ -2061,15 +2185,35 @@ export function disburseBountyReward({ bountyId, submissionId, adminEmail, custo
   const bounty = getBountyById(bountyId);
   if (!bounty) throw new Error('Bounty not found');
 
+  if (bounty.status === 'Settled' || bounty.paymentStatus === 'settled' || bounty.payment_status === 'settled') {
+    throw new Error('This bounty has already been settled.');
+  }
+
   const subStmt = db.prepare(`SELECT * FROM bounty_submissions WHERE id = ? AND bounty_id = ?`);
   const submission = subStmt.get(submissionId, bounty.id);
   if (!submission) throw new Error('Participant submission not found');
 
-  const amountToPay = customAmount ? parseFloat(customAmount) : bounty.amount;
-  const txHash = providedTxHash || (process.env.NODE_ENV === 'test' ? ('0x' + 's'.repeat(64)) : null);
-  if (!txHash) {
-    throw new Error('On-chain settlement transaction hash (txHash) is required. Virtual or fabricated hashes are strictly rejected.');
+  if (submission.status === 'awarded' || Number(submission.reward_paid) > 0) {
+    throw new Error('This submission has already been awarded.');
   }
+
+  const amountToPay = customAmount !== undefined && customAmount !== null
+    ? parseFloat(customAmount)
+    : Number(bounty.amount);
+  if (!Number.isFinite(amountToPay) || amountToPay <= 0 || amountToPay > Number(bounty.amount)) {
+    throw new Error('Disbursement amount must be greater than zero and cannot exceed the bounty amount.');
+  }
+
+  const txHash = providedTxHash;
+  if (!txHash || typeof txHash !== 'string' || !/^0x[0-9a-fA-F]{64}$/.test(txHash)) {
+    throw new Error('A valid on-chain settlement transaction hash (txHash) is required. Virtual or fabricated hashes are strictly rejected.');
+  }
+
+  const reusedTx = db.prepare(`SELECT id FROM disbursements WHERE LOWER(tx_hash) = LOWER(?) LIMIT 1`).get(txHash);
+  if (reusedTx) {
+    throw new Error('This settlement transaction has already been recorded.');
+  }
+
   const now = Date.now();
   const disbId = 'disb_' + crypto.randomBytes(8).toString('hex');
 

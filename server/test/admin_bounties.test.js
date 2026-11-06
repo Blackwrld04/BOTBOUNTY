@@ -1,5 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+
+// Administrators must be explicitly configured; there are no built-in identities.
+process.env.ADMIN_EMAILS = 'admin@example.com,second-admin@example.com';
+process.env.ADMIN_WALLETS = '0x1111111111111111111111111111111111111111';
+process.env.ADMIN_PASSWORD = 'test-only-admin-password-32-chars';
+
 import {
   getAllBounties,
   getBountyById,
@@ -14,54 +20,68 @@ import {
   createSession,
   getUserProfileStats,
   getLeaderboard,
-  getAllUsers
+  getAllUsers,
+  db
 } from '../src/db.js';
 
-test('ArcBounty Escrow Payments & Admin Distribution Tests', async (t) => {
+const txHash = (char) => `0x${char.repeat(64)}`;
+
+test('BotBounty Escrow Payments & Admin Distribution Tests', async (t) => {
   let createdBounty = null;
   let testSubmission = null;
 
-  await t.test('verifies admin authorization for configured admin emails', () => {
-    assert.equal(isAdminUser('olajideabdulquadri22@gmail.com'), true);
+  await t.test('verifies admin authorization only for configured emails and wallets', () => {
+    assert.equal(isAdminUser('admin@example.com'), true);
+    assert.equal(isAdminUser('ADMIN@EXAMPLE.COM'), true);
+    assert.equal(isAdminUser('admin@example.com', '0x1111111111111111111111111111111111111111'), true);
+    assert.equal(isAdminUser('', '0x1111111111111111111111111111111111111111'), true);
     assert.equal(isAdminUser('random_stranger@example.com'), false);
+    assert.equal(isAdminUser('olajideabdulquadri22@gmail.com'), false);
     assert.equal(isAdminUser(''), false);
   });
 
+  await t.test('refuses to create a bounty without an on-chain deposit transaction', () => {
+    assert.throws(() => {
+      createBountyRecord({
+        title: 'Unfunded Bounty',
+        category: 'DEV',
+        amount: 100
+      });
+    }, /deposit transaction is required/i);
+  });
 
-  await t.test('creates bounty in Pending Review status with prize distribution settings', () => {
-    const escrowAddr = '0xBE0aaE21b6252aa1207cAa50A753e8C45bCBCbc5';
-    const mockTx = '0xdep1234567890abcdef1234567890abcdef12';
-
-    const rewardDist = {
-      type: 'tiered',
-      winnerCount: 3,
-      tiers: [
-        { place: 1, amount: 1000, label: '1st Place' },
-        { place: 2, amount: 500, label: '2nd Place' },
-        { place: 3, amount: 250, label: '3rd Place' }
-      ]
-    };
-
+  await t.test('creates bounty in Pending Review status and ignores client-controlled settlement fields', () => {
     createdBounty = createBountyRecord({
-      title: 'Build Decentralized File Verification on Arc',
+      title: 'Build Decentralized File Verification on BOT Chain',
       category: 'DEV',
       categoryName: 'Code & Apps',
       amount: 1750,
-      description: 'Implement zero-knowledge hash verification on Circle Arc L1.',
-      escrowWallet: escrowAddr,
-      depositTx: mockTx,
-      rewardDistribution: rewardDist,
+      description: 'Implement zero-knowledge hash verification on BOT Chain.',
+      depositTx: txHash('a'),
+      // These must all be ignored by the server-side record builder.
+      status: 'Settled',
+      paymentStatus: 'settled',
+      escrowWallet: '0x9999999999999999999999999999999999999999',
+      rewardDistribution: {
+        type: 'tiered',
+        winnerCount: 3,
+        tiers: [
+          { place: 1, amount: 1000, label: '1st Place' },
+          { place: 2, amount: 500, label: '2nd Place' },
+          { place: 3, amount: 250, label: '3rd Place' }
+        ]
+      },
       maintainer: '0x1111111111111111111111111111111111111111',
-      maintainerName: 'Arc Security Guild',
-      maintainerEmail: 'guild@arc.builders',
+      maintainerName: 'BOT Security Guild',
+      maintainerEmail: 'guild@botbounty.ai',
       deadlineDays: 7
     });
 
     assert.ok(createdBounty.id);
-    assert.equal(createdBounty.title, 'Build Decentralized File Verification on Arc');
+    assert.equal(createdBounty.title, 'Build Decentralized File Verification on BOT Chain');
     assert.equal(createdBounty.amount, 1750);
-    assert.equal(createdBounty.escrowWallet, escrowAddr);
-    assert.equal(createdBounty.depositTx, mockTx);
+    assert.equal(createdBounty.depositTx, txHash('a'));
+    assert.notEqual(createdBounty.escrowWallet, '0x9999999999999999999999999999999999999999');
     // Newly created bounties must enter 'Pending Review'
     assert.equal(createdBounty.status, 'Pending Review');
     assert.equal(createdBounty.paymentStatus, 'pending_review');
@@ -71,7 +91,7 @@ test('ArcBounty Escrow Payments & Admin Distribution Tests', async (t) => {
 
   await t.test('admin reviews and approves bounty to make it Open for creators', async () => {
     const { approveBountyRecord } = await import('../src/db.js');
-    const approvedBounty = approveBountyRecord(createdBounty.id, 'jasminee0904@gmail.com');
+    const approvedBounty = approveBountyRecord(createdBounty.id, 'admin@example.com');
 
     assert.equal(approvedBounty.id, createdBounty.id);
     assert.equal(approvedBounty.status, 'Open');
@@ -80,16 +100,18 @@ test('ArcBounty Escrow Payments & Admin Distribution Tests', async (t) => {
     createdBounty = approvedBounty;
   });
 
-  await t.test('strictly blocks submissions once challenge deadline has expired', async () => {
-    // Create an expired bounty
+  await t.test('strictly blocks submissions once challenge deadline has expired', () => {
     const expiredBounty = createBountyRecord({
       title: 'Expired Challenge Test',
       category: 'DEV',
       amount: 100,
-      status: 'Open',
-      paymentStatus: 'funded',
-      deadline: Date.now() - 10000 // 10 seconds ago
+      depositTx: txHash('b'),
+      maintainer: '0x1111111111111111111111111111111111111111',
+      maintainerEmail: 'guild@botbounty.ai',
+      deadlineDays: 7
     });
+    db.prepare(`UPDATE bounties SET status = 'Open', payment_status = 'funded', deadline = ? WHERE id = ?`)
+      .run(Date.now() - 10_000, expiredBounty.id);
 
     assert.throws(() => {
       createBountySubmission({
@@ -129,10 +151,10 @@ test('ArcBounty Escrow Payments & Admin Distribution Tests', async (t) => {
     testSubmission = createBountySubmission({
       bountyId: createdBounty.id,
       creatorName: 'Amina Dev',
-      creatorEmail: 'amina@arc.builders',
+      creatorEmail: 'amina@botbounty.ai',
       walletAddress: creatorWallet,
-      submissionUrl: 'https://github.com/amina-dev/arc-zk-verify',
-      notes: 'Completed full verification smart contract and benchmark suite on Arc Testnet.'
+      submissionUrl: 'https://github.com/amina-dev/botbounty-zk-verify',
+      notes: 'Completed full verification smart contract and benchmark suite on BOT Chain.'
     });
 
     assert.ok(testSubmission.id.startsWith('sub_'));
@@ -141,31 +163,31 @@ test('ArcBounty Escrow Payments & Admin Distribution Tests', async (t) => {
 
     const submissions = getBountySubmissions(createdBounty.id);
     assert.ok(submissions.length >= 1);
-    assert.equal(submissions[0].submission_url, 'https://github.com/amina-dev/arc-zk-verify');
+    assert.equal(submissions[0].submission_url, 'https://github.com/amina-dev/botbounty-zk-verify');
 
     // Bounty status remains Open while deadline is active so creators can participate
     const updated = getBountyById(createdBounty.id);
     assert.equal(updated.status, 'Open');
   });
 
-  await t.test('strictly prevents a creator from submitting more than once to the same bounty and requires editing instead', () => {
+  await t.test('strictly prevents duplicate submissions and allows revisions instead', () => {
     // 1. Same wallet and same email attempts second submission
     assert.throws(() => {
       createBountySubmission({
         bountyId: createdBounty.id,
         creatorName: 'Amina Dev',
-        creatorEmail: 'amina@arc.builders',
+        creatorEmail: 'amina@botbounty.ai',
         walletAddress: '0x2222222222222222222222222222222222222222',
         submissionUrl: 'https://github.com/amina-dev/another-attempt'
       });
     }, /already submitted.*edit your existing submission/i);
 
-    // 2. Same wallet address (different email or uppercase) attempts second submission
+    // 2. Same wallet address (different email) attempts second submission
     assert.throws(() => {
       createBountySubmission({
         bountyId: createdBounty.id,
         creatorName: 'Amina Dev Alt',
-        creatorEmail: 'amina_second_email@arc.builders',
+        creatorEmail: 'amina_second_email@botbounty.ai',
         walletAddress: '0x2222222222222222222222222222222222222222',
         submissionUrl: 'https://github.com/amina-dev/second-attempt'
       });
@@ -176,7 +198,7 @@ test('ArcBounty Escrow Payments & Admin Distribution Tests', async (t) => {
       createBountySubmission({
         bountyId: createdBounty.id,
         creatorName: 'Amina Dev',
-        creatorEmail: 'amina@arc.builders',
+        creatorEmail: 'amina@botbounty.ai',
         walletAddress: '0x7777777777777777777777777777777777777777',
         submissionUrl: 'https://github.com/amina-dev/third-attempt'
       });
@@ -186,14 +208,14 @@ test('ArcBounty Escrow Payments & Admin Distribution Tests', async (t) => {
     const revised = updateBountySubmission({
       bountyId: createdBounty.id,
       submissionId: testSubmission.id,
-      submissionUrl: 'https://github.com/amina-dev/arc-zk-verify-v2',
+      submissionUrl: 'https://github.com/amina-dev/botbounty-zk-verify-v2',
       notes: 'Added optimization benchmarks and security audit fix',
-      submitterEmail: 'amina@arc.builders',
+      submitterEmail: 'amina@botbounty.ai',
       submitterWallet: '0x2222222222222222222222222222222222222222'
     });
 
     assert.equal(revised.revision_count, 2);
-    assert.equal(revised.submission_url, 'https://github.com/amina-dev/arc-zk-verify-v2');
+    assert.equal(revised.submission_url, 'https://github.com/amina-dev/botbounty-zk-verify-v2');
 
     // 5. Another completely different creator CAN submit
     const secondCreatorSub = createBountySubmission({
@@ -206,17 +228,39 @@ test('ArcBounty Escrow Payments & Admin Distribution Tests', async (t) => {
     assert.ok(secondCreatorSub.id.startsWith('sub_'));
   });
 
-  await t.test('admin disburses USDC reward from escrow to the creator', () => {
+  await t.test('settlement requires an explicit submission and a valid on-chain transaction hash', () => {
+    assert.throws(() => {
+      disburseBountyReward({
+        bountyId: createdBounty.id,
+        submissionId: testSubmission.id,
+        adminEmail: 'admin@example.com',
+        customAmount: 1750
+      });
+    }, /settlement transaction hash/i);
+
+    assert.throws(() => {
+      disburseBountyReward({
+        bountyId: createdBounty.id,
+        submissionId: 'sub_does_not_exist',
+        adminEmail: 'admin@example.com',
+        txHash: txHash('c')
+      });
+    }, /submission not found/i);
+  });
+
+  await t.test('admin settles an explicit winning submission with a verified settlement hash', () => {
+    const settlementHash = txHash('c');
     const disbResult = disburseBountyReward({
       bountyId: createdBounty.id,
       submissionId: testSubmission.id,
-      adminEmail: 'jasminee0904@gmail.com',
-      customAmount: 1750
+      adminEmail: 'admin@example.com',
+      customAmount: 1750,
+      txHash: settlementHash
     });
 
     assert.equal(disbResult.success, true);
     assert.equal(disbResult.amount, 1750);
-    assert.ok(disbResult.txHash.startsWith('0x'));
+    assert.equal(disbResult.txHash, settlementHash);
     assert.equal(disbResult.recipient, '0x2222222222222222222222222222222222222222');
 
     // Bounty should now be Settled
@@ -224,12 +268,22 @@ test('ArcBounty Escrow Payments & Admin Distribution Tests', async (t) => {
     assert.equal(settledBounty.status, 'Settled');
     assert.equal(settledBounty.paymentStatus, 'settled');
     assert.equal(settledBounty.solver, '0x2222222222222222222222222222222222222222');
-    assert.ok(settledBounty.settlementTx);
+    assert.equal(settledBounty.settlementTx, settlementHash);
+
+    // Re-using the same settlement hash must be rejected.
+    assert.throws(() => {
+      disburseBountyReward({
+        bountyId: createdBounty.id,
+        submissionId: testSubmission.id,
+        adminEmail: 'admin@example.com',
+        txHash: settlementHash
+      });
+    }, /already been settled/i);
   });
 
   await t.test('admin overview stats aggregates platform metrics accurately', () => {
     createUser({
-      email: 'creator_stats_test@arc.network',
+      email: 'creator_stats_test@botbounty.ai',
       name: 'Stats Test Creator',
       username: 'statstest'
     });
@@ -246,15 +300,9 @@ test('ArcBounty Escrow Payments & Admin Distribution Tests', async (t) => {
     assert.equal(stats.escrowWallet, process.env.ESCROW_CONTRACT_ADDRESS || process.env.ESCROW_WALLET_ADDRESS || '0xB128F2f442554B6517D779788F28F2EB2612164A');
   });
 
-  await t.test('authenticates master admin with password and rejects invalid attempts', async () => {
+  await t.test('admin middleware rejects missing, invalid, and expired tokens and accepts active sessions', async () => {
     const { requireAdmin, activeAdminTokens } = await import('../src/routes/admin.js');
-    const validPassword = process.env.ADMIN_PASSWORD || 'arcbounty2026_admin!';
 
-    // Simulating login logic
-    const wrongAttempt = 'wrong_password_123';
-    assert.notEqual(wrongAttempt, validPassword);
-
-    // Mock Express request/response to test requireAdmin middleware
     let nextCalled = false;
     const req = { headers: {} };
     const res = {
@@ -279,14 +327,29 @@ test('ArcBounty Escrow Payments & Admin Distribution Tests', async (t) => {
     assert.equal(nextCalled, false);
     assert.equal(res.statusCode, 401);
 
-    // 3. Request with valid active admin password token
+    // 3. Request with an expired token
+    const expiredToken = 'arc_adm_expired_token_xyz123';
+    activeAdminTokens.set(expiredToken, {
+      createdAt: Date.now() - 120_000,
+      expiresAt: Date.now() - 60_000
+    });
+    req.headers.authorization = `Bearer ${expiredToken}`;
+    nextCalled = false;
+    requireAdmin(req, res, () => { nextCalled = true; });
+    assert.equal(nextCalled, false);
+    assert.equal(res.statusCode, 401);
+    activeAdminTokens.delete(expiredToken);
+
+    // 4. Request with a valid active admin session
     const testAdminToken = 'arc_adm_test_valid_token_xyz123';
     activeAdminTokens.set(testAdminToken, {
+      email: 'admin@example.com',
       createdAt: Date.now(),
-      expiresAt: Date.now() + 60000
+      expiresAt: Date.now() + 60_000
     });
 
     req.headers.authorization = `Bearer ${testAdminToken}`;
+    nextCalled = false;
     requireAdmin(req, res, () => { nextCalled = true; });
     assert.equal(nextCalled, true);
     assert.equal(req.user.role, 'admin');
@@ -296,46 +359,44 @@ test('ArcBounty Escrow Payments & Admin Distribution Tests', async (t) => {
     activeAdminTokens.delete(testAdminToken);
   });
 
-  await t.test('calculates accurate user profile stats and prevents 0-earnings with wins', () => {
-    // Check stats for creator who received disbursement in previous test
-    const winnerStats = getUserProfileStats(null, 'amina@arc.builders', '0x2222222222222222222222222222222222222222');
+  await t.test('calculates accurate user profile stats and leaderboard entries', () => {
+    const winnerStats = getUserProfileStats(null, 'amina@botbounty.ai', '0x2222222222222222222222222222222222222222');
     assert.equal(winnerStats.submissionsCount, 1);
     assert.equal(winnerStats.winsCount, 1);
     assert.equal(winnerStats.totalEarnings, 1750);
 
-    // Check stats for non-participant
     const emptyStats = getUserProfileStats(null, 'never_submitted@example.com', '0x9999999999999999999999999999999999999999');
     assert.equal(emptyStats.submissionsCount, 0);
     assert.equal(emptyStats.winsCount, 0);
     assert.equal(emptyStats.totalEarnings, 0);
-  });
 
-  await t.test('aggregates leaderboard with mathematically consistent ranks and task counts', () => {
     const leaderboard = getLeaderboard();
     assert.ok(Array.isArray(leaderboard));
-    assert.ok(leaderboard.length >= 1);
-    assert.equal(leaderboard[0].rank, 1);
-    assert.equal(leaderboard[0].earned, 1750);
-    assert.equal(leaderboard[0].completed, 1);
+    const winner = leaderboard.find((entry) => entry.address.toLowerCase() === '0x2222222222222222222222222222222222222222');
+    assert.ok(winner, 'The settled solver must appear on the leaderboard');
+    assert.equal(winner.earned, 1750);
+    assert.equal(winner.completed, 1);
   });
 
-  await t.test('syncs expired bounties to Closed status and attaches participants and submissions for review', async () => {
-    // 1. Create an active bounty with 2 submissions
+  await t.test('syncs expired bounties to Closed status and attaches participants and submissions for review', () => {
     const syncTestBounty = createBountyRecord({
-      title: 'UI Design for Circle Arc Explorer',
+      title: 'UI Design for BOT Chain Explorer',
       category: 'DESIGN',
       amount: 600,
-      status: 'Open',
-      paymentStatus: 'funded',
+      depositTx: txHash('d'),
+      maintainer: '0x1111111111111111111111111111111111111111',
+      maintainerEmail: 'guild@botbounty.ai',
       deadlineDays: 1
     });
+    // Approval is required before submissions are accepted.
+    db.prepare(`UPDATE bounties SET status = 'Open', payment_status = 'funded' WHERE id = ?`).run(syncTestBounty.id);
 
     createBountySubmission({
       bountyId: syncTestBounty.id,
       creatorName: 'Designer Alice',
       creatorEmail: 'alice@design.io',
       walletAddress: '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-      submissionUrl: 'https://figma.com/file/arc-explorer',
+      submissionUrl: 'https://figma.com/file/botchain-explorer',
       notes: 'Figma mockups for explorer'
     });
 
@@ -344,33 +405,27 @@ test('ArcBounty Escrow Payments & Admin Distribution Tests', async (t) => {
       creatorName: 'Designer Bob',
       creatorEmail: 'bob@design.io',
       walletAddress: '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
-      submissionUrl: 'https://figma.com/file/arc-mobile',
+      submissionUrl: 'https://figma.com/file/botchain-mobile',
       notes: 'Mobile responsive variant'
     });
 
-    // 2. Simulate deadline expiration by updating deadline into the past in db
-    const { db: testDb } = await import('../src/db.js');
-    testDb.prepare(`UPDATE bounties SET deadline = ? WHERE id = ?`).run(Date.now() - 5000, syncTestBounty.id);
+    // Simulate deadline expiration.
+    db.prepare(`UPDATE bounties SET deadline = ? WHERE id = ?`).run(Date.now() - 5000, syncTestBounty.id);
 
-    // 3. Query all bounties under 'Closed' status
     const closedBounties = getAllBounties({ status: 'Closed' });
-    const foundClosed = closedBounties.find(b => b.id === syncTestBounty.id);
+    const foundClosed = closedBounties.find((b) => b.id === syncTestBounty.id);
     assert.ok(foundClosed, 'Expired bounty should appear in Closed query');
     assert.equal(foundClosed.status, 'Closed', 'Status must be synced to Closed');
     assert.equal(foundClosed.submissionsCount, 2, 'Submissions count must be 2');
     assert.equal(foundClosed.participantsCount, 2, 'Distinct participants count must be 2');
     assert.ok(Array.isArray(foundClosed.submissions), 'Submissions array must be attached');
-    assert.ok(foundClosed.submissions.some(s => s.submission_url === 'https://figma.com/file/arc-mobile'), 'Must contain mobile submission');
-    assert.ok(foundClosed.submissions.some(s => s.submission_url === 'https://figma.com/file/arc-explorer'), 'Must contain explorer submission');
+    assert.ok(foundClosed.submissions.some((s) => s.submission_url === 'https://figma.com/file/botchain-mobile'));
+    assert.ok(foundClosed.submissions.some((s) => s.submission_url === 'https://figma.com/file/botchain-explorer'));
 
-    // 4. Query under 'Open' status must NOT include the closed bounty
     const openBounties = getAllBounties({ status: 'Open' });
-    const shouldNotFindOpen = openBounties.find(b => b.id === syncTestBounty.id);
-    assert.equal(shouldNotFindOpen, undefined, 'Expired bounty must not appear in Open query');
+    assert.equal(openBounties.find((b) => b.id === syncTestBounty.id), undefined);
 
-    // 5. Admin overview stats must include closedBounties
     const adminStats = getAdminOverviewStats();
     assert.ok(adminStats.closedBounties >= 1, 'Admin overview stats must count closed bounties');
   });
 });
-
