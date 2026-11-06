@@ -1,30 +1,32 @@
 import nodemailer from 'nodemailer';
+import { createHash, timingSafeEqual } from 'crypto';
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function safeSecretMatch(supplied, expected) {
+  if (typeof supplied !== 'string' || typeof expected !== 'string' || !expected) return false;
+  const suppliedDigest = createHash('sha256').update(supplied).digest();
+  const expectedDigest = createHash('sha256').update(expected).digest();
+  return timingSafeEqual(suppliedDigest, expectedDigest);
+}
 
 /**
  * BotBounty Vercel Serverless Email Relay
- * Dispatches high-deliverability transactional emails via Gmail SMTP over port 465 (SSL).
- * Bypasses cloud host port blocks (e.g. Render free tier) and sandbox domain restrictions.
+ *
+ * This endpoint only relays already-rendered transactional email. SMTP
+ * credentials, host, port and sender are fixed by the deployment environment;
+ * callers can never override them.
  */
 export default async function handler(req, res) {
-  // CORS & Preflight headers
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, x-relay-secret, Authorization'
-  );
+  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
 
   if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+    return res.status(204).end();
   }
 
   if (req.method === 'GET') {
-    return res.status(200).json({
-      status: 'ok',
-      service: 'BotBounty Email Relay',
-      timestamp: new Date().toISOString()
-    });
+    return res.status(200).json({ status: 'ok', service: 'BotBounty Email Relay' });
   }
 
   if (req.method !== 'POST') {
@@ -32,43 +34,61 @@ export default async function handler(req, res) {
   }
 
   try {
+    const expectedSecret = process.env.EMAIL_RELAY_SECRET;
+    if (!expectedSecret || expectedSecret.length < 24) {
+      return res.status(503).json({ error: 'Email relay is not configured.' });
+    }
+
+    const suppliedSecret = req.headers['x-relay-secret'];
+    if (!safeSecretMatch(suppliedSecret, expectedSecret)) {
+      return res.status(401).json({ error: 'Unauthorized relay request' });
+    }
+
     let body = req.body;
     if (typeof body === 'string') {
       try {
         body = JSON.parse(body);
       } catch (e) {
-        // Fallback to raw string
+        return res.status(400).json({ error: 'Invalid JSON body.' });
       }
     }
     body = body || {};
 
-    // 1. Verify shared relay secret
-    const secret = req.headers['x-relay-secret'] || body.secret;
-    const expectedSecret = process.env.EMAIL_RELAY_SECRET;
-
-    if (!expectedSecret || secret !== expectedSecret) {
-      return res.status(401).json({ error: 'Unauthorized relay request' });
-    }
-
-    const { to, subject, html, text, auth, from, host: bodyHost, port: bodyPort, secure: bodySecure } = body;
-
-    // 2. Resolve credentials from request auth payload or environment
-    const user = auth?.user || process.env.SMTP_USER || process.env.GMAIL_USER;
-    const rawPass = auth?.pass || process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD;
-    const pass = rawPass ? rawPass.replace(/\s+/g, '') : null;
-    const host = bodyHost || process.env.SMTP_HOST || 'smtp.gmail.com';
-    const port = parseInt(bodyPort || process.env.SMTP_PORT || '465', 10);
-    const secure = bodySecure !== undefined ? bodySecure : (process.env.SMTP_SECURE === 'false' ? false : port === 465);
-
-    if (!user || !pass) {
-      return res.status(500).json({
-        error: 'Missing SMTP credentials. Please configure SMTP_USER and SMTP_PASS in environment variables.'
-      });
-    }
+    const { to, subject, html, text } = body;
 
     const recipients = Array.isArray(to) ? to : [to];
+    if (recipients.length === 0 || recipients.length > 10) {
+      return res.status(400).json({ error: 'Provide between 1 and 10 recipients.' });
+    }
+    for (const recipient of recipients) {
+      if (typeof recipient !== 'string' || !EMAIL_PATTERN.test(recipient.trim()) || recipient.length > 254) {
+        return res.status(400).json({ error: 'Invalid recipient address.' });
+      }
+    }
 
-    // 3. Create high-speed SSL transporter
+    if (typeof subject !== 'string' || !subject.trim() || subject.length > 200) {
+      return res.status(400).json({ error: 'Invalid email subject.' });
+    }
+    if (typeof html !== 'string' || html.length === 0 || html.length > 200_000) {
+      return res.status(400).json({ error: 'Invalid email HTML body.' });
+    }
+    if (text !== undefined && (typeof text !== 'string' || text.length > 100_000)) {
+      return res.status(400).json({ error: 'Invalid email text body.' });
+    }
+
+    const user = process.env.SMTP_USER || process.env.GMAIL_USER;
+    const rawPass = process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD;
+    const pass = rawPass ? rawPass.replace(/\s+/g, '') : null;
+    const host = process.env.SMTP_HOST || 'smtp.gmail.com';
+    const port = parseInt(process.env.SMTP_PORT || '465', 10);
+    const secure = process.env.SMTP_SECURE === 'false' ? false : port === 465;
+
+    if (!user || !pass) {
+      return res.status(503).json({ error: 'Email relay SMTP credentials are not configured.' });
+    }
+
+    const emailFrom = process.env.EMAIL_FROM || `"BotBounty" <${user}>`;
+
     const transporter = nodemailer.createTransport({
       host,
       port,
@@ -79,29 +99,20 @@ export default async function handler(req, res) {
       socketTimeout: 15000
     });
 
-    const emailFrom = from || process.env.EMAIL_FROM || `"BotBounty" <${user}>`;
-
-    // 4. Send email
     const info = await transporter.sendMail({
       from: emailFrom,
-      to: recipients.join(', '),
-      subject,
+      to: recipients.map(recipient => recipient.trim()).join(', '),
+      subject: subject.replace(/[\r\n]+/g, ' '),
       html,
       text: text || html.replace(/<[^>]+>/g, ' ')
     });
 
     return res.status(200).json({
       success: true,
-      messageId: info.messageId,
-      accepted: info.accepted,
-      response: info.response,
-      deliveryMethod: 'vercel-smtp-ssl-relay'
+      messageId: info.messageId
     });
   } catch (error) {
-    console.error('[BotBounty Email Relay Error]:', error);
-    return res.status(500).json({
-      error: 'Failed to dispatch email via relay',
-      details: error.message
-    });
+    console.error('[BotBounty Email Relay Error]:', error.message);
+    return res.status(500).json({ error: 'Failed to dispatch email via relay' });
   }
 }
