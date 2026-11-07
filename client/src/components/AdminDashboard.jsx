@@ -631,7 +631,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
               <span>Restricted Access</span>
             </div>
             <span style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 700 }}>
-              BOT Chain (677 / 968)
+              BOT Chain Mainnet (Chain ID 677)
             </span>
           </div>
 
@@ -855,7 +855,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
               ADMIN CONSOLE
             </span>
             <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 700 }}>
-              BOT Chain Protocol (Chain ID 677 / 968)
+              BOT Chain Protocol (Chain ID 677)
             </span>
           </div>
 
@@ -2166,7 +2166,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
                   Confirm Native $BOT Prize Payout
                 </h3>
                 <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
-                  Execution on BOT Chain Protocol (Chain ID 677 / 968)
+                  Execution on BOT Chain Protocol (Chain ID 677)
                 </span>
               </div>
             </div>

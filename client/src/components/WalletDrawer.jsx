@@ -87,7 +87,7 @@ export default function WalletDrawer({ isOpen, onClose, wallet, setWallet, netwo
               </button>
             </div>
             <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '4px', margin: '4px 0 0 0', lineHeight: 1.4 }}>
-              Native BOT Chain (Chain ID 677 / 968). Payouts for completed challenges are distributed here by the admin.
+              Native BOT Chain Mainnet (Chain ID 677). Payouts for completed challenges are distributed here by the admin.
             </p>
           </div>
 

@@ -8,6 +8,105 @@ export const CREATOR_CATEGORIES = [
 ];
 
 export const INITIAL_BOUNTIES = [
+  // 1. Verified Mainnet Escrow #1 (Settled on BOT Chain Mainnet 677)
+  {
+    id: 'bounty-mainnet-001',
+    bountyId: '0x420fc59c6c25f819ed52f8ebb709fe4186921e8fde2a5005a37d9680153eb4e7',
+    onChainBountyId: '0x420fc59c6c25f819ed52f8ebb709fe4186921e8fde2a5005a37d9680153eb4e7',
+    category: 'DEV',
+    categoryName: 'Development',
+    categoryColor: '#2f578c',
+    categoryTextColor: '#ffffff',
+    title: 'BOT Chain Mainnet Escrow Lifecycle Verification & Settlement #1',
+    repo: 'Blackwrld04/BOTBOUNTY',
+    submissionType: 'GitHub PR & Contract Test Suite',
+    issueUrl: 'https://github.com/Blackwrld04/BOTBOUNTY/blob/main/docs/MAINNET_VERIFICATION_EVIDENCE.md#bounty-0',
+    onChainIssueUrl: 'https://github.com/Blackwrld04/BOTBOUNTY/issues/101',
+    amount: 0.02,
+    tags: ['Mainnet 677', 'Verified On-Chain', 'Settled'],
+    status: 'Settled',
+    maintainer: '0xBE0aaE21b6252aa1207cAa50A753e8C45bCBCbc5',
+    maintainerName: 'BOT Chain Deployer & Protocol Maintainer',
+    solver: '0x872876249c4DE59499c630c89E05748a2c7f5Ccf',
+    solverType: 'Lead Test Solver',
+    prUrl: 'https://github.com/Blackwrld04/BOTBOUNTY/blob/main/docs/MAINNET_VERIFICATION_EVIDENCE.md#bounty-0',
+    onChainPrUrl: 'https://github.com/Blackwrld04/BOTBOUNTY/pull/101',
+    depositTx: '0x6e080dfc80d54748f5ac740ab2a47493b2f9d4bf41a580560d04dcafb5c536eb',
+    settlementTx: '0x20ff9b6954208cfbd48b451589a8c9227d8fc739ee98ea0af85737d6636e62c1',
+    createdAt: 1793959853000,
+    deadline: 1796551852000,
+    deadlineDays: 30,
+    isMainnetVerified: true,
+    isDemo: false,
+    description: 'Production on-chain lifecycle verification on BOT Chain Mainnet (Chain ID 677). Proves non-custodial Native $BOT deposit (0.02 BOT), solver solution registration, and deterministic maintainer release at block 29300556.'
+  },
+
+  // 2. Verified Mainnet Escrow #2 (Settled via Blind Commitment on BOT Chain Mainnet 677)
+  {
+    id: 'bounty-mainnet-002',
+    bountyId: '0x8fa5b7c42e2bf7b2b248962f83dcd9116b369a40b81af10a8c594ddc72fe7e17',
+    onChainBountyId: '0x8fa5b7c42e2bf7b2b248962f83dcd9116b369a40b81af10a8c594ddc72fe7e17',
+    category: 'DEV',
+    categoryName: 'Development',
+    categoryColor: '#2f578c',
+    categoryTextColor: '#ffffff',
+    title: 'BOT Chain Mainnet Cryptographic Blind Commitment Verification #2',
+    repo: 'Blackwrld04/BOTBOUNTY',
+    submissionType: 'Blind Cryptographic Commitment & Preimage Reveal',
+    issueUrl: 'https://github.com/Blackwrld04/BOTBOUNTY/blob/main/docs/MAINNET_VERIFICATION_EVIDENCE.md#bounty-1',
+    onChainIssueUrl: 'https://github.com/Blackwrld04/BOTBOUNTY/issues/102',
+    amount: 0.02,
+    tags: ['Mainnet 677', 'Verified On-Chain', 'Blind Commitment', 'Settled'],
+    status: 'Settled',
+    maintainer: '0xBE0aaE21b6252aa1207cAa50A753e8C45bCBCbc5',
+    maintainerName: 'BOT Chain Deployer & Protocol Maintainer',
+    solver: '0x9a10F17cF4b406078D4cC1415ef079bEcfb271dA',
+    solverType: 'Blind Commitment Solver',
+    prUrl: 'https://github.com/Blackwrld04/BOTBOUNTY/blob/main/docs/MAINNET_VERIFICATION_EVIDENCE.md#bounty-1',
+    onChainPrUrl: 'https://github.com/Blackwrld04/BOTBOUNTY/pull/103',
+    depositTx: '0xd88a3b0fb99a141e6fec75ceda1fbc7299526aca0156470759e2a723845d396a',
+    settlementTx: '0x5e6871479685b094aa03809fb0156890521fd45ce457542ed98642a3f39efeaf',
+    createdAt: 1793959858000,
+    deadline: 1796551852000,
+    deadlineDays: 30,
+    isMainnetVerified: true,
+    isDemo: false,
+    description: 'Production on-chain verification of maintainer rejection (rejectSolution) and front-running-resistant blind commitment (submitSolutionCommitment + releaseBountyWithProof) on BOT Chain Mainnet.'
+  },
+
+  // 3. Verified Mainnet Escrow #3 (Active Open Escrow on BOT Chain Mainnet 677)
+  {
+    id: 'bounty-mainnet-003',
+    bountyId: '0xb9b78f14364903ad6d1506e3da14054cba1a11600276ca708b8194119004523c',
+    onChainBountyId: '0xb9b78f14364903ad6d1506e3da14054cba1a11600276ca708b8194119004523c',
+    category: 'DEV',
+    categoryName: 'Development',
+    categoryColor: '#2f578c',
+    categoryTextColor: '#ffffff',
+    title: 'BOT Chain Mainnet Ecosystem Integration & Agent Workflow Showcase #3',
+    repo: 'Blackwrld04/BOTBOUNTY',
+    submissionType: 'Open Source Integration / AI Agent Solver Script',
+    issueUrl: 'https://github.com/Blackwrld04/BOTBOUNTY/blob/main/docs/MAINNET_VERIFICATION_EVIDENCE.md#bounty-2',
+    onChainIssueUrl: 'https://github.com/Blackwrld04/BOTBOUNTY/issues/104',
+    amount: 0.02,
+    tags: ['Mainnet 677', 'Verified On-Chain', 'Open Escrow', 'AI Agents'],
+    status: 'Open',
+    maintainer: '0xBE0aaE21b6252aa1207cAa50A753e8C45bCBCbc5',
+    maintainerName: 'BOT Chain Deployer & Protocol Maintainer',
+    solver: null,
+    solverType: null,
+    prUrl: null,
+    depositTx: '0xe3b5a4870b225cbaf2c5f2780af66ab2f67ec028f4370dccdbb5af6939deeb01',
+    settlementTx: null,
+    createdAt: 1793959869000,
+    deadline: 1796551852000,
+    deadlineDays: 30,
+    isMainnetVerified: true,
+    isDemo: false,
+    description: 'Active open escrow bounty funded on BOT Chain Mainnet. Submit an open-source BOT Chain ecosystem integration example, analytics script, or AI-agent solver workflow interacting with BotBountyEscrow (0x909661b453bBe13Ee247551754b35370557A9aA2).'
+  },
+
+  // --- DEMO SHOWCASE TEMPLATES (OFF-CHAIN PREVIEWS) ---
   {
     id: 'bounty-bot-001',
     bountyId: '0x8a9b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a01',
@@ -20,7 +119,7 @@ export const INITIAL_BOUNTIES = [
     submissionType: 'Figma / 3D Blender GLTF / PNG Pack',
     issueUrl: 'https://github.com/botchain-ai/community/issues/45',
     amount: 1200,
-    tags: ['3D Art', 'Figma', 'Mascot', 'BOT Chain', 'Stickers'],
+    tags: ['Demo Template', '3D Art', 'Figma', 'Mascot', 'BOT Chain'],
     status: 'Open',
     maintainer: '0x461cd48D95993242bB04774cc68042795586BbAd',
     maintainerName: 'BOT Chain Creative Guild',
@@ -30,6 +129,8 @@ export const INITIAL_BOUNTIES = [
     createdAt: Date.now() - 86400000 * 1,
     deadline: Date.now() + 86400000 * 5,
     deadlineDays: 6,
+    isMainnetVerified: false,
+    isDemo: true,
     description: 'Create an iconic 3D mascot embodying BOT Chain institutional foundation and sub-second speed. Deliverable: Blender GLTF + 15 expressive Telegram & Discord stickers.'
   },
   {
@@ -44,7 +145,7 @@ export const INITIAL_BOUNTIES = [
     submissionType: 'Loom / YouTube / MP4 Link',
     issueUrl: 'https://github.com/botbounty-ai/media/issues/12',
     amount: 1500,
-    tags: ['Motion Graphics', 'TikTok / Reels', '3D After Effects', 'BOT Economy'],
+    tags: ['Demo Template', 'Motion Graphics', 'TikTok / Reels', '3D After Effects'],
     status: 'Open',
     maintainer: '0xBE0aaE21b6252aa1207cAa50A753e8C45bCBCbc5',
     maintainerName: 'BOT Chain Marketing DAO',
@@ -54,6 +155,8 @@ export const INITIAL_BOUNTIES = [
     createdAt: Date.now() - 86400000 * 2,
     deadline: Date.now() + 86400000 * 3,
     deadlineDays: 5,
+    isMainnetVerified: false,
+    isDemo: true,
     description: 'High-octane, fast-paced video showing the pain of fluctuating gas fees on legacy chains vs instant sub-second transactions on BOT Chain with Native $BOT settlement. High-quality kinetic typography and sound design.'
   },
   {
@@ -68,7 +171,7 @@ export const INITIAL_BOUNTIES = [
     submissionType: 'Twitter/X Thread Link / Notion',
     issueUrl: 'https://github.com/botchain-ai/research/issues/8',
     amount: 800,
-    tags: ['Research', 'X Thread', 'Infographics', 'PoS EVM'],
+    tags: ['Demo Template', 'Research', 'X Thread', 'Infographics'],
     status: 'Settled',
     maintainer: '0x461cd48D95993242bB04774cc68042795586BbAd',
     maintainerName: 'BOT Chain Research Foundation',
@@ -78,6 +181,8 @@ export const INITIAL_BOUNTIES = [
     createdAt: Date.now() - 86400000 * 3,
     deadline: Date.now() + 86400000 * 7,
     deadlineDays: 10,
+    isMainnetVerified: false,
+    isDemo: true,
     description: 'Break down BOT Chain consensus and high-throughput EVM execution for both retail and developer audiences. Must include visual diagrams explaining sub-second deterministic finality and multi-asset escrow security.'
   },
   {
@@ -92,7 +197,7 @@ export const INITIAL_BOUNTIES = [
     submissionType: 'X Post Link / Imgur Album',
     issueUrl: 'https://github.com/botchain-ai/memes/issues/3',
     amount: 450,
-    tags: ['Memes', 'Social', 'Humor', 'Viral', 'X/Twitter'],
+    tags: ['Demo Template', 'Memes', 'Social', 'Humor', 'Viral'],
     status: 'Settled',
     maintainer: '0x1234567890abcdef1234567890abcdef12345678',
     maintainerName: 'BOT Chain Meme DAO',
@@ -101,6 +206,8 @@ export const INITIAL_BOUNTIES = [
     prUrl: 'https://x.com/memegod_sol/status/1838192830192',
     createdAt: Date.now() - 86400000 * 5,
     deadline: Date.now() - 86400000 * 1,
+    isMainnetVerified: false,
+    isDemo: true,
     description: 'Create 5 top-tier, viral-ready memes contrasting user pain on high gas fee networks with the effortless sub-cent execution on BOT Chain. Winner receives instant reward.'
   },
   {
@@ -115,7 +222,7 @@ export const INITIAL_BOUNTIES = [
     submissionType: 'GitHub PR & Live Demo',
     issueUrl: 'https://github.com/botbounty-ai/agent-oracle/issues/19',
     amount: 2000,
-    tags: ['TypeScript', 'AI Agents', 'Solidity', 'Oracles', 'BOT Chain'],
+    tags: ['Demo Template', 'TypeScript', 'AI Agents', 'Solidity', 'Oracles'],
     status: 'Open',
     maintainer: '0xBE0aaE21b6252aa1207cAa50A753e8C45bCBCbc5',
     maintainerName: 'BotBounty Labs',
@@ -124,6 +231,8 @@ export const INITIAL_BOUNTIES = [
     prUrl: null,
     createdAt: Date.now() - 86400000 * 1,
     deadline: Date.now() + 86400000 * 14,
+    isMainnetVerified: false,
+    isDemo: true,
     description: 'Create an automated verification oracle allowing autonomous AI agents to evaluate code syntax, pass test suites, and trigger deterministic settlement on BOT Chain.'
   },
   {
@@ -138,7 +247,7 @@ export const INITIAL_BOUNTIES = [
     submissionType: 'Deliverable URL',
     issueUrl: 'https://github.com/botchain-ai/visuals/issues/12',
     amount: 750,
-    tags: ['Design', 'BOT Chain', 'Infographic'],
+    tags: ['Demo Template', 'Design', 'BOT Chain', 'Infographic'],
     status: 'Settled',
     maintainer: '0x461cd48D95993242bB04774cc68042795586BbAd',
     maintainerName: 'BOT Chain Foundation',
@@ -147,6 +256,8 @@ export const INITIAL_BOUNTIES = [
     prUrl: 'https://www.figma.com/design/botchain-interactive-infographic',
     createdAt: Date.now() - 86400000 * 4,
     deadline: Date.now() + 86400000 * 8,
+    isMainnetVerified: false,
+    isDemo: true,
     description: 'Design a high-fidelity interactive SVG visualization of BOT Chain multi-asset escrow settlement with sub-second deterministic finality.'
   },
   {
@@ -161,7 +272,7 @@ export const INITIAL_BOUNTIES = [
     submissionType: 'MP4 Deliverable Link',
     issueUrl: 'https://github.com/botchain-ai/speed-3d/issues/5',
     amount: 750,
-    tags: ['Content', '3D Animation', 'Native $BOT'],
+    tags: ['Demo Template', 'Content', '3D Animation', 'Native $BOT'],
     status: 'Open',
     maintainer: '0x461cd48D95993242bB04774cc68042795586BbAd',
     maintainerName: 'BOT Chain Creative Guild',
@@ -170,6 +281,8 @@ export const INITIAL_BOUNTIES = [
     prUrl: null,
     createdAt: Date.now() - 86400000 * 1,
     deadline: Date.now() + 86400000 * 4,
+    isMainnetVerified: false,
+    isDemo: true,
     description: 'High frame rate 3D kinetic video showcasing sub-second block times and Native $BOT settlement.'
   }
 ];

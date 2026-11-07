@@ -38,7 +38,7 @@ export default function AccountSettings({
   const [activeTab, setActiveTab] = useState(initialTab); // 'account', 'wallet', 'notifications', 'referrals'
   const [name, setName] = useState(user?.name || 'Bot Creator');
   const [username, setUsername] = useState(user?.username || 'creator');
-  const [bio, setBio] = useState(user?.bio || 'Web3 Creator on BOT Chain (677 / 968)');
+  const [bio, setBio] = useState(user?.bio || 'Web3 Creator on BOT Chain Mainnet (Chain ID 677)');
   const [avatar, setAvatar] = useState(user?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80');
   const avatarFileRef = React.useRef(null);
   const [usernameStatus, setUsernameStatus] = useState({ state: 'idle', message: '' }); // 'idle', 'checking', 'available', 'taken', 'invalid'
@@ -762,7 +762,7 @@ export default function AccountSettings({
                 Primary Web3 Wallet (BOT Chain EVM)
               </h3>
               <p style={{ fontSize: '0.84rem', color: '#64748b', margin: '3px 0 0 0' }}>
-                Connected to BOT Chain (Chain ID 677 / 968). All payments and escrow locks settle here.
+                Connected to BOT Chain Mainnet (Chain ID 677). All payments and escrow locks settle here.
               </p>
             </div>
 

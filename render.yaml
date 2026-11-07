@@ -14,17 +14,17 @@ services:
       - key: PORT
         value: "4050"
       - key: BOT_RPC_URL
-        value: https://rpc.bohr.life
+        value: https://rpc.botchain.ai
       - key: BOT_CHAIN_ID
-        value: "968"
+        value: "677"
       - key: BOT_MAINNET_RPC_URL
         value: https://rpc.botchain.ai
       - key: BOT_MAINNET_CHAIN_ID
         value: "677"
       - key: ESCROW_CONTRACT_ADDRESS
-        value: "0xB128F2f442554B6517D779788F28F2EB2612164A"
+        value: "0x909661b453bBe13Ee247551754b35370557A9aA2"
       - key: USDT_ADDRESS
-        value: "0x75edC9335175Fc0552D51D48439F229c10420fe3"
+        value: "0xaBabc7Ddc03e501d190C676BF3d92ef0e6e87a3C"
       - key: SMTP_HOST
         value: "smtp.gmail.com"
       - key: SMTP_PORT

@@ -5,36 +5,29 @@ import { API_BASE } from '../utils/api';
 const FALLBACK_CREATORS = [
   {
     rank: 1,
-    handle: '@Alex Researcher',
-    name: 'Alex Researcher',
-    role: 'Web3 Researcher (Threador)',
-    category: 'WRITING',
-    earned: 800,
+    handle: '@0x8728...5Ccf',
+    name: 'Lead Test Solver',
+    role: 'Lead Test Solver',
+    category: 'DEV',
+    earned: 0.02,
     completed: 1,
     badgeColor: 'var(--arc-quantum-plum)',
-    address: '0x9923Bc8E4786A6B71D0052F5eCE984bC9d123456'
+    address: '0x872876249c4DE59499c630c89E05748a2c7f5Ccf',
+    isMainnetVerified: true,
+    txHash: '0x20ff9b6954208cfbd48b451589a8c9227d8fc739ee98ea0af85737d6636e62c1'
   },
   {
     rank: 2,
-    handle: '@Alex Rivers',
-    name: 'Alex Rivers',
-    role: 'Human Creator',
-    category: 'DESIGN',
-    earned: 750,
+    handle: '@0x9a10...71dA',
+    name: 'Blind Commitment Solver',
+    role: 'AI Agent Solver',
+    category: 'DEV',
+    earned: 0.02,
     completed: 1,
     badgeColor: 'var(--arc-sky-sync)',
-    address: '0x51a8b1bfeb88bdfa9207e999c0b2023c70c97c8f'
-  },
-  {
-    rank: 3,
-    handle: '@Meme God',
-    name: 'Meme God',
-    role: 'Web3 Meme Lord',
-    category: 'MEMES',
-    earned: 450,
-    completed: 1,
-    badgeColor: 'var(--arc-blockstream-gold)',
-    address: '0x71C568ba74d3B107292995bB791e317614399A45'
+    address: '0x9a10F17cF4b406078D4cC1415ef079bEcfb271dA',
+    isMainnetVerified: true,
+    txHash: '0x5e6871479685b094aa03809fb0156890521fd45ce457542ed98642a3f39efeaf'
   }
 ];
 
@@ -106,7 +99,7 @@ export default function Leaderboard({ onSelectCreator }) {
       <div className="container">
         <div style={{ marginBottom: '32px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-            <span className="sticker-tape">TOP EARNERS ON BOT CHAIN (677 / 968)</span>
+            <span className="sticker-tape">TOP EARNERS ON BOT CHAIN MAINNET (677)</span>
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexDirection: isMobile ? 'column' : 'row', flexWrap: 'wrap', gap: '16px' }}>
@@ -139,7 +132,7 @@ export default function Leaderboard({ onSelectCreator }) {
                   SETTLED ON LEADERBOARD
                 </span>
                 <span className="font-space" style={{ fontSize: '1.25rem', fontWeight: 900, color: '#000000' }}>
-                  {totalLeaderboardEarned.toLocaleString()} BOT
+                  {totalLeaderboardEarned.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 4 })} BOT
                 </span>
               </div>
               <div style={{ width: '2px', height: '24px', background: '#000000' }} />
@@ -288,7 +281,7 @@ export default function Leaderboard({ onSelectCreator }) {
 
                       <td style={{ padding: isMobile ? '12px 10px' : '18px 20px' }}>
                         <span className="font-space" style={{ fontSize: isMobile ? '1rem' : '1.35rem', fontWeight: 900, color: '#000000' }}>
-                          {Number(c.earned).toLocaleString()}
+                          {Number(c.earned).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 4 })}
                         </span>
                         <span style={{ fontSize: isMobile ? '0.7rem' : '0.8rem', fontWeight: 800, marginLeft: '4px' }}>BOT</span>
                       </td>
@@ -396,7 +389,7 @@ export default function Leaderboard({ onSelectCreator }) {
               <div style={{ background: '#f8fafc', border: '1.5px solid #000000', borderRadius: '8px', padding: '12px' }}>
                 <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>Total Earned</span>
                 <div className="font-space" style={{ fontSize: '1.3rem', fontWeight: 900, color: '#000000', marginTop: '2px' }}>
-                  {Number(selectedCreator.earned).toLocaleString()} BOT
+                  {Number(selectedCreator.earned).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 4 })} BOT
                 </div>
               </div>
               <div style={{ background: '#f8fafc', border: '1.5px solid #000000', borderRadius: '8px', padding: '12px' }}>

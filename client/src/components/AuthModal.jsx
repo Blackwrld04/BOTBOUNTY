@@ -752,7 +752,7 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
             </div>
             <div>
               <p style={{ fontSize: '0.8rem', fontWeight: 800, margin: 0, color: '#ffffff' }}>Verified Creator Auth</p>
-              <p style={{ fontSize: '0.7rem', opacity: 0.85, margin: 0, color: '#acc6e9' }}>BOT Chain Protocol (677 / 968)</p>
+              <p style={{ fontSize: '0.7rem', opacity: 0.85, margin: 0, color: '#acc6e9' }}>BOT Chain Protocol (Chain ID 677)</p>
             </div>
           </div>
         </div>

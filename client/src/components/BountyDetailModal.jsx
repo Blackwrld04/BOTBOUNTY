@@ -520,6 +520,60 @@ export default function BountyDetailModal({
           {bounty.title}
         </h2>
 
+        {/* Mainnet On-Chain Verification / Demo Banner */}
+        {bounty.isMainnetVerified || (bounty.id && bounty.id.startsWith('bounty-mainnet')) ? (
+          <div style={{
+            background: '#ecfdf5',
+            border: '2px solid #16a34a',
+            boxShadow: '3px 3px 0px #16a34a',
+            borderRadius: '10px',
+            padding: '14px 18px',
+            marginBottom: '18px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', marginBottom: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <CheckCircle2 size={16} color="#16a34a" strokeWidth={2.8} />
+                <span style={{ fontSize: '0.82rem', fontWeight: 900, color: '#166534', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  VERIFIED ON-CHAIN MAINNET BOUNTY (CHAIN ID 677)
+                </span>
+              </div>
+              <a
+                href="https://github.com/Blackwrld04/BOTBOUNTY/blob/main/docs/MAINNET_VERIFICATION_EVIDENCE.md"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ fontSize: '0.74rem', fontWeight: 800, color: '#166534', textDecoration: 'underline' }}
+              >
+                Verification Evidence &amp; Audit Ledger ↗
+              </a>
+            </div>
+            <p style={{ fontSize: '0.78rem', color: '#14532d', margin: '0 0 8px 0', lineHeight: 1.45, fontWeight: 500 }}>
+              Funded with Native $BOT in non-custodial escrow contract <code>0x9096...A9aA2</code> on BOT Chain Mainnet.
+              {bounty.depositTx && (
+                <> Deposit Tx: <a href={`https://scan.botchain.ai/tx/${bounty.depositTx}`} target="_blank" rel="noopener noreferrer" style={{ fontWeight: 700, color: '#166534', textDecoration: 'underline' }}>{bounty.depositTx.slice(0, 10)}...{bounty.depositTx.slice(-8)} ↗</a>.</>
+              )}
+            </p>
+            <div style={{ fontSize: '0.72rem', color: '#166534', background: '#dcfce7', padding: '6px 10px', borderRadius: '6px', border: '1px solid #86efac' }}>
+              <strong>Calldata Reference Note:</strong> The raw on-chain calldata strings (e.g. issues/101–104 and pull/101–103) were synthetic test-vector parameters passed during post-deployment verification. The accessible protocol deliverables and live BOTScan receipts are documented in <a href="https://github.com/Blackwrld04/BOTBOUNTY/blob/main/docs/MAINNET_VERIFICATION_EVIDENCE.md" target="_blank" rel="noopener noreferrer" style={{ fontWeight: 800, color: '#14532d', textDecoration: 'underline' }}>docs/MAINNET_VERIFICATION_EVIDENCE.md</a>.
+            </div>
+          </div>
+        ) : bounty.isDemo ? (
+          <div style={{
+            background: '#fffbeb',
+            border: '2px solid #d97706',
+            boxShadow: '3px 3px 0px #d97706',
+            borderRadius: '10px',
+            padding: '12px 16px',
+            marginBottom: '18px'
+          }}>
+            <span style={{ fontSize: '0.8rem', fontWeight: 900, color: '#92400e', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              DEMO SHOWCASE TEMPLATE (OFF-CHAIN PREVIEW)
+            </span>
+            <p style={{ fontSize: '0.76rem', color: '#78350f', margin: '4px 0 0 0', lineHeight: 1.4 }}>
+              This is an off-chain sample task provided to demonstrate creator workflows, rubrics, and category templates. It is not funded on BOT Chain Mainnet and is excluded from live Mainnet TVL.
+            </p>
+          </div>
+        ) : null}
+
         {/* Escrow Reward Banner (Neo-Brutalist) */}
         <div style={{
           background: 'var(--arc-static-ether)',
@@ -540,7 +594,7 @@ export default function BountyDetailModal({
             </span>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '2px' }}>
               <span className="font-space" style={{ fontSize: '2.2rem', fontWeight: 900, color: '#000000' }}>
-                {bounty.amount.toLocaleString()}
+                {bounty.amount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 4 })}
               </span>
               <span style={{ fontSize: '1rem', fontWeight: 800, color: '#4b5563' }}>$BOT</span>
               <span style={{ fontSize: '0.75rem', color: '#64748b', fontFamily: 'Geist Mono, monospace' }}>

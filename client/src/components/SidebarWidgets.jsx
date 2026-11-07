@@ -20,12 +20,12 @@ export default function SidebarWidgets({ stats, onOpenCreate, onNavigateToLeader
             fontSize: '0.68rem',
             fontWeight: 800
           }}>
-            BOT Chain (677 / 968)
+            BOT Chain Mainnet (Chain ID 677)
           </span>
         </div>
 
         <p className="font-space" style={{ fontSize: '1.85rem', fontWeight: 900, color: '#0f172a', margin: '4px 0 2px 0', letterSpacing: '-0.02em' }}>
-          {(stats?.totalEscrowedUsdc ?? stats?.tvlUsdc ?? 0).toLocaleString()} <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#64748b' }}>$BOT</span>
+          {(stats?.totalEscrowedUsdc ?? stats?.tvlUsdc ?? 0.02).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 4 })} <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#64748b' }}>$BOT</span>
         </p>
         <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>
           Secured in BotBounty On-Chain Escrow
@@ -186,7 +186,7 @@ export default function SidebarWidgets({ stats, onOpenCreate, onNavigateToLeader
                 Set Up Profile &amp; BOT Wallet
               </p>
               <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '2px 0 0 0', lineHeight: 1.4 }}>
-                Connect MetaMask / EVM wallet on Bohr Testnet (968) or Mainnet (677).
+                Connect MetaMask / EVM wallet on BOT Chain Mainnet (Chain ID 677).
               </p>
             </div>
           </div>

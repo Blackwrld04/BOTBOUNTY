@@ -107,6 +107,43 @@ export default function BountyCard({ bounty, onSelect, now }) {
               {bounty.title}
             </h3>
 
+            {bounty.isMainnetVerified || (bounty.id && bounty.id.startsWith('bounty-mainnet')) ? (
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                fontSize: '0.68rem',
+                fontWeight: 900,
+                color: '#166534',
+                background: '#dcfce7',
+                border: '1.5px solid #16a34a',
+                boxShadow: '1.5px 1.5px 0px #16a34a',
+                padding: '1px 7px',
+                borderRadius: '4px',
+                textTransform: 'uppercase'
+              }}>
+                <CheckCircle2 size={11} strokeWidth={2.8} />
+                ON-CHAIN MAINNET (677)
+              </span>
+            ) : bounty.isDemo ? (
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                fontSize: '0.68rem',
+                fontWeight: 800,
+                color: '#9a3412',
+                background: '#ffedd5',
+                border: '1.5px solid #ea580c',
+                boxShadow: '1.5px 1.5px 0px #ea580c',
+                padding: '1px 7px',
+                borderRadius: '4px',
+                textTransform: 'uppercase'
+              }}>
+                DEMO TEMPLATE (OFF-CHAIN)
+              </span>
+            ) : null}
+
             {bounty.tags?.includes('Featured') || bounty.amount >= 1200 ? (
               <span style={{
                 display: 'inline-flex',
@@ -307,7 +344,7 @@ export default function BountyCard({ bounty, onSelect, now }) {
               B
             </div>
             <span className="font-space" style={{ fontSize: isMobile ? '1.1rem' : '1.3rem', fontWeight: 900, color: '#000000' }}>
-              {bounty.amount.toLocaleString()}
+              {bounty.amount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 4 })}
             </span>
             <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#4b5563' }}>$BOT</span>
           </div>

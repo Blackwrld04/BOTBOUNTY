@@ -81,21 +81,28 @@ app.use('/api/admin', adminRouter);
 
 // Health check & Root status
 app.get('/', (req, res) => {
+  const isMainnet = config.botChainId === 677;
   res.json({
     status: 'online',
     message: 'BotBounty Facilitator API is running',
-    network: 'BOT Chain (968 / 677)',
+    network: isMainnet ? 'BOT Chain Mainnet' : 'BOT Chain Bohr Testnet',
+    chainId: config.botChainId,
+    escrowContractAddress: config.escrowContractAddress,
+    explorerUrl: isMainnet ? 'https://scan.botchain.ai' : 'https://scan.bohr.life',
     health: '/health',
     timestamp: new Date().toISOString()
   });
 });
 
 app.get(['/health', '/api/version'], (req, res) => {
+  const isMainnet = config.botChainId === 677;
   res.json({
     status: 'ok',
     service: 'BotBounty Facilitator API',
-    network: 'BOT Chain (Bohr Testnet 968 / Mainnet 677)',
+    network: isMainnet ? 'BOT Chain Mainnet' : 'BOT Chain Bohr Testnet',
     chainId: config.botChainId,
+    rpcUrl: config.botRpcUrl,
+    explorerUrl: isMainnet ? 'https://scan.botchain.ai' : 'https://scan.bohr.life',
     escrowContractAddress: config.escrowContractAddress,
     supportedPilotAsset: 'Native $BOT (address(0))',
     unsupportedAssetsDisabled: ['ERC-20 (USDT)', 'USDC'],

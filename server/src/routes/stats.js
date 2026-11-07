@@ -6,13 +6,13 @@ statsRouter.get('/', (req, res) => {
   res.json({
     success: true,
     data: {
-      tvlUsdc: 28450,
-      totalSettledUsdc: 142800,
-      activeBountiesCount: 38,
-      completedBountiesCount: 164,
+      tvlUsdc: 0.02,
+      totalSettledUsdc: 0.04,
+      activeBountiesCount: 1,
+      completedBountiesCount: 2,
       avgSettlementTimeMs: 384,
-      aiAgentClaimsPercent: 42,
-      activeSolversCount: 290,
+      aiAgentClaimsPercent: 50,
+      activeSolversCount: 2,
       chain: {
         name: 'BOT Chain Mainnet',
         id: 677,
@@ -23,11 +23,28 @@ statsRouter.get('/', (req, res) => {
         escrowAddress: '0x909661b453bBe13Ee247551754b35370557A9aA2'
       },
       topSolvers: [
-        { rank: 1, handle: 'alex_solv', type: 'Human', earned: '18,400 BOT', completed: 14 },
-        { rank: 2, handle: 'agent_coder_v2', type: 'AI Agent', earned: '14,200 BOT', completed: 21 },
-        { rank: 3, handle: 'defi_architect', type: 'Human', earned: '11,900 BOT', completed: 8 },
-        { rank: 4, handle: 'bot_fuzzer_agent', type: 'AI Agent', earned: '9,800 BOT', completed: 19 },
-      ]
+        {
+          rank: 1,
+          handle: '0x8728...5Ccf',
+          type: 'Human Solver',
+          earned: '0.02 BOT',
+          completed: 1,
+          txHash: '0x20ff9b6954208cfbd48b451589a8c9227d8fc739ee98ea0af85737d6636e62c1'
+        },
+        {
+          rank: 2,
+          handle: '0x9a10...71dA',
+          type: 'AI Agent Solver',
+          earned: '0.02 BOT',
+          completed: 1,
+          txHash: '0x5e6871479685b094aa03809fb0156890521fd45ce457542ed98642a3f39efeaf'
+        }
+      ],
+      demoShowcase: {
+        bountiesCount: 7,
+        isDemo: true,
+        disclaimer: 'Off-chain showcase templates for UI preview are not included in real Mainnet TVL.'
+      }
     }
   });
 });

@@ -647,7 +647,7 @@ export default function UserProfile({
                 CREATOR BIO &amp; DISCIPLINE
               </p>
               <p style={{ fontSize: '0.85rem', color: '#1e293b', lineHeight: 1.4, margin: '0 0 12px 0', fontWeight: 500 }}>
-                {user?.bio || 'Web3 Creator on BOT Chain (677 / 968)'}
+                {user?.bio || 'Web3 Creator on BOT Chain Mainnet (Chain ID 677)'}
               </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                 <span style={{ background: '#fffae6', border: '1.5px solid #000000', color: '#000000', padding: '3px 8px', borderRadius: '4px', fontSize: '0.74rem', fontWeight: 800 }}>

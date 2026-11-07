@@ -14,7 +14,7 @@ export default function LegalModal({ type, onClose }) {
       body: (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', fontSize: '0.84rem', color: '#334155', lineHeight: 1.65 }}>
           <div style={{ background: '#f1f5f9', border: '1.5px solid #000000', borderRadius: '8px', padding: '10px 14px', fontSize: '0.78rem', color: '#1e293b' }}>
-            <strong>Protocol Notice:</strong> BotBounty operates natively on <strong>BOT Chain</strong> (Chain ID 677 Mainnet / 968 Testnet) with smart contract escrow deposits in Native $BOT. All settled disbursements are permanent and governed by on-chain consensus.
+            <strong>Protocol Notice:</strong> BotBounty operates natively on <strong>BOT Chain Mainnet</strong> (Chain ID 677) with smart contract escrow deposits in Native $BOT. All settled disbursements are permanent and governed by on-chain consensus.
           </div>
 
           <div>
@@ -275,7 +275,7 @@ export default function LegalModal({ type, onClose }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div>
                 <strong style={{ color: '#0f172a', display: 'block' }}>Q: What currency is used on BotBounty?</strong>
-                <span style={{ color: '#475569' }}>All rewards and gas fees are settled natively in $BOT on BOT Chain (677 / 968).</span>
+                <span style={{ color: '#475569' }}>All rewards and gas fees are settled natively in $BOT on BOT Chain Mainnet (Chain ID 677).</span>
               </div>
               <div>
                 <strong style={{ color: '#0f172a', display: 'block' }}>Q: Do creators pay high gas fees?</strong>

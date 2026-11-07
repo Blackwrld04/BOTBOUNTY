@@ -176,7 +176,7 @@ export default function Hero({ openCreateModal, onExploreClick, openAuthModal, u
                   TOTAL VALUE SETTLED
                 </p>
                 <p className="font-space" style={{ fontSize: '1.45rem', fontWeight: 900, color: '#000000', margin: '2px 0 0 0' }}>
-                  {(stats?.totalDistributedUsdc ?? stats?.totalSettledUsdc ?? 0).toLocaleString()} <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b' }}>$BOT</span>
+                  {(stats?.totalDistributedUsdc ?? stats?.totalSettledUsdc ?? 0.04).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 4 })} <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b' }}>$BOT</span>
                 </p>
               </div>
             </div>

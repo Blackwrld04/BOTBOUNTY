@@ -81,16 +81,16 @@ export default function App() {
   });
 
   const [stats, setStats] = useState({
-    tvlUsdc: 8200,
-    totalEscrowedUsdc: 8200,
-    totalSettledUsdc: 1550,
-    totalDistributedUsdc: 1550,
+    tvlUsdc: 0.02,
+    totalEscrowedUsdc: 0.02,
+    totalSettledUsdc: 0.04,
+    totalDistributedUsdc: 0.04,
     avgSettlementTimeMs: 384,
-    activeBountiesCount: 5,
-    totalBounties: 8,
-    openBounties: 5,
+    activeBountiesCount: 1,
+    totalBounties: 3,
+    openBounties: 1,
     inReviewBounties: 0,
-    settledBounties: 3,
+    settledBounties: 2,
     totalSubmissions: 2,
     totalDistributions: 2
   });
