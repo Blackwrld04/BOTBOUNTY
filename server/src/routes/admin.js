@@ -381,7 +381,7 @@ adminRouter.post(['/distribute', '/disburse'], async (req, res) => {
 
     res.json({
       success: true,
-      message: `Successfully disbursed ${settlement.amount} $BOT to creator on Bohr Testnet!`,
+      message: `Successfully disbursed ${settlement.amount} $BOT to creator on BOT Chain!`,
       settlement
     });
   } catch (err) {
@@ -577,8 +577,8 @@ adminRouter.get('/export-csv', (req, res) => {
       'Sponsor_Wallet',
       'Recipient_Address',
       'Recipient_Email',
-      'Amount_USDC',
-      'Arc_Tx_Hash',
+      'Amount_BOT',
+      'BOTChain_Tx_Hash',
       'Admin_Email'
     ];
 
@@ -602,7 +602,7 @@ adminRouter.get('/export-csv', (req, res) => {
     const csvContent = csvRows.join('\n');
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('Content-Disposition', `attachment; filename=arcbounty_audit_ledger_${new Date().toISOString().split('T')[0]}.csv`);
+    res.setHeader('Content-Disposition', `attachment; filename=botbounty_payout_ledger_${new Date().toISOString().split('T')[0]}.csv`);
     return res.send(csvContent);
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });

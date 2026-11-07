@@ -960,7 +960,7 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
                   Welcome Back
                 </h3>
                 <p style={{ fontSize: '0.84rem', color: '#4b5563', marginTop: '4px', fontWeight: 500 }}>
-                  Enter your credentials to access your bounties and USDC balance.
+                  Enter your credentials to access your bounties and $BOT balance.
                 </p>
               </div>
 

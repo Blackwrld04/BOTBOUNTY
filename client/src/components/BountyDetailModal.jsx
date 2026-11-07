@@ -536,15 +536,15 @@ export default function BountyDetailModal({
         }}>
           <div>
             <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--arc-protocol-navy)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              CANONICAL CIRCLE USDC ESCROW
+              BOT CHAIN NATIVE $BOT ESCROW
             </span>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '2px' }}>
               <span className="font-space" style={{ fontSize: '2.2rem', fontWeight: 900, color: '#000000' }}>
-                ${bounty.amount.toLocaleString()}
+                {bounty.amount.toLocaleString()}
               </span>
-              <span style={{ fontSize: '1rem', fontWeight: 800, color: '#4b5563' }}>USDC</span>
+              <span style={{ fontSize: '1rem', fontWeight: 800, color: '#4b5563' }}>$BOT</span>
               <span style={{ fontSize: '0.75rem', color: '#64748b', fontFamily: 'Geist Mono, monospace' }}>
-                (0x3600...0000)
+                (0x9096...A9aA2)
               </span>
             </div>
           </div>
@@ -552,7 +552,7 @@ export default function BountyDetailModal({
           <div style={{ textAlign: 'right' }}>
             <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b' }}>SPONSOR GUILD</span>
             <p style={{ fontSize: '0.95rem', fontWeight: 800, color: '#000000', margin: '2px 0 0 0' }}>
-              {bounty.maintainerName || 'Arc Creator DAO'}
+              {bounty.maintainerName || 'BOT Chain Sponsor'}
             </p>
             <p style={{ fontSize: '0.75rem', color: '#64748b', fontFamily: 'Geist Mono, monospace', margin: 0 }}>
               {truncateAddress(bounty.maintainer)}
@@ -670,7 +670,7 @@ export default function BountyDetailModal({
                           {t.label || `${t.place} Place`}
                         </span>
                         <span className="font-space" style={{ fontSize: '1.15rem', fontWeight: 900, color: '#0f172a' }}>
-                          ${t.amount.toLocaleString()} <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b' }}>USDC</span>
+                          {t.amount.toLocaleString()} <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b' }}>$BOT</span>
                         </span>
                       </div>
                     ))}
@@ -679,13 +679,13 @@ export default function BountyDetailModal({
 
                 {bounty.rewardDistribution.type === 'equal' && (
                   <div style={{ fontSize: '0.86rem', fontWeight: 700, color: '#1f2937' }}>
-                    <strong>{bounty.rewardDistribution.winnerCount} creators</strong> will each receive an equal share of <strong>${bounty.rewardDistribution.perWinnerAmount} USDC</strong> (${bounty.amount.toLocaleString()} USDC total).
+                    <strong>{bounty.rewardDistribution.winnerCount} creators</strong> will each receive an equal share of <strong>{bounty.rewardDistribution.perWinnerAmount} BOT</strong> ({bounty.amount.toLocaleString()} BOT total).
                   </div>
                 )}
 
                 {bounty.rewardDistribution.type === 'single' && (
                   <div style={{ fontSize: '0.86rem', fontWeight: 700, color: '#1f2937' }}>
-                    Winner takes all: <strong>${bounty.amount.toLocaleString()} USDC</strong> awarded to the winning deliverable.
+                    Winner takes all: <strong>{bounty.amount.toLocaleString()} BOT</strong> awarded to the winning deliverable.
                   </div>
                 )}
               </div>
@@ -703,7 +703,7 @@ export default function BountyDetailModal({
                     <CheckCircle2 size={15} />
                     <span>1. Funded</span>
                   </div>
-                  <p style={{ fontSize: '0.72rem', color: '#4b5563', margin: '2px 0 0 0', fontWeight: 600 }}>Locked in Arc Escrow</p>
+                  <p style={{ fontSize: '0.72rem', color: '#4b5563', margin: '2px 0 0 0', fontWeight: 600 }}>Locked in BOT Chain Escrow</p>
                 </div>
 
                 <div style={{
@@ -734,7 +734,7 @@ export default function BountyDetailModal({
                     <span>3. Disbursed</span>
                   </div>
                   <p style={{ fontSize: '0.72rem', color: '#4b5563', margin: '2px 0 0 0', fontWeight: 600 }}>
-                    {bounty.status === 'Settled' ? '<400ms Finality' : 'Upon Admin Approval'}
+                    {bounty.status === 'Settled' ? 'Settled On-Chain' : 'Upon Admin Approval'}
                   </p>
                 </div>
               </div>
@@ -859,7 +859,7 @@ export default function BountyDetailModal({
                 <p style={{ fontSize: '0.85rem', color: '#475569', margin: '4px 0 0 0', fontWeight: 600 }}>
                   {isExpired
                     ? 'This challenge has reached its completion deadline. Deliverable submissions are strictly closed.'
-                    : 'This challenge has completed review and USDC disbursement is settled.'}
+                    : 'This challenge has completed review and Native $BOT disbursement is settled.'}
                 </p>
               </div>
             )}
@@ -960,7 +960,7 @@ export default function BountyDetailModal({
                     </div>
 
                     <p style={{ margin: 0, fontSize: '0.76rem', color: '#475569', lineHeight: 1.45 }}>
-                      🔒 <strong>Direct Deliverable Review &amp; On-Chain Settlement:</strong> In v1 of the portal, deliverables (GitHub PR / link) are submitted directly to the maintainer for evaluation and verified on-chain via Bohr Escrow (<code>submitSolution</code> / <code>releaseBounty</code>). Submissions are access-controlled so solvers see only their own work during review, while final winner deliverables and disbursements settle publicly on-chain. Smart contract cryptographic blind commit-reveal (<code>submitSolutionCommitment</code>) is reserved for Phase 2 privacy agent workflows.
+                      🔒 <strong>Direct Deliverable Review &amp; On-Chain Settlement:</strong> In v1 of the portal, deliverables (GitHub PR / link) are submitted directly to the maintainer for evaluation and verified on-chain via BOT Chain Escrow (<code>submitSolution</code> / <code>releaseBounty</code>). Submissions are access-controlled so solvers see only their own work during review, while final winner deliverables and disbursements settle publicly on-chain. Smart contract cryptographic blind commit-reveal (<code>submitSolutionCommitment</code>) is reserved for Phase 2 privacy agent workflows.
                     </p>
                   </div>
 
@@ -1015,7 +1015,7 @@ export default function BountyDetailModal({
                               gap: '3px'
                             }}>
                               <Award size={11} />
-                              <span>WINNER &bull; ${userSubmission.reward_paid || bounty.amount} USDC</span>
+                              <span>WINNER &bull; {userSubmission.reward_paid || bounty.amount} BOT</span>
                             </span>
                           )}
                         </div>

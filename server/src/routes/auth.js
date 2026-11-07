@@ -669,7 +669,7 @@ authRouter.post('/wallet-verify', walletLimiter, async (req, res) => {
         }
         user = createUser({
           email: pseudoEmail,
-          name: `Arc Creator (${address.slice(0, 6)}...${address.slice(-4)})`,
+          name: `BOT Creator (${address.slice(0, 6)}...${address.slice(-4)})`,
           username: uniqueUsername(`arc-${address.slice(2, 10)}`),
           provider: 'wallet',
           walletAddress: address

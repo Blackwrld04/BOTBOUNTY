@@ -112,7 +112,7 @@ export default function SocialConnectModal({
       onClose();
     } catch (err) {
       console.error('Social connect error:', err);
-      setError('Network error connecting to Arc verification service');
+      setError('Network error connecting to BotBounty verification service');
     } finally {
       setIsLoading(false);
     }

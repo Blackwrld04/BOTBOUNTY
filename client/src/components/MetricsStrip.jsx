@@ -5,22 +5,22 @@ export default function MetricsStrip({ stats }) {
   const metrics = [
     {
       label: 'TOTAL VALUE IN ESCROW',
-      value: `$${(stats?.totalEscrowedUsdc ?? stats?.tvlUsdc ?? 0).toLocaleString()} USDC`,
-      detail: 'Locked in Arc Canonical USDC',
+      value: `${(stats?.totalEscrowedUsdc ?? stats?.tvlUsdc ?? 0).toLocaleString()} BOT`,
+      detail: 'Locked in BOT Chain Escrow',
       bg: 'var(--arc-sky-sync)',
       icon: <Shield size={20} strokeWidth={2.5} />
     },
     {
       label: 'COMPLETED CREATOR PAYOUTS',
-      value: `$${(stats?.totalDistributedUsdc ?? stats?.totalSettledUsdc ?? 0).toLocaleString()}`,
-      detail: `${stats?.settledBounties ?? 0} Bounties Disbursed on Arc`,
+      value: `${(stats?.totalDistributedUsdc ?? stats?.totalSettledUsdc ?? 0).toLocaleString()} BOT`,
+      detail: `${stats?.settledBounties ?? 0} Bounties Disbursed on BOT Chain`,
       bg: '#ffffff',
       icon: <CheckCircle size={20} strokeWidth={2.5} />
     },
     {
       label: 'SETTLEMENT LATENCY',
       value: `${stats?.avgSettlementTimeMs || 384}ms`,
-      detail: 'Deterministic Malachite Finality',
+      detail: 'Deterministic BOT Chain Finality',
       bg: 'var(--arc-token-sand)',
       icon: <Clock size={20} strokeWidth={2.5} />
     },

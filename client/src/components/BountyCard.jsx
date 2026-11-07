@@ -153,7 +153,7 @@ export default function BountyCard({ bounty, onSelect, now }) {
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap'
               }}>
-                {bounty.maintainerName || 'Arc Sponsor'}
+                {bounty.maintainerName || 'BOT Chain Sponsor'}
               </span>
               <CheckCircle2 size={13} color="var(--arc-validator-blue)" style={{ flexShrink: 0 }} />
             </div>
@@ -195,7 +195,7 @@ export default function BountyCard({ bounty, onSelect, now }) {
                   {bounty.rewardDistribution.type === 'tiered'
                     ? `${bounty.rewardDistribution.winnerCount} Winners`
                     : bounty.rewardDistribution.type === 'equal'
-                    ? `${bounty.rewardDistribution.winnerCount} Winners × $${bounty.rewardDistribution.perWinnerAmount}`
+                    ? `${bounty.rewardDistribution.winnerCount} Winners × ${bounty.rewardDistribution.perWinnerAmount} BOT`
                     : '1 Winner'}
                 </span>
               </span>
@@ -289,27 +289,27 @@ export default function BountyCard({ bounty, onSelect, now }) {
       }}>
         <div style={{ textAlign: isMobile ? 'left' : 'right' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: isMobile ? 'flex-start' : 'flex-end', gap: '6px' }}>
-            {/* Circle USDC Symbol */}
+            {/* Native $BOT Symbol */}
             <div style={{
               width: '20px',
               height: '20px',
               borderRadius: '50%',
-              background: 'var(--arc-usdc-blue)',
+              background: '#059669',
               color: '#ffffff',
               border: '1.5px solid #000000',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '0.7rem',
+              fontSize: '0.68rem',
               fontWeight: 900,
               flexShrink: 0
             }}>
-              $
+              B
             </div>
             <span className="font-space" style={{ fontSize: isMobile ? '1.1rem' : '1.3rem', fontWeight: 900, color: '#000000' }}>
-              ${bounty.amount.toLocaleString()}
+              {bounty.amount.toLocaleString()}
             </span>
-            <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#4b5563' }}>USDC</span>
+            <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#4b5563' }}>$BOT</span>
           </div>
 
           <div style={{
@@ -335,7 +335,7 @@ export default function BountyCard({ bounty, onSelect, now }) {
             ) : (
               <>
                 <Zap size={12} color="var(--arc-validator-blue)" />
-                <span>0 Gas Payout</span>
+                <span>BOT Chain Escrow</span>
               </>
             )}
           </div>

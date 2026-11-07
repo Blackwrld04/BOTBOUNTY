@@ -8,14 +8,14 @@
 [![Network: BOT Chain Mainnet (677)](https://img.shields.io/badge/network-BOT_Chain_Mainnet_(677)-4f46e5?style=flat-square)](https://botchain.ai)
 [![Escrow Contract: BOT Chain Mainnet](https://img.shields.io/badge/Mainnet_Escrow-0x9096...A9aA2-00ff66?style=flat-square)](https://scan.botchain.ai/address/0x909661b453bBe13Ee247551754b35370557A9aA2)
 [![Escrow Contract: Bohr Testnet](https://img.shields.io/badge/Testnet_Escrow-0xB128...164A-94a3b8?style=flat-square)](https://scan.bohr.life/address/0xB128F2f442554B6517D779788F28F2EB2612164A)
-[![Settlement: Native $BOT & USDT](https://img.shields.io/badge/settlement-Native_$BOT_%26_USDT-2775ca?style=flat-square)](https://scan.botchain.ai)
+[![Settlement: Native $BOT Escrow](https://img.shields.io/badge/settlement-Native_$BOT_Escrow-2775ca?style=flat-square)](https://scan.botchain.ai/address/0x909661b453bBe13Ee247551754b35370557A9aA2)
 [![Automated Test Suite: 21/21 Passing](https://img.shields.io/badge/Foundry_tests-21%2F21_passing-brightgreen?style=flat-square)](#the-smart-contract--settlement-specification)
 [![Backend Tests: 75/75 Passing](https://img.shields.io/badge/Backend_tests-75%2F75_passing-brightgreen?style=flat-square)](#verify-it-yourself)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 
-BotBounty is a decentralized, non-custodial multi-asset bounty escrow and proof-of-work protocol built natively for **BOT Chain** ([botchain.ai](https://botchain.ai) · Mainnet Chain ID `677` / Bohr Testnet `968`). It empowers Web3 projects, autonomous AI agents, and sponsors to lock native `$BOT` and ERC-20 rewards in smart contract escrow and distribute deterministic payouts upon solution verification.
+BotBounty is a decentralized, non-custodial bounty escrow and proof-of-work protocol built natively for **BOT Chain** ([botchain.ai](https://botchain.ai) · Mainnet Chain ID `677` / Bohr Testnet `968`). Live on BOT Chain Mainnet (`0x909661b453bBe13Ee247551754b35370557A9aA2`), the web app settles rewards in **Native `$BOT` (`address(0)`)** via an open-source, test-verified smart contract escrow (while the underlying Solidity contract also includes ERC-20 hooks for future token support).
 
-**Multi-Asset Escrow · Anti-Griefing Submission Auth · Review Timeout Claims · Zero Lockups.**
+**Non-Custodial Native `$BOT` Escrow · Anti-Griefing Submission Auth · Review Timeout Claims · Zero Lockups.**
 
 [Live Web App (Vercel)](https://botbounty-theta.vercel.app/) · [BOT Chain Official](https://botchain.ai) · [Deployed Escrow on BOTScan Mainnet](https://scan.botchain.ai/address/0x909661b453bBe13Ee247551754b35370557A9aA2) · [Mainnet Deployment Tx](https://scan.botchain.ai/tx/0x6d61ed706aa64c5fac35f18cb7aa07f42391c224a23248a86ce27f698361e402) · [Smart Contract (BotBountyEscrow.sol)](contracts/BotBountyEscrow.sol) · [Foundry Tests (BotBountyEscrow.t.sol)](contracts/test/BotBountyEscrow.t.sol)
 
@@ -531,6 +531,7 @@ BOTBOUNTY/
 
 ## Disclosures & license
 
-* **Protocol Status**: BotBounty is deployed on Bohr Testnet (Chain ID 968) and configured for BOT Chain Mainnet (Chain ID 677).
+* **Protocol Status**: BotBounty is live on **BOT Chain Mainnet (Chain ID 677)** at [`0x909661b453bBe13Ee247551754b35370557A9aA2`](https://scan.botchain.ai/address/0x909661b453bBe13Ee247551754b35370557A9aA2) (and deployed on Bohr Testnet, Chain ID 968, at `0xB128F2f442554B6517D779788F28F2EB2612164A`), with active web app funding and payouts operating exclusively in **Native `$BOT` (`address(0)`)**.
+* **Security & Audit Status**: `BotBountyEscrow.sol` is open-source and verified by automated Foundry unit and security tests (`21/21` passing) plus backend integration tests (`75/75` passing). It has **not** undergone a formal third-party security audit; users should review the source code and exercise standard smart contract precautions.
 * **Non-Custodial Guarantee**: At no point does BotBounty hold creator private keys. Funds are locked exclusively within the escrow smart contract until conditions are satisfied.
 * **License**: Open-source software released under the [MIT License](LICENSE).

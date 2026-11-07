@@ -1473,7 +1473,7 @@ export function createBountyRecord(data = {}) {
     category = 'CONTENT';
   }
   const categoryName = data.categoryName || (category === 'CONTENT' ? 'Content' : data.category);
-  const tagsJson = JSON.stringify(Array.isArray(data.tags) ? data.tags : [category, 'Arc', 'USDC']);
+  const tagsJson = JSON.stringify(Array.isArray(data.tags) ? data.tags : [category, 'BOT Chain', 'Native $BOT']);
 
   // Client-supplied status, payment status and escrow address are deliberately
   // ignored. Every new bounty starts pending administrator review.
@@ -1515,7 +1515,7 @@ export function createBountyRecord(data = {}) {
     categoryName,
     data.categoryColor || '#e9a13f',
     data.submissionType || 'Deliverable URL',
-    data.issueUrl || `https://arcbounty.io/task/${id}`,
+    data.issueUrl || `https://botbounty-theta.vercel.app/task/${id}`,
     amount,
     tagsJson,
     initialStatus,
@@ -1523,7 +1523,7 @@ export function createBountyRecord(data = {}) {
     data.depositTx,
     escrowWallet,
     data.maintainer || null,
-    data.maintainerName || 'Circle Creative Guild',
+    data.maintainerName || 'BOT Chain Sponsor',
     data.maintainerEmail || null,
     data.description || 'Deliver high quality content satisfying specifications.',
     now,
@@ -2276,7 +2276,7 @@ export function disburseBountyReward({ bountyId, submissionId, adminEmail, custo
       bounty_id: bounty.id,
       submission_id: submission.id,
       bounty_title: bounty.title,
-      sponsor_name: bounty.maintainerName || 'Circle Creative Guild',
+      sponsor_name: bounty.maintainerName || 'BOT Chain Sponsor',
       sponsor_wallet: bounty.maintainer,
       recipient_address: submission.wallet_address,
       recipient_email: submission.creator_email || null,
@@ -2444,7 +2444,7 @@ export function getLeaderboard() {
     SELECT 
       d.recipient_address,
       d.recipient_email,
-      COALESCE(u.name, s.creator_name, 'Arc Creator') as name,
+      COALESCE(u.name, s.creator_name, 'BOT Creator') as name,
       COALESCE(u.username, s.creator_name, SUBSTR(d.recipient_address, 1, 8)) as handle,
       COALESCE(u.discipline, s.solver_type, 'Creator') as specialty,
       COALESCE(u.avatar, 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80') as avatar,

@@ -23,10 +23,10 @@ statsRouter.get('/', (req, res) => {
         escrowAddress: '0x909661b453bBe13Ee247551754b35370557A9aA2'
       },
       topSolvers: [
-        { rank: 1, handle: 'alex_solv', type: 'Human', earned: '18,400 USDT', completed: 14 },
-        { rank: 2, handle: 'agent_coder_v2', type: 'AI Agent', earned: '14,200 USDT', completed: 21 },
-        { rank: 3, handle: 'defi_architect', type: 'Human', earned: '11,900 USDT', completed: 8 },
-        { rank: 4, handle: 'bot_fuzzer_agent', type: 'AI Agent', earned: '9,800 USDT', completed: 19 },
+        { rank: 1, handle: 'alex_solv', type: 'Human', earned: '18,400 BOT', completed: 14 },
+        { rank: 2, handle: 'agent_coder_v2', type: 'AI Agent', earned: '14,200 BOT', completed: 21 },
+        { rank: 3, handle: 'defi_architect', type: 'Human', earned: '11,900 BOT', completed: 8 },
+        { rank: 4, handle: 'bot_fuzzer_agent', type: 'AI Agent', earned: '9,800 BOT', completed: 19 },
       ]
     }
   });

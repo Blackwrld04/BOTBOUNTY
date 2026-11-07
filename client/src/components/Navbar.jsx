@@ -257,9 +257,9 @@ export default function Navbar({
                   background: '#ffffff',
                   textTransform: 'none'
                 }}
-                title="Collected Earnings: Open Arc Wallet Drawer"
+                title="Collected Earnings: Open BOT Chain Wallet Drawer"
               >
-                <span style={{ color: '#16a34a', fontWeight: 900 }}>${(wallet?.balance || 0).toLocaleString()}</span>
+                <span style={{ color: '#16a34a', fontWeight: 900 }}>{(wallet?.balance || 0).toLocaleString()}</span>
                 <span
                   style={{
                     fontSize: '0.7rem',
@@ -271,7 +271,7 @@ export default function Navbar({
                     fontWeight: 900
                   }}
                 >
-                  USDC
+                  $BOT
                 </span>
               </button>
 
@@ -424,7 +424,7 @@ export default function Navbar({
                         }}
                       >
                         <Wallet size={15} color="#64748b" />
-                        <span>Arc Wallet Drawer</span>
+                        <span>BOT Wallet Drawer</span>
                       </button>
 
                       <button

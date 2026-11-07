@@ -336,7 +336,7 @@ export default function UserProfile({
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <h1 className="font-space" style={{ fontSize: isMobile ? '1.3rem' : '1.65rem', fontWeight: 900, color: '#0f172a', margin: 0 }}>
-                    {user?.name || 'Arc Creator'}
+                    {user?.name || 'BOT Creator'}
                   </h1>
                   <ShieldCheck size={20} color="#16a34a" />
                 </div>
@@ -361,7 +361,7 @@ export default function UserProfile({
                       cursor: 'pointer',
                       color: '#0f172a'
                     }}
-                    title="Click to copy Arc address"
+                    title="Click to copy BOT Chain address"
                   >
                     <Wallet size={12} />
                     <span>{truncateAddress(wallet?.address || user?.address || '0x0000000000000000000000000000000000000000')}</span>
@@ -677,7 +677,7 @@ export default function UserProfile({
             >
               <div style={{ textAlign: 'center' }}>
                 <p className="font-space" style={{ fontSize: '1.45rem', fontWeight: 900, color: '#0f172a', margin: 0 }}>
-                  ${(profileStats.totalEarnings || 0).toLocaleString()}
+                  {(profileStats.totalEarnings || 0).toLocaleString()} BOT
                 </p>
                 <p style={{ fontSize: '0.7rem', color: '#64748b', margin: '2px 0 0 0', fontWeight: 700 }}>
                   EARNINGS COLLECTED
@@ -702,7 +702,7 @@ export default function UserProfile({
                   {profileStats.winsCount}
                 </p>
                 <p style={{ fontSize: '0.7rem', color: '#64748b', margin: '2px 0 0 0', fontWeight: 700 }}>
-                  WON ON ARC
+                  WON ON BOT CHAIN
                 </p>
               </div>
             </div>

@@ -199,7 +199,7 @@ export async function sendVerificationEmail(toEmail, code, type = 'login') {
       <body style="margin: 0; padding: 0; width: 100% !important; background-color: #0b111e; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
         <!-- Hidden Preheader Preview Text -->
         <div style="display: none; max-height: 0px; overflow: hidden; font-size: 1px; line-height: 1px; color: #0b111e; opacity: 0; mso-hide: all;">
-          Your BotBounty verification code is ${escapeHtml(code)}. Valid for 10 minutes on Circle Arc.
+          Your BotBounty verification code is ${escapeHtml(code)}. Valid for 10 minutes on BOT Chain.
         </div>
 
         <!-- Master Wrapper -->
@@ -217,7 +217,7 @@ export async function sendVerificationEmail(toEmail, code, type = 'login') {
                       Bot<span style="color: #6366f1;">Bounty</span>
                     </div>
                     <div style="display: inline-block; background-color: #0d1a2d; color: #acc6e9; border: 1.5px solid #2f578c; border-radius: 6px; padding: 4px 10px; font-size: 11px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;">
-                      BOT Chain &bull; Chain ID 968
+                      BOT Chain Mainnet &bull; Chain ID 677
                     </div>
                   </td>
                 </tr>
@@ -276,7 +276,7 @@ export async function sendVerificationEmail(toEmail, code, type = 'login') {
                 <tr>
                   <td align="center" style="background-color: #0b1424; padding: 18px 24px; border-top: 1.5px solid #1e3352; font-size: 12px; line-height: 1.5; color: #64748b;">
                     <div style="font-weight: 700; color: #94a3b8; margin-bottom: 4px;">
-                      Circle Arc L1 &bull; Canonical USDC &bull; Zero-gas Creator Capital Engine
+                      BOT Chain Mainnet (EVM 677) &bull; Native $BOT Escrow &bull; Open Bounty Protocol
                     </div>
                     <div>
                       Dispatched securely to <span style="color: #acc6e9;">${escapeHtml(toEmail)}</span>
@@ -299,16 +299,16 @@ export async function sendVerificationEmail(toEmail, code, type = 'login') {
     to: toEmail,
     subject,
     html: htmlContent,
-    text: `Your BotBounty verification code is: ${code}. Valid for 10 minutes on Circle Arc L1.`
+    text: `Your BotBounty verification code is: ${code}. Valid for 10 minutes on BOT Chain.`
   });
 }
 
 /**
- * Send real notification email when admin distributes USDC bounty reward to creator
+ * Send real notification email when admin distributes Native $BOT bounty reward to creator
  */
 export async function sendRewardDisbursedEmail({ toEmail, creatorName, bountyTitle, amount, txHash, walletAddress }) {
   if (!toEmail) return null;
-  const subject = `USDC Disbursed: $${amount} for "${bountyTitle}" on Circle Arc`.replace(/[\r\n]+/g, ' ');
+  const subject = `Reward Disbursed: ${amount} BOT for "${bountyTitle}" on BOT Chain`.replace(/[\r\n]+/g, ' ');
 
   const htmlContent = `
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -321,7 +321,7 @@ export async function sendRewardDisbursedEmail({ toEmail, creatorName, bountyTit
       </head>
       <body style="margin: 0; padding: 0; width: 100% !important; background-color: #0b111e; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
         <div style="display: none; max-height: 0px; overflow: hidden; font-size: 1px; line-height: 1px; color: #0b111e; opacity: 0;">
-          Congratulations! $${escapeHtml(amount)} USDC has been disbursed to your wallet for "${escapeHtml(bountyTitle)}".
+          Congratulations! ${escapeHtml(amount)} BOT has been disbursed to your wallet for "${escapeHtml(bountyTitle)}".
         </div>
         <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="background-color: #0b111e; padding: 32px 12px;">
           <tr>
@@ -333,7 +333,7 @@ export async function sendRewardDisbursedEmail({ toEmail, creatorName, bountyTit
                       Bot<span style="color: #6366f1;">Bounty</span>
                     </div>
                     <div style="display: inline-block; background-color: #0d1a2d; color: #acc6e9; border: 1.5px solid #2f578c; border-radius: 6px; padding: 4px 10px; font-size: 11px; font-weight: 800; text-transform: uppercase;">
-                      Settlement Confirmed &bull; Chain ID 968
+                      Settlement Confirmed &bull; BOT Chain
                     </div>
                   </td>
                 </tr>
@@ -349,20 +349,20 @@ export async function sendRewardDisbursedEmail({ toEmail, creatorName, bountyTit
                       <tr>
                         <td>
                           <div style="font-size: 11px; font-weight: 800; color: #ffcc6f; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px;">AMOUNT DISBURSED</div>
-                          <div style="font-size: 34px; font-weight: 900; color: #10b981; font-family: monospace;">$${escapeHtml(amount)} USDC</div>
+                          <div style="font-size: 34px; font-weight: 900; color: #10b981; font-family: monospace;">${escapeHtml(amount)} BOT</div>
                           <div style="font-size: 12px; color: #94a3b8; margin-top: 8px;">Recipient: <span style="color: #ffffff; font-family: monospace;">${escapeHtml(walletAddress || 'Your Connected Wallet')}</span></div>
                           <div style="font-size: 11px; color: #64748b; margin-top: 4px; word-break: break-all;">Tx Hash: <span style="color: #acc6e9; font-family: monospace;">${escapeHtml(txHash)}</span></div>
                         </td>
                       </tr>
                     </table>
                     <div style="background-color: #16243d; border-left: 4px solid #10b981; padding: 12px 14px; border-radius: 4px; font-size: 12px; color: #cbd5e1; margin-bottom: 16px;">
-                      Finalized on Circle Arc L1 with sub-second deterministic finality.
+                      Finalized on BOT Chain with deterministic EVM settlement.
                     </div>
                   </td>
                 </tr>
                 <tr>
                   <td align="center" style="background-color: #0b1424; padding: 18px 24px; border-top: 1.5px solid #1e3352; font-size: 12px; color: #64748b;">
-                    Circle Arc L1 &bull; Canonical USDC &bull; Zero-gas Creator Capital Engine
+                    BOT Chain Mainnet (EVM 677) &bull; Native $BOT Escrow &bull; Open Bounty Protocol
                   </td>
                 </tr>
               </table>
@@ -377,7 +377,7 @@ export async function sendRewardDisbursedEmail({ toEmail, creatorName, bountyTit
     to: toEmail,
     subject,
     html: htmlContent,
-    text: `Your BotBounty prize of $${amount} USDC for "${bountyTitle}" has been disbursed to ${walletAddress}. Settlement Tx: ${txHash}`
+    text: `Your BotBounty prize of ${amount} BOT for "${bountyTitle}" has been disbursed to ${walletAddress}. Settlement Tx: ${txHash}`
   });
 }
 
@@ -389,11 +389,11 @@ export async function sendBountyApprovedNotification(maintainerEmail, bounty) {
 
   const subject = `Your Challenge is Now Live: "${bounty.title}" on BotBounty`.replace(/[\r\n]+/g, ' ');
 
-  let prizeInfo = `$${bounty.amount} USDC`;
+  let prizeInfo = `${bounty.amount} BOT`;
   if (bounty.rewardDistribution && bounty.rewardDistribution.type === 'tiered' && Array.isArray(bounty.rewardDistribution.tiers)) {
-    prizeInfo = bounty.rewardDistribution.tiers.map(t => `${t.place === 1 ? '1st' : t.place === 2 ? '2nd' : t.place === 3 ? '3rd' : `${t.place}th`}: $${t.amount}`).join(' · ');
+    prizeInfo = bounty.rewardDistribution.tiers.map(t => `${t.place === 1 ? '1st' : t.place === 2 ? '2nd' : t.place === 3 ? '3rd' : `${t.place}th`}: ${t.amount} BOT`).join(' · ');
   } else if (bounty.rewardDistribution && bounty.rewardDistribution.type === 'equal') {
-    prizeInfo = `${bounty.rewardDistribution.count} Winners × $${bounty.rewardDistribution.amountPerWinner} USDC`;
+    prizeInfo = `${bounty.rewardDistribution.count} Winners × ${bounty.rewardDistribution.amountPerWinner} BOT`;
   }
 
   const htmlContent = `
@@ -403,7 +403,7 @@ export async function sendBountyApprovedNotification(maintainerEmail, bounty) {
         <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="max-width: 520px; margin: 0 auto; background-color: #111c30; border: 2px solid #2f578c; border-radius: 12px; overflow: hidden;">
           <tr>
             <td align="center" style="background-color: #1b3158; padding: 24px 20px; border-bottom: 2px solid #2f578c;">
-              <div style="font-size: 22px; font-weight: 900; color: #ffffff;">Arc<span style="color: #ffcc6f;">Bounty</span></div>
+              <div style="font-size: 22px; font-weight: 900; color: #ffffff;">Bot<span style="color: #ffcc6f;">Bounty</span></div>
               <div style="font-size: 11px; font-weight: 800; color: #acc6e9; letter-spacing: 0.06em; text-transform: uppercase; margin-top: 4px;">Challenge Verified &amp; Published</div>
             </td>
           </tr>
@@ -445,11 +445,11 @@ export async function sendNewBountyBroadcastToCreators(creatorEmails, bounty) {
   const validEmails = creatorEmails.filter(e => e && e.includes('@'));
   if (validEmails.length === 0) return null;
 
-  let prizeInfo = `$${bounty.amount} USDC`;
+  let prizeInfo = `${bounty.amount} BOT`;
   if (bounty.rewardDistribution && bounty.rewardDistribution.type === 'tiered' && Array.isArray(bounty.rewardDistribution.tiers)) {
-    prizeInfo = bounty.rewardDistribution.tiers.map(t => `${t.place === 1 ? '1st' : t.place === 2 ? '2nd' : t.place === 3 ? '3rd' : `${t.place}th`}: $${t.amount}`).join(' · ');
+    prizeInfo = bounty.rewardDistribution.tiers.map(t => `${t.place === 1 ? '1st' : t.place === 2 ? '2nd' : t.place === 3 ? '3rd' : `${t.place}th`}: ${t.amount} BOT`).join(' · ');
   } else if (bounty.rewardDistribution && bounty.rewardDistribution.type === 'equal') {
-    prizeInfo = `${bounty.rewardDistribution.count} Winners × $${bounty.rewardDistribution.amountPerWinner} USDC`;
+    prizeInfo = `${bounty.rewardDistribution.count} Winners × ${bounty.rewardDistribution.amountPerWinner} BOT`;
   }
 
   const subject = `New Challenge Live: "${bounty.title}" (${prizeInfo})`.replace(/[\r\n]+/g, ' ');
@@ -461,7 +461,7 @@ export async function sendNewBountyBroadcastToCreators(creatorEmails, bounty) {
         <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="max-width: 520px; margin: 0 auto; background-color: #111c30; border: 2px solid #2f578c; border-radius: 12px; overflow: hidden;">
           <tr>
             <td align="center" style="background-color: #1b3158; padding: 24px 20px; border-bottom: 2px solid #2f578c;">
-              <div style="font-size: 22px; font-weight: 900; color: #ffffff;">Arc<span style="color: #ffcc6f;">Bounty</span></div>
+              <div style="font-size: 22px; font-weight: 900; color: #ffffff;">Bot<span style="color: #ffcc6f;">Bounty</span></div>
               <div style="font-size: 11px; font-weight: 800; color: #acc6e9; letter-spacing: 0.06em; text-transform: uppercase; margin-top: 4px;">New Creator Opportunity</div>
             </td>
           </tr>
@@ -469,7 +469,7 @@ export async function sendNewBountyBroadcastToCreators(creatorEmails, bounty) {
             <td style="padding: 28px 24px;">
               <h2 style="margin: 0 0 10px 0; font-size: 19px; font-weight: 800; color: #ffffff;">New Challenge Published!</h2>
               <p style="margin: 0 0 18px 0; font-size: 14px; line-height: 1.5; color: #94a3b8;">
-                A new escrow-funded bounty has been verified by platform admins and is now open for creator submissions on Circle Arc.
+                A new escrow-funded bounty has been verified by platform admins and is now open for creator submissions on BOT Chain.
               </p>
               <div style="background-color: #0a1322; border: 1.5px solid #2f578c; border-radius: 8px; padding: 18px; margin-bottom: 20px;">
                 <div style="font-size: 16px; font-weight: 800; color: #ffffff; margin-bottom: 6px;">${escapeHtml(bounty.title)}</div>
@@ -492,6 +492,6 @@ export async function sendNewBountyBroadcastToCreators(creatorEmails, bounty) {
     to: validEmails,
     subject,
     html: htmlContent,
-    text: `New Challenge on BotBounty: "${bounty.title}". Prize: ${prizeInfo}. Submit your deliverable on BotBounty to win USDT / $BOT!`
+    text: `New Challenge on BotBounty: "${bounty.title}". Prize: ${prizeInfo}. Submit your deliverable on BotBounty to win Native $BOT!`
   });
 }

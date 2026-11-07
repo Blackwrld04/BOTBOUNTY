@@ -419,7 +419,7 @@ bountyRouter.post('/', requireAuth, createLimiter, async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: 'Bounty created and verified with on-chain Bohr escrow deposit',
+      message: 'Bounty created and verified with on-chain BOT Chain escrow deposit',
       bounty: toPublicBounty(newBounty),
       verifiedDeposit: {
         verified: verifiedDeposit.verified,
@@ -910,7 +910,7 @@ bountyRouter.post('/:id/release', async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Escrow reward disbursed to solver on Bohr Testnet',
+      message: 'Escrow reward disbursed to solver on BOT Chain',
       settlement: result,
       verifiedSettlement,
       bounty: updatedBounty

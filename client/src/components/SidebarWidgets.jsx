@@ -89,7 +89,7 @@ export default function SidebarWidgets({ stats, onOpenCreate, onNavigateToLeader
         </h4>
 
         <p style={{ fontSize: '0.82rem', opacity: 0.88, lineHeight: 1.5, marginBottom: '16px' }}>
-          Audited non-custodial smart escrow in Native $BOT with anti-griefing authorization and maintainer review workflows.
+          Open-source, non-custodial smart contract escrow in Native $BOT with anti-griefing authorization and maintainer review workflows.
         </p>
 
         <div style={{ display: 'flex', gap: '8px' }}>

@@ -1081,7 +1081,7 @@ export default function App() {
             </a>
 
             <a
-              href="https://x.com"
+              href="https://x.com/BotBountyio"
               target="_blank"
               rel="noopener noreferrer"
               style={{

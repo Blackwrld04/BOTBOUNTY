@@ -61,7 +61,7 @@ const WALLETS = [
     id: 'coinbase',
     name: 'Coinbase Wallet',
     url: 'https://www.coinbase.com/wallet/downloads',
-    desc: 'Passkey-ready with Native $BOT settlement on Bohr.',
+    desc: 'Passkey-ready with Native $BOT settlement on BOT Chain.',
     icon: (
       <img
         src="/wallets/coinbase.svg"
@@ -76,7 +76,7 @@ const WALLETS = [
     id: 'rabby',
     name: 'Rabby Wallet',
     url: 'https://rabby.io',
-    desc: 'Optimal desktop multi-chain routing & sub-400ms Malachite BFT finality.',
+    desc: 'Optimal desktop multi-chain routing & fast BOT Chain EVM finality.',
     icon: (
       <img
         src="/wallets/rabby.svg"

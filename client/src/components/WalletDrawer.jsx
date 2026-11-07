@@ -137,10 +137,10 @@ export default function WalletDrawer({ isOpen, onClose, wallet, setWallet, netwo
 
             <div style={{ marginTop: '12px', display: 'flex', alignItems: 'baseline', gap: '8px' }}>
               <span className="font-space" style={{ fontSize: '2.7rem', fontWeight: 900, lineHeight: 1, color: '#ffffff' }}>
-                ${creatorBalance.toLocaleString()}
+                {creatorBalance.toLocaleString()}
               </span>
               <span style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--arc-blockstream-gold)' }}>
-                USDC
+                $BOT
               </span>
             </div>
           </div>
@@ -169,7 +169,7 @@ export default function WalletDrawer({ isOpen, onClose, wallet, setWallet, netwo
                     width: '36px',
                     height: '36px',
                     borderRadius: '8px',
-                    background: '#2775ca',
+                    background: '#059669',
                     color: '#ffffff',
                     display: 'flex',
                     alignItems: 'center',
@@ -183,9 +183,9 @@ export default function WalletDrawer({ isOpen, onClose, wallet, setWallet, netwo
                 </div>
                 <div style={{ overflow: 'hidden' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ fontWeight: 800, fontSize: '0.88rem', color: '#0f172a' }}>Circle USDC</span>
+                    <span style={{ fontWeight: 800, fontSize: '0.88rem', color: '#0f172a' }}>Native $BOT</span>
                     <span style={{ fontSize: '0.68rem', color: '#16a34a', background: '#dcfce7', padding: '1px 6px', borderRadius: '4px', fontWeight: 800 }}>
-                      CANONICAL
+                      BOT CHAIN
                     </span>
                   </div>
                   <span style={{ fontSize: '0.74rem', color: '#64748b', fontFamily: 'monospace', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -225,7 +225,7 @@ export default function WalletDrawer({ isOpen, onClose, wallet, setWallet, netwo
                 Payout Transactions ({transactions.length})
               </h4>
               <span style={{ fontSize: '0.74rem', color: 'var(--arc-validator-blue)', fontWeight: 700 }}>
-                &lt;400ms Malachite BFT
+                BOT Chain EVM Finality
               </span>
             </div>
 
@@ -271,7 +271,7 @@ export default function WalletDrawer({ isOpen, onClose, wallet, setWallet, netwo
                           display: 'inline-block'
                         }}
                       >
-                        +${tx.amount.toLocaleString()} USDC
+                        +{tx.amount.toLocaleString()} BOT
                       </span>
                     </div>
                   </div>

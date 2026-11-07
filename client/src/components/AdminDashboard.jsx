@@ -909,12 +909,12 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
             <span>Creators Directory ({stats ? (stats.totalUsers ?? usersList.length) : (usersList.length || '---')})</span>
           </button>
 
-          {/* 1-Click CSV Audit Ledger Export */}
+          {/* 1-Click CSV Payout Ledger Export */}
           <a
             href={`${API_BASE}/api/admin/export-csv?token=${adminToken}`}
             target="_blank"
             rel="noopener noreferrer"
-            download="botbounty_audit_ledger.csv"
+            download="botbounty_payout_ledger.csv"
             style={{
               background: '#ffffff',
               color: '#0f172a',
@@ -930,10 +930,10 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
               gap: '6px',
               textDecoration: 'none'
             }}
-            title="Download full CSV audit ledger of all bounty payouts and settlements"
+            title="Download full CSV payout ledger of all bounty payouts and settlements"
           >
             <Download size={14} color="#1b3158" />
-            <span>Audit Ledger (CSV)</span>
+            <span>Payout Ledger (CSV)</span>
           </a>
 
           {/* GitHub Bot Integration Panel */}
@@ -1116,7 +1116,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
             <Award size={18} color="#10b981" />
           </div>
           <div style={{ fontSize: '1.85rem', fontWeight: 900, color: '#10b981' }}>
-            ${stats ? stats.totalDistributedUsdc.toLocaleString() : '---'} <span style={{ fontSize: '1rem', color: '#64748b' }}>USDC</span>
+            {stats ? stats.totalDistributedUsdc.toLocaleString() : '---'} <span style={{ fontSize: '1rem', color: '#64748b' }}>$BOT</span>
           </div>
           <div style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 700, marginTop: '4px' }}>
             {stats?.totalDistributions || 0} Payouts Executed
@@ -1321,7 +1321,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
                       </td>
 
                       <td style={{ padding: '12px', fontWeight: 900, color: '#0f172a' }}>
-                        ${b.amount} <span style={{ fontSize: '0.72rem', color: '#64748b' }}>USDC</span>
+                        {b.amount} <span style={{ fontSize: '0.72rem', color: '#64748b' }}>$BOT</span>
                       </td>
 
                       <td style={{ padding: '12px' }}>
@@ -1432,7 +1432,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <div style={{ fontSize: isMobile ? '1.15rem' : '1.3rem', fontWeight: 900, color: '#0f172a' }}>
-                    ${selectedBounty.amount} <span style={{ fontSize: '0.8rem', color: '#64748b' }}>USDC</span>
+                    {selectedBounty.amount} <span style={{ fontSize: '0.8rem', color: '#64748b' }}>$BOT</span>
                   </div>
 
                   <button
@@ -1521,7 +1521,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
                   <span>Reward Disbursed on BOT Chain!</span>
                 </div>
                 <p style={{ fontSize: '0.8rem', color: '#14532d', margin: 0 }}>
-                  Prize of <strong>${settlementResult.amount} USDC</strong> successfully transferred to <code>{settlementResult.recipient}</code>.
+                  Prize of <strong>{settlementResult.amount} BOT</strong> successfully transferred to <code>{settlementResult.recipient}</code>.
                 </p>
                 <div style={{ fontSize: '0.72rem', fontFamily: 'monospace', color: '#166534', marginTop: '6px' }}>
                   Tx Hash: {settlementResult.txHash}
@@ -1583,7 +1583,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
                       fontWeight: 700,
                       color: '#854d0e'
                     }}>
-                      BOT Chain RPC Scanner: {scanResult.bountiesScanned} bounties scanned on Chain 968 &bull; {scanResult.depositsDetected} deposits verified.
+                      BOT Chain RPC Scanner: {scanResult.bountiesScanned} bounties scanned on BOT Chain &bull; {scanResult.depositsDetected} deposits verified.
                     </div>
                   )}
                 </div>
@@ -1603,7 +1603,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
                   <div>
                     <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>Sponsor / Maintainer Info</span>
                     <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '0.9rem', marginTop: '2px' }}>
-                      {selectedBounty.maintainerName || 'Arc User'}
+                      {selectedBounty.maintainerName || 'BOT Chain User'}
                     </div>
                     <div style={{ fontSize: '0.78rem', color: '#475569', marginTop: '2px' }}>
                       Email: <strong>{selectedBounty.maintainerEmail || 'Not specified'}</strong>
@@ -1617,7 +1617,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
                     <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>Escrow Collateral &amp; Deposit Tx</span>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '4px' }}>
                       <span style={{ fontSize: '0.84rem', fontWeight: 800, color: '#0f172a' }}>
-                        Amount: ${selectedBounty.amount.toLocaleString()} USDC
+                        Amount: {selectedBounty.amount.toLocaleString()} BOT
                       </span>
                       <span style={{
                         background: '#fef08a',
@@ -1648,18 +1648,18 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
                           {selectedBounty.rewardDistribution.tiers?.map((t, i) => (
                             <div key={i} style={{ background: '#ffffff', border: '1px solid #000000', borderRadius: '6px', padding: '6px 8px', fontSize: '0.76rem' }}>
                               <div style={{ fontWeight: 800, color: '#1b3158' }}>{t.label || `${t.place} Place`}</div>
-                              <div style={{ fontWeight: 900, color: '#0f172a' }}>${t.amount} USDC</div>
+                              <div style={{ fontWeight: 900, color: '#0f172a' }}>{t.amount} BOT</div>
                             </div>
                           ))}
                         </div>
                       </div>
                     ) : selectedBounty.rewardDistribution && selectedBounty.rewardDistribution.type === 'equal' ? (
                       <div style={{ marginTop: '6px', fontSize: '0.82rem', fontWeight: 700, color: '#0f172a' }}>
-                        Equal Split: {selectedBounty.rewardDistribution.winnerCount} Winners &times; ${selectedBounty.rewardDistribution.perWinnerAmount} USDC each (${selectedBounty.amount} USDC total)
+                        Equal Split: {selectedBounty.rewardDistribution.winnerCount} Winners &times; {selectedBounty.rewardDistribution.perWinnerAmount} BOT each ({selectedBounty.amount} BOT total)
                       </div>
                     ) : (
                       <div style={{ marginTop: '6px', fontSize: '0.82rem', fontWeight: 700, color: '#0f172a' }}>
-                        Single Winner: 100% (${selectedBounty.amount} USDC) to 1st Place deliverable
+                        Single Winner: 100% ({selectedBounty.amount} BOT) to 1st Place deliverable
                       </div>
                     )}
                   </div>
@@ -1758,7 +1758,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
                         </span>
                       </div>
                       <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#475569' }}>
-                        Escrow: ${selectedBounty.amount} USDC
+                        Escrow: {selectedBounty.amount} BOT
                       </span>
                     </div>
                   );
@@ -2094,7 +2094,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
                                   gap: '4px',
                                   textDecoration: 'none'
                                 }}
-                                title="View on Arc Explorer"
+                                title="View on BOTScan Explorer"
                               >
                                 <span>Explorer</span>
                                 <ExternalLink size={12} />
@@ -2118,7 +2118,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
                             }}
                           >
                             <Award size={15} />
-                            <span>{distributingId === sub.id ? 'Settling on Arc...' : `Distribute $${selectedBounty.amount} USDC to this Creator`}</span>
+                            <span>{distributingId === sub.id ? 'Settling on BOT Chain...' : `Distribute ${selectedBounty.amount} BOT to this Creator`}</span>
                           </button>
                         )}
                       </div>
@@ -2244,7 +2244,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
                 style={{ flex: 1, padding: '12px', borderRadius: '8px', background: '#10b981' }}
               >
                 <Award size={16} />
-                <span>{distributingId !== null ? 'Disbursing...' : `Confirm & Pay $${confirmModal.bounty.amount} USDC`}</span>
+                <span>{distributingId !== null ? 'Disbursing...' : `Confirm & Pay ${confirmModal.bounty.amount} BOT`}</span>
               </button>
             </div>
           </div>
@@ -2493,7 +2493,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
                     Multi-Winner Split Disbursement
                   </h3>
                   <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
-                    Ranked prize pool distribution: ${multiWinnerModal.bounty.amount} USDC total
+                    Ranked prize pool distribution: {multiWinnerModal.bounty.amount} BOT total
                   </span>
                 </div>
               </div>
@@ -2535,7 +2535,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
                       </span>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <span style={{ fontSize: '0.85rem', fontWeight: 900, color: '#0f172a' }}>
-                          ${computedUsdc} USDC
+                          {computedUsdc} BOT
                         </span>
                         <span style={{ fontSize: '0.74rem', color: '#64748b', fontWeight: 700 }}>
                           ({w.percentage}%)
@@ -3048,12 +3048,12 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
                             fontSize: '0.7rem',
                             fontWeight: 900
                           }}>
-                            ${(u.usdc_balance || 0).toLocaleString()} USDC
+                            {(u.usdc_balance || 0).toLocaleString()} BOT
                           </span>
                         </div>
                       </div>
 
-                      {/* User Bottom Row: Arc L1 Wallet, Joined Date, Socials */}
+                      {/* User Bottom Row: BOT Chain Wallet, Joined Date, Socials */}
                       <div style={{
                         display: 'flex',
                         alignItems: isMobile ? 'flex-start' : 'center',
@@ -3114,7 +3114,7 @@ export default function AdminDashboard({ user, wallet, onBackToExplore, onDataCh
                                   textDecoration: 'underline',
                                   fontSize: '0.74rem'
                                 }}
-                                title="View on Bohr Explorer"
+                                title="View on BOTScan Explorer"
                               >
                                 <span>Explorer</span>
                                 <ExternalLink size={10} />

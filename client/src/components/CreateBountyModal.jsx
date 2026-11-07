@@ -221,7 +221,7 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
     }
 
     if (!depositTx) {
-      alert('On-chain escrow deposit required: Please click "Lock Funds via Web3 Wallet" to fund the bounty on Bohr Testnet before submitting.');
+      alert('On-chain escrow deposit required: Please click "Fund & Lock with Wallet" to fund the bounty on BOT Chain before submitting.');
       return;
     }
 
@@ -443,7 +443,7 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
               </label>
               <input
                 type="text"
-                placeholder="e.g. Design Official 3D Mascot for Circle Arc or Write Viral Thread"
+                placeholder="e.g. Design Official 3D Mascot for BOT Chain or Write Viral Thread"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 style={{
@@ -578,7 +578,7 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
               Prize Distribution &amp; BOT Chain Escrow
             </h2>
             <p style={{ fontSize: '0.88rem', color: '#64748b', marginBottom: '20px' }}>
-              Configure winner prize sharing and lock settlement rewards in the BotBounty escrow smart contract on Bohr Testnet.
+              Configure winner prize sharing and lock settlement rewards in the BotBounty escrow smart contract on BOT Chain Mainnet (Chain ID 677).
             </p>
 
             {/* Escrow Settlement Asset Selector */}
@@ -591,7 +591,7 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
               marginBottom: '20px'
             }}>
               <label style={{ fontSize: '0.78rem', fontWeight: 800, color: '#0f172a', display: 'block', marginBottom: '10px', textTransform: 'uppercase' }}>
-                Escrow Settlement Asset (ERC-20 / Native)
+                Escrow Settlement Asset
               </label>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
@@ -770,7 +770,7 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
                 >
                   <DollarSign size={16} />
                   <span>Equal Split</span>
-                  <span style={{ fontSize: '0.68rem', opacity: 0.8 }}>e.g. 10 × $25</span>
+                  <span style={{ fontSize: '0.68rem', opacity: 0.8 }}>e.g. 10 × 25 BOT</span>
                 </button>
               </div>
 
@@ -781,7 +781,7 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
                     1ST PLACE WINNER REWARD ({selectedAsset})
                   </label>
                   <div style={{ position: 'relative' }}>
-                    <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontWeight: 800, color: '#64748b' }}>{selectedAsset}</span>
+                    <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontWeight: 800, color: '#64748b', fontSize: '0.82rem' }}>{selectedAsset}</span>
                     <input
                       type="number"
                       min="10"
@@ -791,7 +791,7 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
                       required
                       style={{
                         width: '100%',
-                        padding: '10px 14px 10px 28px',
+                        padding: '10px 14px 10px 52px',
                         borderRadius: '8px',
                         border: '1.5px solid #000000',
                         fontSize: '1.05rem',
@@ -880,8 +880,8 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
                           }}
                         />
 
-                        <div style={{ position: 'relative', width: '110px', flexShrink: 0 }}>
-                          <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', fontWeight: 700, color: '#64748b', fontSize: '0.8rem' }}>$</span>
+                        <div style={{ position: 'relative', width: '120px', flexShrink: 0 }}>
+                          <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', fontWeight: 700, color: '#64748b', fontSize: '0.72rem' }}>BOT</span>
                           <input
                             type="number"
                             min="5"
@@ -890,7 +890,7 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
                             placeholder="BOT"
                             style={{
                               width: '100%',
-                              padding: '6px 8px 6px 22px',
+                              padding: '6px 8px 6px 38px',
                               borderRadius: '6px',
                               border: '1px solid #cbd5e1',
                               fontSize: '0.85rem',
@@ -973,7 +973,7 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
                         {selectedAsset} REWARD PER WINNER
                       </label>
                       <div style={{ position: 'relative' }}>
-                        <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontWeight: 800, color: '#64748b' }}>{selectedAsset}</span>
+                        <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontWeight: 800, color: '#64748b', fontSize: '0.8rem' }}>{selectedAsset}</span>
                         <input
                           type="number"
                           min="5"
@@ -983,7 +983,7 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
                           required
                           style={{
                             width: '100%',
-                            padding: '10px 12px 10px 26px',
+                            padding: '10px 12px 10px 48px',
                             borderRadius: '8px',
                             border: '1.5px solid #000000',
                             fontSize: '0.95rem',
@@ -1123,11 +1123,11 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
                   {selectedAsset === 'USDT' ? 'Escrow Asset: Bridged USDT (ERC-20)' : 'Escrow Asset: Native $BOT'}
                 </span>
                 <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#16a34a', background: '#f0fdf4', border: '1px solid #bbf7d0', padding: '2px 8px', borderRadius: '4px' }}>
-                  Supported Multi-Asset Escrow
+                  Native $BOT On-Chain Escrow
                 </span>
               </div>
               <p style={{ fontSize: '0.8rem', color: '#475569', lineHeight: 1.4, margin: '0 0 10px 0' }}>
-                Lock total reward of <strong style={{ color: '#0f172a' }}>{effectiveTotalAmount()} {selectedAsset === 'USDT' ? 'USDT (Bridged ERC-20)' : 'Native $BOT'}</strong> directly into the verified escrow contract:
+                Lock total reward of <strong style={{ color: '#0f172a' }}>{effectiveTotalAmount()} {selectedAsset === 'USDT' ? 'USDT (Bridged ERC-20)' : 'Native $BOT'}</strong> directly into the escrow contract:
               </p>
 
               {/* Address Box with Copy */}
@@ -1241,7 +1241,7 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
             }}>
               <Shield size={16} color="#ca8a04" style={{ flexShrink: 0, marginTop: '2px' }} />
               <div>
-                <strong>Non-Custodial Escrow Security:</strong> Bounties are locked in the audited Bohr smart contract. Maintainers disburse rewards upon verifying deliverables on-chain, and unfulfilled bounties can be refunded after the deadline.
+                <strong>Non-Custodial Escrow Security:</strong> Bounties are locked in the open-source BOT Chain smart contract (unaudited; test-verified). Maintainers disburse rewards upon verifying deliverables on-chain, and unfulfilled bounties can be refunded after the deadline.
               </div>
             </div>
 
@@ -1261,7 +1261,7 @@ export default function CreateBountyModal({ isOpen, onClose, onCreateBounty, wal
                 className="btn-primary"
                 style={{ flex: 1, padding: '14px', borderRadius: '10px', background: '#10b981' }}
               >
-                <span>{isSubmitting ? 'Securing on BOT Chain...' : `Publish $${effectiveTotalAmount().toLocaleString()} Challenge on BOT Chain`}</span>
+                <span>{isSubmitting ? 'Securing on BOT Chain...' : `Publish ${effectiveTotalAmount().toLocaleString()} BOT Challenge on BOT Chain`}</span>
                 <ArrowRight size={18} />
               </button>
             </div>

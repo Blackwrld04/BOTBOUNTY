@@ -209,7 +209,7 @@ export default function AccountSettings({
         >
           {[
             { id: 'account', label: 'Account & Socials' },
-            { id: 'wallet', label: 'Arc Wallet' },
+            { id: 'wallet', label: 'BOT Wallet' },
             { id: 'notifications', label: 'Notifications' },
             { id: 'referrals', label: 'Referrals' }
           ].map((t) => (
@@ -503,7 +503,7 @@ export default function AccountSettings({
                   Connected Social Accounts &amp; Proof of Identity
                 </h3>
                 <p style={{ fontSize: '0.84rem', color: '#64748b', margin: '4px 0 0 0' }}>
-                  Connect your Telegram, Discord, X, and GitHub. Sponsors verify these social links before releasing USDC bounties.
+                  Connect your Telegram, Discord, X, and GitHub. Sponsors verify these social links before releasing $BOT bounties.
                 </p>
               </div>
 
@@ -856,7 +856,7 @@ export default function AccountSettings({
                     Deliverable Reviews &amp; Approvals
                   </p>
                   <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '2px 0 0 0' }}>
-                    Receive alerts when sponsors review or disburse your USDC escrow
+                    Receive alerts when sponsors review or disburse your $BOT escrow
                   </p>
                 </div>
                 <label className="toggle-switch">
