@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Filter, Sparkles, Bot, Search, SlidersHorizontal, ArrowRight, Layers } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import BountyCard from './BountyCard';
 import SidebarWidgets from './SidebarWidgets';
 import { CREATOR_CATEGORIES } from '../data/initialBounties';
-import { isChallengeExpired } from '../utils/time';
 
 export default function BountyList({
   bounties,
@@ -16,7 +15,6 @@ export default function BountyList({
 }) {
   const [activeCategory, setActiveCategory] = useState('ALL');
   const [activeStatus, setActiveStatus] = useState('All');
-  const [viewScope, setViewScope] = useState('MAINNET'); // 'MAINNET' | 'ALL' | 'DEMO'
   const [now, setNow] = useState(Date.now());
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth <= 768 : false);
 
@@ -34,20 +32,8 @@ export default function BountyList({
     return () => clearInterval(timer);
   }, []);
 
-  const isMainnetItem = (b) => Boolean(b.isMainnetVerified || (b.id && b.id.startsWith('bounty-mainnet')));
-  const isDemoItem = (b) => Boolean(b.isDemo || (!isMainnetItem(b) && !b.depositTx));
-
-  const mainnetCount = bounties.filter(isMainnetItem).length;
-  const demoCount = bounties.filter(isDemoItem).length;
-
-  // Filter logic: keeps Settled tab visible and allows browsing all bounties
+  // Filter logic by status, category, and search query
   const filteredBounties = bounties.filter((b) => {
-    const isMainnet = isMainnetItem(b);
-    const isDemo = isDemoItem(b);
-
-    if (viewScope === 'MAINNET' && !isMainnet) return false;
-    if (viewScope === 'DEMO' && !isDemo) return false;
-
     const effectiveDeadline = b.deadline || (b.createdAt && b.deadlineDays ? (b.createdAt + b.deadlineDays * 86400000) : null);
     const isExpired = effectiveDeadline && now >= effectiveDeadline;
     const isClosed = b.status === 'Closed' || isExpired;
@@ -139,72 +125,6 @@ export default function BountyList({
                   </button>
                 ))}
               </div>
-            </div>
-
-            {/* Real Mainnet vs Demo Showcase Segmented Filter */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              marginBottom: '14px',
-              flexWrap: 'wrap'
-            }}>
-              <button
-                type="button"
-                onClick={() => setViewScope('MAINNET')}
-                style={{
-                  padding: '6px 14px',
-                  borderRadius: '6px',
-                  border: '2px solid #16a34a',
-                  background: viewScope === 'MAINNET' ? '#16a34a' : '#dcfce7',
-                  color: viewScope === 'MAINNET' ? '#ffffff' : '#166534',
-                  fontWeight: 900,
-                  fontSize: '0.78rem',
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  boxShadow: viewScope === 'MAINNET' ? '2px 2px 0px #000000' : 'none'
-                }}
-              >
-                <span>✓ Verified Mainnet ({mainnetCount} On-Chain)</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setViewScope('ALL')}
-                style={{
-                  padding: '6px 14px',
-                  borderRadius: '6px',
-                  border: '2px solid #000000',
-                  background: viewScope === 'ALL' ? 'var(--arc-protocol-navy)' : '#ffffff',
-                  color: viewScope === 'ALL' ? '#ffffff' : '#000000',
-                  fontWeight: 800,
-                  fontSize: '0.78rem',
-                  cursor: 'pointer',
-                  boxShadow: viewScope === 'ALL' ? '2px 2px 0px #000000' : 'none'
-                }}
-              >
-                <span>All Bounties ({bounties.length})</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setViewScope('DEMO')}
-                style={{
-                  padding: '6px 14px',
-                  borderRadius: '6px',
-                  border: '2px solid #d97706',
-                  background: viewScope === 'DEMO' ? '#d97706' : '#fef3c7',
-                  color: viewScope === 'DEMO' ? '#ffffff' : '#92400e',
-                  fontWeight: 800,
-                  fontSize: '0.78rem',
-                  cursor: 'pointer',
-                  boxShadow: viewScope === 'DEMO' ? '2px 2px 0px #000000' : 'none'
-                }}
-              >
-                <span>Demo Templates ({demoCount} Off-Chain)</span>
-              </button>
             </div>
 
             {/* Category Filter Pills (Exact 6 Categories: All Bounties, Content, Design, Development, All Social, Other) */}

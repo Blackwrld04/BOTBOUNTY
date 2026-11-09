@@ -13,7 +13,7 @@ import {
   pgSaveSession
 } from './supabase.js';
 import { config } from './config.js';
-import { FABRICATED_SEED_TX, DEMO_BOUNTY_IDS } from './seedEvidence.js';
+import { FABRICATED_SEED_TX, DEMO_BOUNTY_IDS, VERIFICATION_BOUNTY_IDS } from './seedEvidence.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -1231,202 +1231,25 @@ try {
   ensureActiveBounties();
 } catch (e) {}
 
-export function ensureMainnetVerifiedBounties() {
-  if (process.env.DB_PATH === ":memory:") return;
+/**
+ * Remove the 0.02 $BOT mainnet verification bounties. Those escrows existed
+ * only to validate the deployment and must not appear in the public feed.
+ */
+export function purgeVerificationBounties() {
+  if (process.env.DB_PATH === ':memory:') return;
+  const verificationIds = VERIFICATION_BOUNTY_IDS;
   try {
-    const mainnetBounties = [
-      {
-        id: 'bounty-mainnet-001',
-        bountyId: '0x420fc59c6c25f819ed52f8ebb709fe4186921e8fde2a5005a37d9680153eb4e7',
-        category: 'DEV',
-        categoryName: 'Development',
-        categoryColor: '#2f578c',
-        title: 'BOT Chain Mainnet Escrow Lifecycle Verification & Settlement #1',
-        submissionType: 'GitHub PR & Contract Test Suite',
-        issueUrl: 'https://github.com/Blackwrld04/BOTBOUNTY/blob/main/docs/MAINNET_VERIFICATION_EVIDENCE.md#bounty-0',
-        amount: 0.02,
-        tags: JSON.stringify(['Mainnet 677', 'Verified On-Chain', 'Settled']),
-        status: 'Settled',
-        paymentStatus: 'settled',
-        depositTx: '0x6e080dfc80d54748f5ac740ab2a47493b2f9d4bf41a580560d04dcafb5c536eb',
-        settlementTx: '0x20ff9b6954208cfbd48b451589a8c9227d8fc739ee98ea0af85737d6636e62c1',
-        escrowWallet: '0x909661b453bBe13Ee247551754b35370557A9aA2',
-        maintainer: '0xBE0aaE21b6252aa1207cAa50A753e8C45bCBCbc5',
-        maintainerName: 'BOT Chain Protocol Maintainer',
-        maintainerEmail: 'deployer@botbounty.ai',
-        solver: '0x872876249c4DE59499c630c89E05748a2c7f5Ccf',
-        solverType: 'Lead Test Solver',
-        prUrl: 'https://github.com/Blackwrld04/BOTBOUNTY/blob/main/docs/MAINNET_VERIFICATION_EVIDENCE.md#bounty-0',
-        createdAt: 1793959853000,
-        deadline: 1796551852000,
-        settledAt: 1793959856000,
-        description: 'Production on-chain lifecycle verification on BOT Chain Mainnet (Chain ID 677). Proves non-custodial Native $BOT deposit, solver solution registration, and deterministic maintainer release at block 29300556.'
-      },
-      {
-        id: 'bounty-mainnet-002',
-        bountyId: '0x8fa5b7c42e2bf7b2b248962f83dcd9116b369a40b81af10a8c594ddc72fe7e17',
-        category: 'DEV',
-        categoryName: 'Development',
-        categoryColor: '#2f578c',
-        title: 'BOT Chain Mainnet Cryptographic Blind Commitment Verification #2',
-        submissionType: 'Blind Cryptographic Commitment & Preimage Reveal',
-        issueUrl: 'https://github.com/Blackwrld04/BOTBOUNTY/blob/main/docs/MAINNET_VERIFICATION_EVIDENCE.md#bounty-1',
-        amount: 0.02,
-        tags: JSON.stringify(['Mainnet 677', 'Verified On-Chain', 'Blind Commitment', 'Settled']),
-        status: 'Settled',
-        paymentStatus: 'settled',
-        depositTx: '0xd88a3b0fb99a141e6fec75ceda1fbc7299526aca0156470759e2a723845d396a',
-        settlementTx: '0x5e6871479685b094aa03809fb0156890521fd45ce457542ed98642a3f39efeaf',
-        escrowWallet: '0x909661b453bBe13Ee247551754b35370557A9aA2',
-        maintainer: '0xBE0aaE21b6252aa1207cAa50A753e8C45bCBCbc5',
-        maintainerName: 'BOT Chain Protocol Maintainer',
-        maintainerEmail: 'deployer@botbounty.ai',
-        solver: '0x9a10F17cF4b406078D4cC1415ef079bEcfb271dA',
-        solverType: 'Blind Commitment Solver',
-        prUrl: 'https://github.com/Blackwrld04/BOTBOUNTY/blob/main/docs/MAINNET_VERIFICATION_EVIDENCE.md#bounty-1',
-        createdAt: 1793959858000,
-        deadline: 1796551852000,
-        settledAt: 1793959871000,
-        description: 'Production on-chain verification of maintainer rejection (rejectSolution) and front-running-resistant blind commitment (submitSolutionCommitment + releaseBountyWithProof) on BOT Chain Mainnet.'
-      },
-      {
-        id: 'bounty-mainnet-003',
-        bountyId: '0xb9b78f14364903ad6d1506e3da14054cba1a11600276ca708b8194119004523c',
-        category: 'DEV',
-        categoryName: 'Development',
-        categoryColor: '#2f578c',
-        title: 'BOT Chain Mainnet Ecosystem Integration & Agent Workflow Showcase #3',
-        submissionType: 'Open Source Integration / AI Agent Solver Script',
-        issueUrl: 'https://github.com/Blackwrld04/BOTBOUNTY/blob/main/docs/MAINNET_VERIFICATION_EVIDENCE.md#bounty-2',
-        amount: 0.02,
-        tags: JSON.stringify(['Mainnet 677', 'Verified On-Chain', 'Open Escrow', 'AI Agents']),
-        status: 'Open',
-        paymentStatus: 'funded',
-        depositTx: '0xe3b5a4870b225cbaf2c5f2780af66ab2f67ec028f4370dccdbb5af6939deeb01',
-        settlementTx: null,
-        escrowWallet: '0x909661b453bBe13Ee247551754b35370557A9aA2',
-        maintainer: '0xBE0aaE21b6252aa1207cAa50A753e8C45bCBCbc5',
-        maintainerName: 'BOT Chain Protocol Maintainer',
-        maintainerEmail: 'deployer@botbounty.ai',
-        solver: null,
-        solverType: null,
-        prUrl: null,
-        createdAt: 1793959869000,
-        deadline: 1796551852000,
-        settledAt: null,
-        description: 'Active open escrow bounty funded on BOT Chain Mainnet. Submit an open-source BOT Chain ecosystem integration example, analytics script, or AI-agent solver workflow interacting with BotBountyEscrow (0x909661b453bBe13Ee247551754b35370557A9aA2).'
-      }
-    ];
-
-    const insertBountyStmt = db.prepare(`
-      INSERT INTO bounties (
-        id, bounty_id, title, category, category_name, category_color,
-        submission_type, issue_url, amount, tags, status, payment_status,
-        deposit_tx, escrow_wallet, maintainer, maintainer_name, maintainer_email,
-        solver, solver_type, pr_url, description, created_at, deadline, settled_at, settlement_tx
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(id) DO UPDATE SET
-        bounty_id = excluded.bounty_id,
-        title = excluded.title,
-        status = excluded.status,
-        payment_status = excluded.payment_status,
-        deposit_tx = excluded.deposit_tx,
-        settlement_tx = excluded.settlement_tx,
-        solver = excluded.solver,
-        solver_type = excluded.solver_type,
-        pr_url = excluded.pr_url,
-        issue_url = excluded.issue_url,
-        amount = excluded.amount,
-        escrow_wallet = excluded.escrow_wallet,
-        description = excluded.description
-    `);
-
-    for (const b of mainnetBounties) {
-      insertBountyStmt.run(
-        b.id, b.bountyId, b.title, b.category, b.categoryName, b.categoryColor,
-        b.submissionType, b.issueUrl, b.amount, b.tags, b.status, b.paymentStatus,
-        b.depositTx, b.escrowWallet, b.maintainer, b.maintainerName, b.maintainerEmail,
-        b.solver, b.solverType, b.prUrl, b.description, b.createdAt, b.deadline, b.settledAt, b.settlementTx
-      );
-    }
-
-    const insertSubStmt = db.prepare(`
-      INSERT OR IGNORE INTO bounty_submissions (
-        id, bounty_id, creator_id, creator_name, creator_email,
-        wallet_address, submission_url, notes, solver_type, status,
-        reward_paid, disbursement_tx, submitted_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-
-    insertSubStmt.run(
-      'sub_mainnet_001',
-      'bounty-mainnet-001',
-      'usr_mainnet_solver_1',
-      'Lead Test Solver',
-      'solver1@botbounty.ai',
-      '0x872876249c4DE59499c630c89E05748a2c7f5Ccf',
-      'https://github.com/Blackwrld04/BOTBOUNTY/blob/main/docs/MAINNET_VERIFICATION_EVIDENCE.md#bounty-0',
-      'Completed Mainnet contract lifecycle smoke test #1.',
-      'Human Creator',
-      'awarded',
-      0.02,
-      '0x20ff9b6954208cfbd48b451589a8c9227d8fc739ee98ea0af85737d6636e62c1',
-      1793959855000
-    );
-
-    insertSubStmt.run(
-      'sub_mainnet_002',
-      'bounty-mainnet-002',
-      'usr_mainnet_solver_2',
-      'Blind Commitment Solver',
-      'solver2@botbounty.ai',
-      '0x9a10F17cF4b406078D4cC1415ef079bEcfb271dA',
-      'https://github.com/Blackwrld04/BOTBOUNTY/blob/main/docs/MAINNET_VERIFICATION_EVIDENCE.md#bounty-1',
-      'Completed Mainnet blind commitment & preimage release verification #2.',
-      'AI Agent Solver',
-      'awarded',
-      0.02,
-      '0x5e6871479685b094aa03809fb0156890521fd45ce457542ed98642a3f39efeaf',
-      1793959865000
-    );
-
-    const insertDisbStmt = db.prepare(`
-      INSERT OR IGNORE INTO disbursements (
-        id, bounty_id, submission_id, recipient_address, recipient_email,
-        amount, tx_hash, admin_email, distributed_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-
-    insertDisbStmt.run(
-      'disb_mainnet_001',
-      'bounty-mainnet-001',
-      'sub_mainnet_001',
-      '0x872876249c4DE59499c630c89E05748a2c7f5Ccf',
-      'solver1@botbounty.ai',
-      0.02,
-      '0x20ff9b6954208cfbd48b451589a8c9227d8fc739ee98ea0af85737d6636e62c1',
-      'deployer@botbounty.ai',
-      1793959856000
-    );
-
-    insertDisbStmt.run(
-      'disb_mainnet_002',
-      'bounty-mainnet-002',
-      'sub_mainnet_002',
-      '0x9a10F17cF4b406078D4cC1415ef079bEcfb271dA',
-      'solver2@botbounty.ai',
-      0.02,
-      '0x5e6871479685b094aa03809fb0156890521fd45ce457542ed98642a3f39efeaf',
-      'deployer@botbounty.ai',
-      1793959871000
-    );
+    const placeholders = verificationIds.map(() => '?').join(',');
+    db.prepare(`DELETE FROM disbursements WHERE bounty_id IN (${placeholders})`).run(...verificationIds);
+    db.prepare(`DELETE FROM bounty_submissions WHERE bounty_id IN (${placeholders})`).run(...verificationIds);
+    db.prepare(`DELETE FROM bounties WHERE id IN (${placeholders})`).run(...verificationIds);
   } catch (err) {
-    console.warn('[Database] Failed to ensure mainnet verified bounties:', err.message);
+    console.warn('[Database] Failed to purge verification bounties:', err.message);
   }
 }
 
 try {
-  ensureMainnetVerifiedBounties();
+  purgeVerificationBounties();
 } catch (e) {}
 
 /**
@@ -2590,11 +2413,11 @@ export function getAdminOverviewStats() {
     totalUsers: userStats.total_users || 0,
     totalCreators: userStats.total_creators || userStats.total_users || 0,
     escrowWallet: process.env.ESCROW_CONTRACT_ADDRESS || process.env.ESCROW_WALLET_ADDRESS || '0x909661b453bBe13Ee247551754b35370557A9aA2',
-    mainnetEscrowedBot: (mainnetQuery?.open_amount || 0) > 0 ? Number(mainnetQuery.open_amount) : 0.02,
-    mainnetSettledBot: (mainnetQuery?.settled_amount || 0) > 0 ? Number(mainnetQuery.settled_amount) : 0.04,
-    mainnetOpenBounties: mainnetQuery?.open_count || 1,
-    mainnetSettledBounties: mainnetQuery?.settled_count || 2,
-    mainnetTotalBounties: mainnetQuery?.count || 3,
+    mainnetEscrowedBot: Number(mainnetQuery?.open_amount || 0),
+    mainnetSettledBot: Number(mainnetQuery?.settled_amount || 0),
+    mainnetOpenBounties: mainnetQuery?.open_count || 0,
+    mainnetSettledBounties: mainnetQuery?.settled_count || 0,
+    mainnetTotalBounties: mainnetQuery?.count || 0,
     demoEscrowedBot: Number(demoQuery?.total_escrowed || 0),
     demoDistributedBot: Number(demoQuery?.settled_amount || 0),
     demoBountiesCount: Number(demoQuery?.count || 0)

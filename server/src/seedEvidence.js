@@ -34,3 +34,10 @@ export const DEMO_BOUNTY_IDS = [
   'bounty-arc-3356',
   'bounty-arc-4237'
 ];
+
+/** Ids of the 0.02 $BOT escrow bounties used only for post-deployment verification. */
+export const VERIFICATION_BOUNTY_IDS = [
+  'bounty-mainnet-001',
+  'bounty-mainnet-002',
+  'bounty-mainnet-003'
+];

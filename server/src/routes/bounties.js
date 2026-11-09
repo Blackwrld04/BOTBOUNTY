@@ -237,30 +237,23 @@ bountyRouter.get('/stats', (req, res) => {
     res.json({
       success: true,
       stats: {
-        tvlUsdc: adminStats.mainnetEscrowedBot ?? 0.02,
-        totalEscrowedUsdc: adminStats.mainnetEscrowedBot ?? 0.02,
-        totalSettledUsdc: adminStats.mainnetSettledBot ?? 0.04,
-        totalDistributedUsdc: adminStats.mainnetSettledBot ?? 0.04,
+        tvlUsdc: adminStats.totalEscrowedUsdc,
+        totalEscrowedUsdc: adminStats.totalEscrowedUsdc,
+        totalSettledUsdc: adminStats.totalDistributedUsdc,
+        totalDistributedUsdc: adminStats.totalDistributedUsdc,
         avgSettlementTimeMs: 384,
-        activeBountiesCount: adminStats.mainnetOpenBounties ?? 1,
-        totalBounties: (adminStats.mainnetOpenBounties ?? 1) + (adminStats.mainnetSettledBounties ?? 2),
-        openBounties: adminStats.mainnetOpenBounties ?? 1,
-        inReviewBounties: 0,
-        settledBounties: adminStats.mainnetSettledBounties ?? 2,
-        totalSubmissions: 2,
-        totalDistributions: adminStats.mainnetSettledBounties ?? 2,
+        activeBountiesCount: adminStats.openBounties + adminStats.inReviewBounties,
+        totalBounties: adminStats.totalBounties,
+        openBounties: adminStats.openBounties,
+        inReviewBounties: adminStats.inReviewBounties,
+        settledBounties: adminStats.settledBounties,
+        totalSubmissions: adminStats.totalSubmissions,
+        totalDistributions: adminStats.totalDistributions,
         totalUsers: adminStats.totalUsers,
         totalCreators: adminStats.totalCreators,
         escrowWallet: config.escrowContractAddress,
         chainId: config.botChainId,
-        network: 'BOT Chain Mainnet (Chain ID 677)',
-        demoShowcase: {
-          totalEscrowedBot: adminStats.demoEscrowedBot,
-          totalSettledBot: adminStats.demoDistributedBot,
-          bountiesCount: adminStats.demoBountiesCount,
-          isDemo: true,
-          disclaimer: 'Off-chain showcase templates for UI demonstration. Excluded from real Mainnet TVL.'
-        }
+        network: 'BOT Chain Mainnet (Chain ID 677)'
       }
     });
   } catch (err) {

@@ -196,7 +196,7 @@ export default function WalletModal({
             className="brutal-btn brutal-btn-white"
             style={{ width: '100%', padding: '12px', fontSize: '0.88rem' }}
           >
-            USE SIMULATED DEMO ACCOUNT (500 Native $BOT)
+            USE TEST ACCOUNT (500 Native $BOT)
           </button>
         </div>
       </div>

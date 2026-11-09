@@ -5,29 +5,36 @@ import { API_BASE } from '../utils/api';
 const FALLBACK_CREATORS = [
   {
     rank: 1,
-    handle: '@0x8728...5Ccf',
-    name: 'Lead Test Solver',
-    role: 'Lead Test Solver',
-    category: 'DEV',
-    earned: 0.02,
+    handle: '@Alex Researcher',
+    name: 'Alex Researcher',
+    role: 'Web3 Researcher (Threador)',
+    category: 'WRITING',
+    earned: 800,
     completed: 1,
     badgeColor: 'var(--arc-quantum-plum)',
-    address: '0x872876249c4DE59499c630c89E05748a2c7f5Ccf',
-    isMainnetVerified: true,
-    txHash: '0x20ff9b6954208cfbd48b451589a8c9227d8fc739ee98ea0af85737d6636e62c1'
+    address: '0x9923Bc8E4786A6B71D0052F5eCE984bC9d123456'
   },
   {
     rank: 2,
-    handle: '@0x9a10...71dA',
-    name: 'Blind Commitment Solver',
-    role: 'AI Agent Solver',
-    category: 'DEV',
-    earned: 0.02,
+    handle: '@Alex Rivers',
+    name: 'Alex Rivers',
+    role: 'Human Creator',
+    category: 'DESIGN',
+    earned: 750,
     completed: 1,
     badgeColor: 'var(--arc-sky-sync)',
-    address: '0x9a10F17cF4b406078D4cC1415ef079bEcfb271dA',
-    isMainnetVerified: true,
-    txHash: '0x5e6871479685b094aa03809fb0156890521fd45ce457542ed98642a3f39efeaf'
+    address: '0x51a8b1bfeb88bdfa9207e999c0b2023c70c97c8f'
+  },
+  {
+    rank: 3,
+    handle: '@Meme God',
+    name: 'Meme God',
+    role: 'Web3 Meme Lord',
+    category: 'MEMES',
+    earned: 450,
+    completed: 1,
+    badgeColor: 'var(--arc-blockstream-gold)',
+    address: '0x71C568ba74d3B107292995bB791e317614399A45'
   }
 ];
 

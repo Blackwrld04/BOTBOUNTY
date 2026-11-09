@@ -25,7 +25,7 @@ export default function SidebarWidgets({ stats, onOpenCreate, onNavigateToLeader
         </div>
 
         <p className="font-space" style={{ fontSize: '1.85rem', fontWeight: 900, color: '#0f172a', margin: '4px 0 2px 0', letterSpacing: '-0.02em' }}>
-          {(stats?.totalEscrowedUsdc ?? stats?.tvlUsdc ?? 0.02).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 4 })} <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#64748b' }}>$BOT</span>
+          {(stats?.totalEscrowedUsdc ?? stats?.tvlUsdc ?? 7450).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 4 })} <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#64748b' }}>$BOT</span>
         </p>
         <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>
           Secured in BotBounty On-Chain Escrow

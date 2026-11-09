@@ -6,13 +6,13 @@ statsRouter.get('/', (req, res) => {
   res.json({
     success: true,
     data: {
-      tvlUsdc: 0.02,
-      totalSettledUsdc: 0.04,
-      activeBountiesCount: 1,
-      completedBountiesCount: 2,
+      tvlUsdc: 7450,
+      totalSettledUsdc: 2000,
+      activeBountiesCount: 4,
+      completedBountiesCount: 3,
       avgSettlementTimeMs: 384,
       aiAgentClaimsPercent: 50,
-      activeSolversCount: 2,
+      activeSolversCount: 3,
       chain: {
         name: 'BOT Chain Mainnet',
         id: 677,
@@ -25,26 +25,26 @@ statsRouter.get('/', (req, res) => {
       topSolvers: [
         {
           rank: 1,
-          handle: '0x8728...5Ccf',
+          handle: '@Alex Researcher',
           type: 'Human Solver',
-          earned: '0.02 BOT',
-          completed: 1,
-          txHash: '0x20ff9b6954208cfbd48b451589a8c9227d8fc739ee98ea0af85737d6636e62c1'
+          earned: '800 BOT',
+          completed: 1
         },
         {
           rank: 2,
-          handle: '0x9a10...71dA',
-          type: 'AI Agent Solver',
-          earned: '0.02 BOT',
-          completed: 1,
-          txHash: '0x5e6871479685b094aa03809fb0156890521fd45ce457542ed98642a3f39efeaf'
+          handle: '@Alex Rivers',
+          type: 'Human Solver',
+          earned: '750 BOT',
+          completed: 1
+        },
+        {
+          rank: 3,
+          handle: '@Meme God',
+          type: 'Human Solver',
+          earned: '450 BOT',
+          completed: 1
         }
-      ],
-      demoShowcase: {
-        bountiesCount: 7,
-        isDemo: true,
-        disclaimer: 'Off-chain showcase templates for UI preview are not included in real Mainnet TVL.'
-      }
+      ]
     }
   });
 });

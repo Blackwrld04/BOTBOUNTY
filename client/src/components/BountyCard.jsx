@@ -125,23 +125,6 @@ export default function BountyCard({ bounty, onSelect, now }) {
                 <CheckCircle2 size={11} strokeWidth={2.8} />
                 ON-CHAIN MAINNET (677)
               </span>
-            ) : bounty.isDemo ? (
-              <span style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px',
-                fontSize: '0.68rem',
-                fontWeight: 800,
-                color: '#9a3412',
-                background: '#ffedd5',
-                border: '1.5px solid #ea580c',
-                boxShadow: '1.5px 1.5px 0px #ea580c',
-                padding: '1px 7px',
-                borderRadius: '4px',
-                textTransform: 'uppercase'
-              }}>
-                DEMO TEMPLATE (OFF-CHAIN)
-              </span>
             ) : null}
 
             {bounty.tags?.includes('Featured') || bounty.amount >= 1200 ? (

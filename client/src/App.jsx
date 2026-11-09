@@ -68,7 +68,7 @@ export default function App() {
   const [bounties, setBounties] = useState(() => {
     try {
       localStorage.removeItem('arcbounty_items_v4');
-      const saved = localStorage.getItem('botbounty_items_v5');
+      const saved = localStorage.getItem('botbounty_items_v6');
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
@@ -81,16 +81,16 @@ export default function App() {
   });
 
   const [stats, setStats] = useState({
-    tvlUsdc: 0.02,
-    totalEscrowedUsdc: 0.02,
-    totalSettledUsdc: 0.04,
-    totalDistributedUsdc: 0.04,
+    tvlUsdc: 7450,
+    totalEscrowedUsdc: 7450,
+    totalSettledUsdc: 2000,
+    totalDistributedUsdc: 2000,
     avgSettlementTimeMs: 384,
-    activeBountiesCount: 1,
-    totalBounties: 3,
-    openBounties: 1,
+    activeBountiesCount: 4,
+    totalBounties: 7,
+    openBounties: 4,
     inReviewBounties: 0,
-    settledBounties: 2,
+    settledBounties: 3,
     totalSubmissions: 2,
     totalDistributions: 2
   });
@@ -295,7 +295,7 @@ export default function App() {
           return true;
         });
         setBounties(unique);
-        localStorage.setItem('botbounty_items_v5', JSON.stringify(unique));
+        localStorage.setItem('botbounty_items_v6', JSON.stringify(unique));
       }
     } catch (e) {
       console.warn('[App] SQLite bounties sync fallback:', e);
@@ -360,7 +360,7 @@ export default function App() {
 
   // Sync to local storage
   useEffect(() => {
-    localStorage.setItem('botbounty_items_v5', JSON.stringify(bounties));
+    localStorage.setItem('botbounty_items_v6', JSON.stringify(bounties));
   }, [bounties]);
 
   // Handle posting a new bounty with Escrow deposit

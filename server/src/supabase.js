@@ -4,7 +4,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createClient } from '@supabase/supabase-js';
-import { FABRICATED_SEED_TX } from './seedEvidence.js';
+import { FABRICATED_SEED_TX, VERIFICATION_BOUNTY_IDS } from './seedEvidence.js';
 
 const { Pool } = pg;
 const __filename = fileURLToPath(import.meta.url);
@@ -392,6 +392,9 @@ export async function initSupabaseDatabase(initialBounties = [], sqliteDb = null
       await pool.query(`UPDATE bounties SET settlement_tx = NULL WHERE LOWER(settlement_tx) = ANY($1::text[])`, [FABRICATED_SEED_TX]);
       await pool.query(`UPDATE bounty_submissions SET disbursement_tx = NULL WHERE LOWER(disbursement_tx) = ANY($1::text[])`, [FABRICATED_SEED_TX]);
       await pool.query(`DELETE FROM disbursements WHERE LOWER(tx_hash) = ANY($1::text[])`, [FABRICATED_SEED_TX]);
+      await pool.query(`DELETE FROM disbursements WHERE bounty_id = ANY($1::text[])`, [VERIFICATION_BOUNTY_IDS]);
+      await pool.query(`DELETE FROM bounty_submissions WHERE bounty_id = ANY($1::text[])`, [VERIFICATION_BOUNTY_IDS]);
+      await pool.query(`DELETE FROM bounties WHERE id = ANY($1::text[])`, [VERIFICATION_BOUNTY_IDS]);
     } catch (migErr) {
       console.warn('[Supabase] Migration or seed purge warning:', migErr.message);
     }
